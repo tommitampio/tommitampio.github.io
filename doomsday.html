@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Doomsday – Tommi Tampio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Music&text=%F0%9D%84%9E&display=swap">
+<style>
+/* Layout: one narrow left-aligned column, photo and name on top, sections as ruled rows that can be added to later. */
+:root {
+  --bg: #F2F5F7;
+  --fg: #14202A;
+  --muted: #566672;
+  --rule: #CBD5DC;
+  --accent: #1F5C8B;
+  --nv-wood: #4b3027; --nv-fret: #c9c2b0; --nv-string: #e9e4d6; --nv-inlay: #7a5a4c;
+  --nv-root: #c68512; --nv-on-root: #1d1404;
+  --nv-good: #1c7a3c; --nv-bad: #b3261e; --nv-good-bg: #dff3e6; --nv-bad-bg: #fbe3e1;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B;
+    --fg: #E6ECF0;
+    --muted: #93A3AE;
+    --rule: #26343E;
+    --accent: #78B6E4;
+    --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+    --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+    --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B;
+  --fg: #E6ECF0;
+  --muted: #93A3AE;
+  --rule: #26343E;
+  --accent: #78B6E4;
+  --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+  --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+  --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 3.5rem; }
+.meta {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+.kuva {
+  display: block;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 1.75rem 0 0;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--rule);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 1.25rem;
+  text-wrap: balance;
+}
+h1 span { color: var(--accent); }
+.lead { font-size: 1.15rem; max-width: 34rem; margin: 0; }
+section {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 0.5rem 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+}
+section p { margin: 0; max-width: 34rem; }
+section p + p { margin-top: 0.75rem; }
+.soft { color: var(--muted); }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.shelf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+.count { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+input[type="search"] {
+  font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.5rem 0.75rem; width: 100%; max-width: 15rem; min-width: 0;
+}
+input[type="search"]:focus-visible, button.more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.books { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.books li { padding: 0.65rem 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; min-width: 0; }
+.books li.grp { font-family: var(--font-display); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--rule); }
+.books li.grp:first-child { padding-top: 0.75rem; }
+.books .t { font-weight: 500; overflow-wrap: anywhere; }
+.books .a { color: var(--muted); font-size: 0.9rem; }
+button.more {
+  font: inherit; color: var(--accent); background: none; border: 0;
+  padding: 0.75rem 0 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em;
+}
+footer { font-size: 0.85rem; color: var(--muted); }
+@media (max-width: 34rem) {
+  body { padding-block: 2.5rem 2rem; }
+  section { grid-template-columns: minmax(0, 1fr); }
+  .kuva { width: 7rem; height: 7rem; }
+}
+
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1.pg { font-size: clamp(2.2rem, 8vw, 3.4rem); margin: 0.75rem 0 0.5rem; }
+
+/* Doomsday-peli */
+.dd-n { display: inline-block; font: 700 0.95em var(--font-display); font-style: normal; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 4px; padding: 0 0.35em; min-width: 1.4em; text-align: center; font-variant-numeric: tabular-nums; }
+.dd-n.ok { color: var(--nv-good); background: var(--nv-good-bg); }
+.dd-days { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; margin-top: 0.4rem; }
+.dd-days span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.dd-calc { margin: 0.5rem 0; padding: 0.6rem 0.8rem; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); display: flex; flex-direction: column; gap: 0.35rem; font-variant-numeric: tabular-nums; }
+.dd-calc .sum { border-top: 1px solid var(--rule); padding-top: 0.4rem; font-weight: 500; }
+.dd-explain .dd-calc { margin: 0; }
+.dd [hidden] { display: none !important; }
+.dd { margin-top: 1.5rem; border: 1px solid var(--rule); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.dd-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; }
+.dd-name { font: 500 1rem var(--font-display); }
+.dd-stats { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.dd-stats b { color: var(--fg); font-weight: 500; }
+.dd-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.dd-level { font: inherit; text-align: left; color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 0.75rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.2rem; }
+.dd-level:hover { border-color: var(--accent); }
+.dd-level b { font: 500 1rem var(--font-display); color: var(--accent); }
+.dd-level span { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.dd-date { text-align: center; padding: 0.75rem 0 0.25rem; }
+.dd-date .d { display: block; font: 700 clamp(2.2rem, 9vw, 3rem) var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.dd-date .q { color: var(--muted); font-size: 0.95rem; }
+.dd-bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.dd-bar i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; transition: transform 0.25s linear; }
+.dd-keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.35rem; }
+.dd-keys button { font: 700 1.05rem var(--font-display); padding: 0.75rem 0; min-width: 0; background: transparent; color: var(--fg); border: 1px solid var(--rule); border-bottom-width: 3px; border-radius: 6px; cursor: pointer; }
+.dd-keys button:hover:not(:disabled) { border-color: var(--accent); }
+.dd-keys button:disabled { cursor: default; }
+.dd-keys button.good { background: var(--nv-good-bg); border-color: var(--nv-good); color: var(--nv-good); }
+.dd-keys button.bad { background: var(--nv-bad-bg); border-color: var(--nv-bad); color: var(--nv-bad); }
+.dd-status { min-height: 1.6em; text-align: center; font-weight: 500; color: var(--muted); }
+.dd-status.good { color: var(--nv-good); } .dd-status.bad { color: var(--nv-bad); }
+.dd-pop { display: inline-block; animation: dd-pop 0.6s ease-out; }
+@keyframes dd-pop { 0% { transform: scale(0.6); opacity: 0; } 40% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1); } }
+.dd-explain { font-size: 0.92rem; border-top: 1px solid var(--rule); padding-top: 0.75rem; }
+.dd-explain ol { margin: 0; padding-left: 1.25rem; }
+.dd-explain li + li { margin-top: 0.3rem; }
+.dd-explain b { font-weight: 500; }
+.dd-row { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.dd-btn { font: inherit; font-size: 0.9rem; color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 6px; padding: 0.45rem 0.9rem; cursor: pointer; min-height: 2.5rem; }
+.dd-btn:hover { border-color: var(--accent); }
+.dd-btn.main { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+.dd-btn:disabled { opacity: 0.45; cursor: default; }
+.dd button:focus-visible, .dd input:focus-visible, .dd summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dd-help { font-size: 0.93rem; }
+.dd-help summary { cursor: pointer; color: var(--accent); }
+.dd-help h3 { font: 500 0.95rem var(--font-display); margin: 1rem 0 0.3rem; }
+.dd-help p { margin: 0.4rem 0 0; }
+.dd-help ol { margin: 0.4rem 0 0; padding-left: 1.25rem; }
+.dd-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.dd-table td, .dd-table th { border-bottom: 1px solid var(--rule); padding: 0.35rem 0.4rem; text-align: left; }
+.dd-table th { font-weight: 500; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.dd-end { text-align: center; display: flex; flex-direction: column; gap: 0.6rem; align-items: center; }
+.dd-big { font: 700 2.6rem var(--font-display); color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+.dd-name-in { font: 700 1.5rem var(--font-display); text-transform: uppercase; letter-spacing: 0.3em; text-align: center; width: 7.5rem; padding: 0.4rem 0 0.4rem 0.3em; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; }
+.dd-tabs { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.dd-tabs button { font: inherit; font-size: 0.85rem; padding: 0.35rem 0.75rem; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.dd-tabs button[aria-pressed="true"] { background: var(--accent); color: var(--bg); font-weight: 500; }
+.dd-top { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.dd-top td { border-bottom: 1px solid var(--rule); padding: 0.4rem 0.3rem; }
+.dd-top td:first-child { color: var(--muted); width: 2rem; }
+.dd-top td.n { font: 700 0.95rem var(--font-display); letter-spacing: 0.1em; }
+.dd-top td.p { text-align: right; font-weight: 500; }
+.dd-top td.t { color: var(--muted); font-size: 0.8rem; text-align: right; }
+.dd-top tr.me td { color: var(--accent); }
+.dd-board { display: flex; flex-direction: column; gap: 0.6rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+.dd-board-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.dd-board-head span { font: 500 0.8rem var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.dd-empty { color: var(--muted); font-size: 0.9rem; margin: 0; }
+@media (max-width: 34rem) {
+  .dd { padding: 1rem 0.75rem; }
+  .dd-levels { grid-template-columns: minmax(0, 1fr); }
+  .dd-keys button { font-size: 0.9rem; }
+}
+.ddwrap{display:block}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <nav class="top-nav"><a href="pelit.html">‹ Pelit</a><a href="index.html">Etusivu</a></nav>
+    <h1 class="pg">Doomsday</h1>
+  </header>
+  <div class="ddwrap">
+      <p>Doomsday-menetelmä. Matemaatikko John Horton Conwayn keksimällä menetelmällä voi laskea päässä minkä tahansa päivämäärän viikonpäivän, oli se menneisyydessä, tänään tai tulevaisuudessa.</p>
+      <p class="soft">Lue ohjeet, valitse taso ja kokeile. Kierroksen lopuksi voit kirjoittaa nimimerkkisi top 20 -listalle. Vastata voi myös näppäimillä 1–7 (maanantai–sunnuntai).</p>
+
+      <div class="dd" id="doomsday">
+        <details class="dd-help" id="dd-help">
+          <summary>Näin menetelmä toimii</summary>
+          <p>Ajatus on yksinkertainen: joka vuosi tietyt helposti muistettavat päivät, kuten 4.4., 6.6. ja 12.12., ovat aina samana viikonpäivänä. Sitä viikonpäivää kutsutaan vuoden <b>tuomiopäiväksi</b>. Kun tiedät sen, lasket vain muutaman päivän eteen- tai taaksepäin.</p>
+
+          <h3>1. Viikonpäivät numeroina</h3>
+          <div class="dd-days">
+            <span><i class="dd-n">0</i>su</span><span><i class="dd-n">1</i>ma</span><span><i class="dd-n">2</i>ti</span><span><i class="dd-n">3</i>ke</span><span><i class="dd-n">4</i>to</span><span><i class="dd-n">5</i>pe</span><span><i class="dd-n">6</i>la</span>
+          </div>
+          <p>Jos luku on suurempi kuin 6, vähennä siitä 7 (tai 14, 21 …), kunnes se on 0–6.</p>
+
+          <h3>2. Vuosisadan koodi</h3>
+          <div class="dd-days">
+            <span>1800-luku <i class="dd-n">5</i></span><span>1900-luku <i class="dd-n">3</i></span><span>2000-luku <i class="dd-n">2</i></span><span>2100-luku <i class="dd-n">0</i></span>
+          </div>
+
+          <h3>3. Vuoden tuomiopäivä, esimerkkinä 1928</h3>
+          <p>Ota vuosiluvun kaksi viimeistä numeroa: <b>28</b>.</p>
+          <div class="dd-calc">
+            <div>28 ÷ 12 = <i class="dd-n">2</i>, jää yli <i class="dd-n">4</i></div>
+            <div>4 ÷ 4 = <i class="dd-n">1</i></div>
+            <div>vuosisadan koodi <i class="dd-n">3</i></div>
+            <div class="sum"><i class="dd-n">2</i> + <i class="dd-n">4</i> + <i class="dd-n">1</i> + <i class="dd-n">3</i> = 10 → 10 − 7 = <i class="dd-n ok">3</i> = keskiviikko</div>
+          </div>
+          <p>Laske yhteen vain korostetut numerot. Vuoden 1928 tuomiopäivä on siis keskiviikko.</p>
+
+          <h3>4. Muistipäivät</h3>
+          <table class="dd-table">
+            <tr><th>Kuukausi</th><th>Muistipäivä</th></tr>
+            <tr><td>4, 6, 8, 10, 12</td><td>sama päivä ja kuukausi: 4.4., 6.6., 8.8., 10.10., 12.12.</td></tr>
+            <tr><td>5, 9, 7, 11</td><td>9.5., 5.9., 11.7., 7.11. (”töissä 9–5 ja kaupassa 7–11”)</td></tr>
+            <tr><td>3</td><td>14.3. (piin päivä)</td></tr>
+            <tr><td>2</td><td>helmikuun viimeinen päivä</td></tr>
+            <tr><td>1</td><td>3.1. (karkausvuonna 4.1.)</td></tr>
+          </table>
+          <p class="soft">Karkausvuosi on joka neljäs vuosi. Täysistä vuosisadoista vain 400:lla jaolliset ovat karkausvuosia (2000 oli, 1900 ei).</p>
+
+          <h3>5. Lopuksi oikea päivä, esimerkkinä 24.12.1928</h3>
+          <div class="dd-calc">
+            <div>12.12.1928 on tuomiopäivä eli keskiviikko <i class="dd-n">3</i></div>
+            <div>24 − 12 = 12 → 12 − 7 = <i class="dd-n">5</i></div>
+            <div class="sum"><i class="dd-n">3</i> + <i class="dd-n">5</i> = 8 → 8 − 7 = <i class="dd-n ok">1</i> = maanantai</div>
+          </div>
+        </details>
+
+        <div id="dd-menu">
+          <div class="dd-levels">
+            <button type="button" class="dd-level" data-l="helppo"><b>Helppo</b><span>10 kysymystä · vuodet 2000–2030 · vihjeet käytössä</span></button>
+            <button type="button" class="dd-level" data-l="keski"><b>Keskitaso</b><span>20 kysymystä · vuodet 1900–2099 · yksi vihje</span></button>
+            <button type="button" class="dd-level" data-l="vaikea"><b>Vaikea</b><span>30 kysymystä · vuodet 1800–2199 · ei apuja</span></button>
+          </div>
+        </div>
+
+        <div id="dd-game" hidden>
+          <div class="dd-head">
+            <span class="dd-name" id="dd-lvl">Helppo</span>
+            <span class="dd-stats">Kysymys <b id="dd-qno">1/10</b> · Pisteet <b id="dd-score">0</b> · Putki <b id="dd-streak">0</b></span>
+          </div>
+          <div class="dd-date">
+            <span class="d" id="dd-date">1.1.2000</span>
+            <span class="q">Mikä viikonpäivä?</span>
+          </div>
+          <div class="dd-bar" aria-hidden="true"><i id="dd-bar"></i></div>
+          <div class="dd-keys" id="dd-keys"></div>
+          <div class="dd-status" id="dd-status" aria-live="polite"></div>
+          <div class="dd-explain" id="dd-explain" hidden></div>
+          <div class="dd-row">
+            <button type="button" class="dd-btn" id="dd-hint">Vihje</button>
+            <button type="button" class="dd-btn main" id="dd-next" hidden>Seuraava</button>
+            <button type="button" class="dd-btn" id="dd-quit">Lopeta</button>
+          </div>
+        </div>
+
+        <div id="dd-end" class="dd-end" hidden>
+          <span class="dd-name" id="dd-end-lvl"></span>
+          <span class="dd-big" id="dd-end-score">0</span>
+          <span class="soft" id="dd-end-info"></span>
+          <form id="dd-form" class="dd-end" hidden>
+            <span id="dd-rank-msg"></span>
+            <input class="dd-name-in" id="dd-nick" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Nimimerkki, 3 kirjainta" placeholder="AAA">
+            <button type="submit" class="dd-btn main">Tallenna listalle</button>
+          </form>
+          <div class="dd-row">
+            <button type="button" class="dd-btn main" id="dd-again">Pelaa uudestaan</button>
+            <button type="button" class="dd-btn" id="dd-menu-btn">Vaihda tasoa</button>
+          </div>
+        </div>
+
+        <div class="dd-board">
+          <div class="dd-board-head">
+            <span>Top 20</span>
+            <div class="dd-tabs" id="dd-tabs" role="group" aria-label="Taso">
+              <button type="button" data-l="helppo">Helppo</button>
+              <button type="button" data-l="keski">Keskitaso</button>
+              <button type="button" data-l="vaikea">Vaikea</button>
+            </div>
+          </div>
+          <table class="dd-top" id="dd-top"></table>
+        </div>
+      </div>
+  </div>
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+</main>
+<script>try{document.getElementById("vuosi").textContent=new Date().getFullYear()}catch(e){}</script>
+<script>
+(function () {
+  var root = document.getElementById('doomsday');
+  if (!root) return;
+  var $ = function (id) { return document.getElementById('dd-' + id); };
+  var DAYS = ['sunnuntai', 'maanantai', 'tiistai', 'keskiviikko', 'torstai', 'perjantai', 'lauantai'];
+  var SHORT = ['Su', 'Ma', 'Ti', 'Ke', 'To', 'Pe', 'La'];
+  var ORDER = [1, 2, 3, 4, 5, 6, 0];
+  var LEVELS = {
+    helppo: { name: 'Helppo', n: 10, y0: 2000, y1: 2030, hints: 3 },
+    keski: { name: 'Keskitaso', n: 20, y0: 1900, y1: 2099, hints: 1 },
+    vaikea: { name: 'Vaikea', n: 30, y0: 1800, y1: 2199, hints: 0 }
+  };
+  var ANCHOR_NAME = { 18: 'perjantai', 19: 'keskiviikko', 20: 'tiistai', 21: 'sunnuntai' };
+  var KEY = 'doomsday-top';
+  var SPEED_WINDOW = 25; // sekuntia, jonka aikana nopeusbonus laskee nollaan
+
+  var g = null, timer = null, boardLevel = 'helppo', lastSaved = null;
+
+  function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+  function mod7(n) { return ((n % 7) + 7) % 7; }
+  function memDay(y, m) {
+    var leap = isLeap(y);
+    return [0, leap ? 4 : 3, leap ? 29 : 28, 14, 4, 9, 6, 11, 8, 5, 10, 7, 12][m];
+  }
+  function solve(y, m, d) {
+    var c = Math.floor(y / 100), yy = y % 100;
+    var anchor = mod7(2 + 5 * (c % 4));
+    var a = Math.floor(yy / 12), b = yy % 12, cc = Math.floor(b / 4);
+    var dd = mod7(anchor + a + b + cc);
+    var ref = memDay(y, m), diff = d - ref;
+    return { c: c, yy: yy, anchor: anchor, a: a, b: b, cc: cc, dd: dd, ref: ref, diff: diff, wd: mod7(dd + diff) };
+  }
+  function randDate(lv) {
+    var s = Date.UTC(lv.y0, 0, 1), e = Date.UTC(lv.y1, 11, 31);
+    var t = new Date(s + Math.floor(Math.random() * ((e - s) / 864e5 + 1)) * 864e5);
+    return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(), wd: t.getUTCDay() };
+  }
+  function fmtDate(q) { return q.d + '.' + q.m + '.' + q.y; }
+
+  var CODE = { 18: 5, 19: 3, 20: 2, 21: 0 };
+  function N(x, ok) { return '<i class="dd-n' + (ok ? ' ok' : '') + '">' + x + '</i>'; }
+  function reduce(x) { // näyttää 10 → 10 − 7 = 3 tai −9 → −9 + 14 = 5
+    var r = mod7(x);
+    if (x === r) return N(r, true);
+    var k = Math.abs(x - r);
+    return x + ' → ' + x + (x > r ? ' − ' : ' + ') + k + ' = ' + N(r, true);
+  }
+  function hintStep(q, s, i) {
+    if (i === 0) return '<div>Vuosisadan ' + s.c + '00 koodi on ' + N(CODE[s.c]) + ' (' + DAYS[s.anchor] + ')</div>';
+    if (i === 1) {
+      var sum = s.a + s.b + s.cc + s.anchor;
+      return '<div>' + s.yy + ' ÷ 12 = ' + N(s.a) + ', jää yli ' + N(s.b) + '</div>' +
+        '<div>' + s.b + ' ÷ 4 = ' + N(s.cc) + '</div>' +
+        '<div class="sum">' + N(s.a) + ' + ' + N(s.b) + ' + ' + N(s.cc) + ' + ' + N(s.anchor) + ' = ' + reduce(sum) +
+        ' → vuoden ' + q.y + ' tuomiopäivä on ' + DAYS[s.dd] + '</div>';
+    }
+    var line1 = '<div>Muistipäivä ' + s.ref + '.' + q.m + '. on ' + DAYS[s.dd] + ' ' + N(s.dd) + '</div>';
+    if (s.diff === 0) return line1 + '<div class="sum">' + q.d + '.' + q.m + '. on itse muistipäivä → ' + DAYS[s.dd] + '</div>';
+    var r = mod7(s.diff);
+    return line1 +
+      '<div>' + q.d + ' − ' + s.ref + ' = ' + reduce(s.diff).replace(' ok', '') + '</div>' +
+      '<div class="sum">' + N(s.dd) + ' + ' + N(r) + ' = ' + reduce(s.dd + r) + ' = ' + DAYS[s.wd] + '</div>';
+  }
+  function wrap(parts) { return '<div class="dd-calc">' + parts.join('') + '</div>'; }
+  function explainAll(q, s) {
+    return wrap([hintStep(q, s, 0), hintStep(q, s, 1), hintStep(q, s, 2)]);
+  }
+
+  // Ääni
+  var ac = null;
+  function beep(ok) {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var notes = ok ? [660, 880] : [220];
+      notes.forEach(function (f, i) {
+        var o = ac.createOscillator(), v = ac.createGain(), t = ac.currentTime + i * 0.09;
+        o.frequency.value = f; o.type = ok ? 'triangle' : 'sawtooth';
+        v.gain.setValueAtTime(0.0001, t); v.gain.exponentialRampToValueAtTime(ok ? 0.12 : 0.06, t + 0.01);
+        v.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        o.connect(v); v.connect(ac.destination); o.start(t); o.stop(t + 0.2);
+      });
+    } catch (e) {}
+  }
+
+  // Näppäimet
+  ORDER.forEach(function (w, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = SHORT[w]; b.dataset.w = w;
+    b.setAttribute('aria-label', DAYS[w] + ' (' + (i + 1) + ')');
+    b.addEventListener('click', function () { answer(w); });
+    $('keys').appendChild(b);
+  });
+
+  function show(which) {
+    $('menu').hidden = which !== 'menu';
+    $('game').hidden = which !== 'game';
+    $('end').hidden = which !== 'end';
+  }
+
+  function start(l) {
+    var lv = LEVELS[l];
+    g = { l: l, lv: lv, i: 0, score: 0, streak: 0, best: 0, right: 0, t0: Date.now(), q: null };
+    $('lvl').textContent = lv.name;
+    boardLevel = l; renderBoard();
+    show('game');
+    next();
+  }
+
+  function next() {
+    var lv = g.lv;
+    if (g.i >= lv.n) return finish();
+    var q = randDate(lv);
+    g.q = q; g.s = solve(q.y, q.m, q.d); g.hint = 0; g.answered = false; g.qt = Date.now();
+    $('qno').textContent = (g.i + 1) + '/' + lv.n;
+    $('score').textContent = g.score; $('streak').textContent = g.streak;
+    $('date').textContent = fmtDate(q);
+    $('status').className = 'dd-status'; $('status').textContent = '';
+    $('explain').hidden = true; $('explain').innerHTML = '';
+    $('next').hidden = true;
+    $('hint').hidden = lv.hints === 0; $('hint').disabled = false;
+    $('hint').textContent = lv.hints > 1 ? 'Vihje (1/' + lv.hints + ')' : 'Vihje';
+    Array.prototype.forEach.call($('keys').children, function (b) { b.disabled = false; b.className = ''; });
+    clearInterval(timer);
+    tickBar(); timer = setInterval(tickBar, 250);
+  }
+
+  function speedBonus() {
+    var sec = (Date.now() - g.qt) / 1000;
+    return Math.max(0, Math.round(100 * (1 - sec / SPEED_WINDOW)));
+  }
+  function tickBar() {
+    if (!g || g.answered) return;
+    var frac = g.hint ? 0 : speedBonus() / 100;
+    $('bar').style.transform = 'scaleX(' + frac + ')';
+  }
+
+  $('hint').addEventListener('click', function () {
+    if (!g || g.answered || g.hint >= g.lv.hints) return;
+    var lines = [];
+    if (g.lv.hints === 1) {
+      lines.push(hintStep(g.q, g.s, 0));
+      lines.push('<div>Kuukauden muistipäivä on ' + g.s.ref + '.' + g.q.m + '.</div>');
+      g.hint = 1;
+    } else {
+      g.hint++;
+      for (var i = 0; i < g.hint; i++) lines.push(hintStep(g.q, g.s, i));
+    }
+    $('explain').innerHTML = wrap(lines);
+    $('explain').hidden = false;
+    $('hint').textContent = g.hint < g.lv.hints ? 'Vihje (' + (g.hint + 1) + '/' + g.lv.hints + ')' : 'Ei enempää vihjeitä';
+    $('hint').disabled = g.hint >= g.lv.hints;
+    tickBar();
+  });
+
+  function answer(w) {
+    if (!g || g.answered) return;
+    g.answered = true; clearInterval(timer);
+    var ok = w === g.q.wd, pts = 0;
+    Array.prototype.forEach.call($('keys').children, function (b) {
+      b.disabled = true;
+      var bw = +b.dataset.w;
+      if (bw === g.q.wd) b.className = 'good';
+      else if (bw === w) b.className = 'bad';
+    });
+    if (ok) {
+      g.streak++; g.right++; g.best = Math.max(g.best, g.streak);
+      var base = g.hint ? 50 : 100, speed = g.hint ? 0 : speedBonus();
+      var streakB = Math.min(50, 10 * (g.streak - 1));
+      pts = base + speed + streakB;
+      g.score += pts;
+      var cheer = g.streak >= 10 ? 'Mahtava putki!' : g.streak >= 5 ? 'Tulessa!' : g.streak >= 3 ? 'Hyvä putki!' : 'Oikein!';
+      $('status').className = 'dd-status good';
+      $('status').innerHTML = '<span class="dd-pop">' + cheer + ' +' + pts + '</span>' + (streakB ? ' <span class="soft">(putkibonus +' + streakB + ')</span>' : '');
+    } else {
+      g.streak = 0;
+      $('status').className = 'dd-status bad';
+      $('status').textContent = 'Väärin, oikea vastaus on ' + DAYS[g.q.wd] + '.';
+    }
+    beep(ok);
+    $('score').textContent = g.score; $('streak').textContent = g.streak;
+    $('explain').innerHTML = explainAll(g.q, g.s);
+    $('explain').hidden = false;
+    $('hint').hidden = true;
+    g.i++;
+    $('next').textContent = g.i >= g.lv.n ? 'Katso tulos' : 'Seuraava';
+    $('next').hidden = false;
+    $('next').focus({ preventScroll: true });
+  }
+
+  $('next').addEventListener('click', next);
+  $('quit').addEventListener('click', function () { clearInterval(timer); g = null; show('menu'); });
+
+  // Top 20
+  function loadTop() {
+    try { var t = JSON.parse(localStorage.getItem(KEY) || '{}'); return t && typeof t === 'object' ? t : {}; } catch (e) { return {}; }
+  }
+  function saveTop(t) { try { localStorage.setItem(KEY, JSON.stringify(t)); } catch (e) {} }
+  function rankOf(list, p) {
+    var r = 0;
+    while (r < list.length && list[r].p >= p) r++;
+    return r < 20 && p > 0 ? r + 1 : 0;
+  }
+  function fmtWhen(ts) {
+    var d = new Date(ts);
+    return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear() + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function renderBoard() {
+    Array.prototype.forEach.call($('tabs').children, function (b) { b.setAttribute('aria-pressed', b.dataset.l === boardLevel ? 'true' : 'false'); });
+    var list = loadTop()[boardLevel] || [], tb = $('top');
+    tb.innerHTML = '';
+    if (!list.length) {
+      tb.innerHTML = '<tr><td colspan="4" class="dd-empty">Ei vielä tuloksia. Ole ensimmäinen!</td></tr>';
+      return;
+    }
+    list.forEach(function (e, i) {
+      var tr = document.createElement('tr');
+      if (lastSaved && lastSaved.l === boardLevel && lastSaved.ts === e.ts) tr.className = 'me';
+      [String(i + 1) + '.', e.n, e.p + ' p', fmtWhen(e.ts)].forEach(function (v, k) {
+        var td = document.createElement('td');
+        td.textContent = v;
+        td.className = ['', 'n', 'p', 't'][k];
+        if (k === 2) td.title = e.c + ' oikein';
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  }
+  Array.prototype.forEach.call($('tabs').children, function (b) {
+    b.addEventListener('click', function () { boardLevel = b.dataset.l; renderBoard(); });
+  });
+
+  function finish() {
+    clearInterval(timer);
+    var secs = Math.round((Date.now() - g.t0) / 1000);
+    $('end-lvl').textContent = g.lv.name;
+    $('end-score').textContent = g.score + ' p';
+    $('end-info').textContent = g.right + '/' + g.lv.n + ' oikein · pisin putki ' + g.best + ' · aika ' +
+      Math.floor(secs / 60) + ' min ' + (secs % 60) + ' s';
+    var list = loadTop()[g.l] || [], r = rankOf(list, g.score);
+    $('form').hidden = !r;
+    if (r) {
+      $('rank-msg').textContent = r === 1 ? 'Uusi ennätys! Sijoitus 1.' : 'Pääsit listalle sijalle ' + r + '.';
+      try { $('nick').value = localStorage.getItem('doomsday-nick') || ''; } catch (e) { $('nick').value = ''; }
+    }
+    boardLevel = g.l; renderBoard();
+    show('end');
+    if (r) setTimeout(function () { $('nick').focus({ preventScroll: true }); }, 50);
+  }
+
+  $('nick').addEventListener('input', function () {
+    this.value = this.value.toUpperCase().replace(/[^A-ZÅÄÖ0-9]/g, '').slice(0, 3);
+  });
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var n = $('nick').value.toUpperCase();
+    if (n.length !== 3) { $('rank-msg').textContent = 'Kirjoita kolme merkkiä, esimerkiksi TOM.'; return; }
+    var all = loadTop(), list = all[g.l] || [];
+    var e = { n: n, p: g.score, c: g.right + '/' + g.lv.n, ts: Date.now() };
+    list.push(e);
+    list.sort(function (a, b) { return b.p - a.p || a.ts - b.ts; });
+    all[g.l] = list.slice(0, 20);
+    saveTop(all);
+    try { localStorage.setItem('doomsday-nick', n); } catch (err) {}
+    lastSaved = { l: g.l, ts: e.ts };
+    $('form').hidden = true;
+    boardLevel = g.l; renderBoard();
+  });
+
+  $('again').addEventListener('click', function () { start(g ? g.l : 'helppo'); });
+  $('menu-btn').addEventListener('click', function () { show('menu'); });
+  Array.prototype.forEach.call(root.querySelectorAll('.dd-level'), function (b) {
+    b.addEventListener('click', function () { start(b.dataset.l); });
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (!g || $('game').hidden || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var tag = (ev.target && ev.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    var r = root.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) return;
+    if (!g.answered && ev.key >= '1' && ev.key <= '7') { ev.preventDefault(); answer(ORDER[+ev.key - 1]); }
+    else if (g.answered && ev.key === 'Enter' && ev.target !== $('next')) { ev.preventDefault(); next(); }
+  });
+
+  renderBoard();
+})();
+</script>
+</body>
+</html>

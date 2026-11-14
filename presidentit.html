@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Presidenttivisa – Tommi Tampio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{--bg:#F2F5F7;--card:#fff;--fg:#14202A;--mut:#566672;--line:#CBD5DC;--navy:#1F5C8B;--red:#b8322a;--ok:#2e7d4f;--bad:#c0392b;--dem:#2b5fb4;--rep:#c0392b;--oth:#7a6a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#0E151B;--card:#141e26;--fg:#E6ECF0;--mut:#93A3AE;--line:#26343E;--navy:#78B6E4;--red:#ef6f5e;--ok:#5cc489;--bad:#ef6f5e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;justify-content:center;padding:18px 14px 40px}
+.app{width:100%;max-width:520px}
+h1{margin:0 0 2px;font-size:2rem;letter-spacing:-.02em;font-family:"Space Grotesk",sans-serif}.back{display:inline-block;margin-bottom:14px;color:var(--navy);text-decoration:none;font-size:.9rem}
+.sub{color:var(--mut);margin:0 0 18px}
+.stars{color:var(--red);letter-spacing:4px;font-size:.8rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.modes{display:grid;gap:10px}
+.mode{all:unset;cursor:pointer;display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.mode b{display:block;font-size:1.05rem}.mode span{color:var(--mut);font-size:.9rem}
+.mode:active{transform:scale(.99)}
+.best{color:var(--mut);font-size:.85rem;margin-top:14px;text-align:center}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--mut);font-size:.9rem}
+.top button{all:unset;cursor:pointer;color:var(--navy);font-weight:600}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px}.bar i{display:block;height:100%;background:var(--navy);transition:width .3s}
+.num{font-family:"Space Grotesk",sans-serif;font-size:3.4rem;font-weight:700;color:var(--navy);line-height:1;text-align:center;margin:6px 0}
+.q{text-align:center;font-size:1.15rem;font-weight:600;margin:6px 0 16px}
+.opts{display:grid;gap:10px}
+.opt{all:unset;cursor:pointer;text-align:center;padding:14px;border:1.5px solid var(--line);border-radius:12px;font-weight:600;background:var(--card);transition:background .15s,border-color .15s}
+.opt.ok{background:color-mix(in srgb,var(--ok) 18%,var(--card));border-color:var(--ok)}
+.opt.bad{background:color-mix(in srgb,var(--bad) 16%,var(--card));border-color:var(--bad)}
+.opt[disabled]{cursor:default}
+.info{margin-top:16px;padding:14px;border-radius:12px;background:var(--bg);display:none}
+.info.show{display:block}
+.info h3{margin:0 0 2px;font-size:1.1rem}
+.meta{color:var(--mut);font-size:.9rem;margin-bottom:6px}
+.party{display:inline-block;padding:1px 8px;border-radius:99px;color:#fff;font-size:.78rem;font-weight:600;margin-left:4px}
+.info a{color:var(--navy);font-size:.9rem}
+.next{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:block;text-align:center;margin-top:14px;padding:14px;border-radius:12px;background:var(--navy);color:#fff;font-weight:700}
+@media (prefers-color-scheme:dark){.next{color:#12141a}}
+.verdict{font-weight:700;margin-bottom:6px}.verdict.ok{color:var(--ok)}.verdict.bad{color:var(--bad)}
+.end{text-align:center}.end .big{font-size:3rem;font-weight:800;color:var(--navy)}
+.miss{text-align:left;margin-top:14px;font-size:.9rem;color:var(--mut)}.miss li{margin:2px 0}
+.lb{width:100%;border-collapse:collapse;margin-top:10px;font-size:.95rem}.lb td{padding:7px 4px;border-bottom:1px solid var(--line)}.lb td:first-child{color:var(--mut);width:2em}.lb td:nth-child(3){text-align:right;font-weight:700;font-variant-numeric:tabular-nums}.lb td:last-child{text-align:right;color:var(--mut);font-size:.8rem;width:5.5em}.lb tr.me td{background:color-mix(in srgb,var(--navy) 12%,transparent)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.tab{all:unset;cursor:pointer;padding:6px 10px;border-radius:99px;border:1px solid var(--line);font-size:.85rem}.tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.entry{margin-top:14px;padding:14px;border-radius:12px;background:var(--bg);text-align:left}.entry input{width:100%;font:inherit;font-size:1.1rem;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);margin:8px 0 0}
+.empty{color:var(--mut);text-align:center;padding:18px 0}
+</style></head><body><div class="app" id="app"></div>
+<script>
+const P=[
+[1,"George Washington","1789–1797","o","Ainoa presidentti, joka on valittu valitsijamiesten yksimielisin äänin."],
+[2,"John Adams","1797–1801","o","Ensimmäinen presidentti, joka asui Valkoisessa talossa."],
+[3,"Thomas Jefferson","1801–1809","o","Itsenäisyysjulistuksen pääkirjoittaja. Osti Louisianan alueen Ranskalta."],
+[4,"James Madison","1809–1817","o","Häntä kutsutaan perustuslain isäksi."],
+[5,"James Monroe","1817–1825","o","Monroen oppi: Eurooppa ei saa puuttua Amerikan asioihin."],
+[6,"John Quincy Adams","1825–1829","o","Toisen presidentin John Adamsin poika."],
+[7,"Andrew Jackson","1829–1837","d","Hänen kuvansa on 20 dollarin setelissä."],
+[8,"Martin Van Buren","1837–1841","d","Ensimmäinen itsenäisessä Yhdysvalloissa syntynyt presidentti."],
+[9,"William Henry Harrison","1841","o","Kuoli vain noin kuukausi virkaan astumisensa jälkeen."],
+[10,"John Tyler","1841–1845","o","Ensimmäinen varapresidentti, joka nousi presidentiksi edeltäjän kuoltua."],
+[11,"James K. Polk","1845–1849","d","USA laajeni hänen kaudellaan Tyynellemerelle asti."],
+[12,"Zachary Taylor","1849–1850","o","Meksikon sodan sankari, kuoli virassa."],
+[13,"Millard Fillmore","1850–1853","o","Viimeinen whig-puolueen presidentti."],
+[14,"Franklin Pierce","1853–1857","d","Kansas–Nebraska-laki kiristi orjuuskiistaa hänen kaudellaan."],
+[15,"James Buchanan","1857–1861","d","Ainoa presidentti, joka ei koskaan mennyt naimisiin."],
+[16,"Abraham Lincoln","1861–1865","r","Johti maata sisällissodan läpi ja lakkautti orjuuden. Murhattiin 1865."],
+[17,"Andrew Johnson","1865–1869","o","Ensimmäinen presidentti, jota vastaan nostettiin virkasyyte."],
+[18,"Ulysses S. Grant","1869–1877","r","Pohjoisvaltioiden armeijan ylipäällikkö sisällissodassa."],
+[19,"Rutherford B. Hayes","1877–1881","r","Voitti historian kiistellyimpiin kuuluvan vaalin 1876."],
+[20,"James A. Garfield","1881","r","Ammuttiin vain muutama kuukausi virkaan astumisen jälkeen."],
+[21,"Chester A. Arthur","1881–1885","r","Uudisti liittovaltion virkamiesten palkkaamista."],
+[22,"Grover Cleveland","1885–1889","d","Palveli kaksi erillistä kautta: hän on sekä 22. että 24. presidentti."],
+[23,"Benjamin Harrison","1889–1893","r","9. presidentin William Henry Harrisonin pojanpoika."],
+[24,"Grover Cleveland","1893–1897","d","Palasi virkaan neljän vuoden tauon jälkeen."],
+[25,"William McKinley","1897–1901","r","Murhattiin 1901 toisen kautensa alussa."],
+[26,"Theodore Roosevelt","1901–1909","r","Teddy bear eli nallekarhu on nimetty hänen mukaansa."],
+[27,"William Howard Taft","1909–1913","r","Toimi myöhemmin korkeimman oikeuden presidenttinä."],
+[28,"Woodrow Wilson","1913–1921","d","Johti USA:n ensimmäiseen maailmansotaan ja ajoi Kansainliittoa."],
+[29,"Warren G. Harding","1921–1923","r","Kuoli virassa. Hänen hallintoaan varjostivat skandaalit."],
+[30,"Calvin Coolidge","1923–1929","r","Vähäpuheisuutensa vuoksi lempinimeltään Hiljainen Cal."],
+[31,"Herbert Hoover","1929–1933","r","Pörssiromahdus ja suuri lama alkoivat hänen kaudellaan."],
+[32,"Franklin D. Roosevelt","1933–1945","d","Ainoa yli kaksi kertaa valittu presidentti (neljästi)."],
+[33,"Harry S. Truman","1945–1953","d","Teki päätöksen atomipommien käytöstä Japania vastaan."],
+[34,"Dwight D. Eisenhower","1953–1961","r","Liittoutuneiden ylipäällikkö Normandian maihinnousussa."],
+[35,"John F. Kennedy","1961–1963","d","Murhattiin Dallasissa marraskuussa 1963."],
+[36,"Lyndon B. Johnson","1963–1969","d","Allekirjoitti kansalaisoikeuslain 1964."],
+[37,"Richard Nixon","1969–1974","r","Ainoa presidentti, joka on eronnut (Watergate)."],
+[38,"Gerald Ford","1974–1977","r","Ainoa presidentti, jota ei valittu vaaleilla presidentiksi eikä varapresidentiksi."],
+[39,"Jimmy Carter","1977–1981","d","Sai Nobelin rauhanpalkinnon 2002."],
+[40,"Ronald Reagan","1981–1989","r","Oli Hollywood-näyttelijä ennen politiikkaa."],
+[41,"George H. W. Bush","1989–1993","r","Kylmä sota päättyi ja Neuvostoliitto hajosi hänen kaudellaan."],
+[42,"Bill Clinton","1993–2001","d","Arkansasin entinen kuvernööri, soittaa saksofonia."],
+[43,"George W. Bush","2001–2009","r","41. presidentin poika. Syyskuun 11. päivän iskut tapahtuivat hänen kaudellaan."],
+[44,"Barack Obama","2009–2017","d","Ensimmäinen afroamerikkalainen presidentti."],
+[45,"Donald Trump","2017–2021","r","Liikemies ja tv-persoona ennen politiikkaa."],
+[46,"Joe Biden","2021–2025","d","Toimi aiemmin Obaman varapresidenttinä."],
+[47,"Donald Trump","2025–","r","Toinen Clevelandin jälkeen, joka palasi virkaan erilliselle kaudelle."]
+];
+const F={
+1:["Hänen tekohampaissaan ei ollut puuta: niissä oli mm. virtahevon norsunluuta sekä eläinten ja ihmisten hampaita.","Ei koskaan asunut Valkoisessa talossa – se valmistui vasta hänen kuolemansa jälkeen."],
+2:["Kuoli samana päivänä kuin Jefferson: 4.7.1826, itsenäisyysjulistuksen 50-vuotispäivänä.","Puolusti juristina brittisotilaita Bostonin verilöylyn oikeudenkäynnissä."],
+3:["Perusti Virginian yliopiston.","Myi kirjastonsa kongressille, kun britit olivat polttaneet kongressin kirjaston 1814."],
+4:["Lyhyin presidentti, vain noin 163 cm.","Britit polttivat Valkoisen talon hänen kaudellaan 1814."],
+5:["Liberian pääkaupunki Monrovia on nimetty hänen mukaansa.","Kuoli heinäkuun 4. päivänä 1831 – kolmas presidentti, joka kuoli itsenäisyyspäivänä."],
+6:["Toimi presidenttikautensa jälkeen vielä 17 vuotta edustajainhuoneen jäsenenä.","Kävi tiettävästi aamuisin uimassa Potomac-joessa."],
+7:["Kävi useita kaksintaisteluja, ja yhden luoti jäi hänen rintaansa loppuiäksi.","Ensimmäinen presidentti, jota yritettiin murhata (1835). Hyökkääjän molemmat pistoolit klikkasivat tyhjää."],
+8:["Hänen äidinkielensä oli hollanti.","OK-sanan suosio liitetään usein hänen lempinimeensä Old Kinderhook."],
+9:["Piti historian pisimmän virkaanastujaispuheen, lähes kaksi tuntia kylmässä säässä.","Hänen pojanpoikansa Benjamin Harrison oli 23. presidentti."],
+10:["Hänellä oli 15 lasta, enemmän kuin yhdelläkään muulla presidentillä.","Hänen pojanpoikiaan oli elossa vielä 2000-luvulla."],
+11:["Lupasi palvella vain yhden kauden ja piti lupauksensa.","Kuoli vain noin kolme kuukautta kautensa päättymisen jälkeen."],
+12:["Ei ollut tiettävästi koskaan äänestänyt presidentinvaaleissa ennen omaa valintaansa.","Hänen ratsunsa Old Whitey laidunsi Valkoisen talon nurmikolla."],
+13:["Perusti tiettävästi Valkoiseen taloon sen ensimmäisen kirjaston.","Lähetti kommodori Perryn laivastoineen avaamaan Japanin kaupankäynnille."],
+14:["Piti virkaanastujaispuheensa ulkomuistista, ilman paperia.","Opiskeli samassa collegessa kuin kirjailija Nathaniel Hawthorne, joka kirjoitti hänen vaalielämäkertansa."],
+15:["Ainoa presidentti Pennsylvaniasta.","Monet historioitsijat pitävät häntä yhtenä heikoimmista presidenteistä."],
+16:["Pisin presidentti, noin 193 cm.","Ainoa presidentti, jolla on patentti: laite laivojen nostamiseksi matalikolta."],
+17:["Ei käynyt päivääkään koulua ja oli ammatiltaan räätäli.","Hänen kaudellaan USA osti Alaskan Venäjältä 1867."],
+18:["Hänen muistelmansa julkaisi Mark Twainin kustantamo.","Tarinan mukaan hän sai ylinopeussakon hevosvaunuilla ollessaan presidentti."],
+19:["Ensimmäinen presidentti, jolla oli puhelin Valkoisessa talossa.","Hänen vaimonsa ei tarjoillut alkoholia, ja sai lempinimen Lemonade Lucy."],
+20:["Keksi oman todistuksensa Pythagoraan lauseelle.","Tarinan mukaan hän osasi kirjoittaa latinaa toisella kädellä ja kreikkaa toisella yhtä aikaa."],
+21:["Tunnettiin tyylikkäästä pukeutumisesta ja lempinimestä Elegant Arthur.","Salasi vakavan munuaissairautensa koko kautensa ajan."],
+22:["Ainoa presidentti, joka on vihitty Valkoisessa talossa (1886).","Oli nuorena sheriffi ja toimitti itse kaksi hirttotuomiota."],
+23:["Valkoiseen taloon asennettiin sähkövalot hänen kaudellaan, mutta perhe ei aluksi uskaltanut koskea katkaisijoihin.","Hänen kaudellaan liittoon liittyi kuusi uutta osavaltiota."],
+24:["Hänelle tehtiin salaa leikkaus huvijahdissa kurkun kasvaimen vuoksi 1893.","Baby Ruth -suklaapatukan väitetään saaneen nimensä hänen tyttärestään Ruthista."],
+25:["Kantoi napinlävessä punaista neilikkaa onnenkukkana.","Hänen kaudellaan USA liitti itseensä Havaijin."],
+26:["Nuorin presidentti: 42-vuotias virkaan astuessaan.","Ammuttiin 1912 puheen alussa, mutta piti puheen loppuun – rintataskun puhepaperi hidasti luotia."],
+27:["Painavin presidentti, enimmillään yli 150 kg.","Aloitti perinteen, jossa presidentti heittää baseballkauden avausheiton."],
+28:["Ainoa presidentti, jolla oli tohtorin tutkinto.","Sai Nobelin rauhanpalkinnon 1919."],
+29:["Ensimmäinen istuva senaattori, joka valittiin presidentiksi.","Oli ennen politiikkaa sanomalehden kustantaja."],
+30:["Vannoi virkavalansa yöllä isänsä maatilalla öljylampun valossa – valan otti hänen isänsä.","Hänellä oli Valkoisessa talossa lemmikkinä pesukarhu nimeltä Rebecca."],
+31:["Lahjoitti presidentin palkkansa hyväntekeväisyyteen.","Puhui vaimonsa kanssa kiinaa, kun ei halunnut muiden ymmärtävän."],
+32:["Sairastui polioon 1921 ja käytti pyörätuolia, mitä ei juuri näytetty julkisuudessa.","Hänen jälkeensä perustuslakiin lisättiin kahden kauden enimmäisraja."],
+33:["Hänen toinen nimensä on pelkkä kirjain S.","Hänen pöydällään oli kyltti \"The buck stops here\" – vastuu päättyy tähän."],
+34:["Rakennutti Yhdysvaltain moottoritieverkoston.","Asennutti Valkoisen talon pihalle golfin harjoitusviheriön."],
+35:["Nuorin vaaleilla valittu presidentti, 43-vuotias.","Ensimmäinen katolinen presidentti."],
+36:["Vannoi virkavalansa lentokoneessa Kennedyn murhan jälkeen.","Koko perheen nimikirjaimet olivat LBJ: Lady Bird, Lynda Bird ja Luci Baines."],
+37:["Vieraili Kiinassa 1972 ensimmäisenä istuvana presidenttinä.","Soitti 1969 puhelun Kuun pinnalla oleville astronauteille."],
+38:["Selvisi kahdesta murhayrityksestä saman kuukauden aikana 1975.","Oli nuorena lupaava amerikkalaisen jalkapallon pelaaja."],
+39:["Eli pidempään kuin yksikään muu presidentti, 100-vuotiaaksi.","Oli maapähkinäfarmari ennen politiikkaa."],
+40:["Selvisi murhayrityksestä 1981, vain 69 päivää virkaan astumisensa jälkeen.","Oli Hollywoodin näyttelijäliiton puheenjohtaja."],
+41:["Hyppäsi laskuvarjolla 75-, 80-, 85- ja 90-vuotispäivinään.","Toisen maailmansodan lentäjä, joka ammuttiin alas Tyynellämerellä."],
+42:["Tapasi nuorena presidentti Kennedyn Valkoisessa talossa 1963.","On voittanut Grammy-palkinnon puhutun sanan albumista."],
+43:["Ainoa presidentti, jolla on MBA-tutkinto.","Maalaa nykyään öljyvärimaalauksia."],
+44:["Asui lapsena muutaman vuoden Indonesiassa.","Sai Nobelin rauhanpalkinnon 2009."],
+45:["Juonsi tv-ohjelmaa The Apprentice.","Hänellä on tähti Hollywoodin Walk of Famella."],
+46:["Valittiin senaattiin jo 29-vuotiaana (1972).","Oli virkaan astuessaan 2021 siihen asti vanhin presidentti."],
+47:["Vanhin virkaan astunut presidentti, 78-vuotias.","Hänen varapresidenttinsä on JD Vance."]
+};
+const PARTY={d:["Demokraatti","var(--dem)"],r:["Republikaani","var(--rep)"],o:["Muu puolue","var(--oth)"]};
+const app=document.getElementById("app");
+let st={};
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+function getLB(){try{return JSON.parse(localStorage.getItem("pv_lb")||"{}")}catch(e){return{}}}
+function saveLB(lb){try{localStorage.setItem("pv_lb",JSON.stringify(lb))}catch(e){}}
+function qualifies(m,score){if(score<=0)return false;const l=getLB()[m]||[];return l.length<10||score>l[l.length-1].s}
+function addLB(m,name,score,tot){const lb=getLB();const l=lb[m]||[];const d=new Date();const e={n:name,s:score,t:tot,d:d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear(),id:Date.now()};l.push(e);l.sort((a,b)=>b.s-a.s||a.id-b.id);lb[m]=l.slice(0,10);saveLB(lb);return e.id}
+function lbTable(m,hl){const l=getLB()[m]||[];if(!l.length)return '<div class="empty">Ei vielä tuloksia.</div>';return '<table class="lb">'+l.map((e,i)=>`<tr class="${e.id===hl?"me":""}"><td>${i+1}.</td><td>${esc(e.n)}</td><td>${e.s}/${e.t}</td><td>${e.d}</td></tr>`).join("")+'</table>'}
+const esc=t=>t.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function board(m,hl){m=m||"jarj";app.innerHTML=`<div class="top"><button id="quit">‹ Valikko</button><span>Top 10</span></div><h1>Tulokset</h1>
+<div class="tabs">${Object.entries(MODES).map(([k,x])=>`<button class="tab ${k===m?"on":""}" data-m="${k}">${x.t}</button>`).join("")}</div>
+<div class="card" style="margin-top:12px">${lbTable(m,hl)}</div>`;document.getElementById("quit").onclick=home;app.querySelectorAll(".tab").forEach(t=>t.onclick=()=>board(t.dataset.m))}
+function getBest(){try{return JSON.parse(localStorage.getItem("pv_best")||"{}")}catch(e){return{}}}
+function setBest(m,v){try{const b=getBest();if(!b[m]||v>b[m]){b[m]=v;localStorage.setItem("pv_best",JSON.stringify(b))}}catch(e){}}
+const MODES={
+ jarj:{t:"Järjestyksessä",d:"Washingtonista nykypäivään, kaikki 47",q:()=>P.map(p=>p[0]),type:"who"},
+ sat:{t:"Satunnainen kymppi",d:"Kuka oli n:s presidentti? 10 kysymystä",q:()=>shuffle(P.map(p=>p[0])).slice(0,10),type:"who"},
+ mones:{t:"Monesko presidentti?",d:"Näet nimen, arvaat järjestysnumeron. 10 kysymystä",q:()=>shuffle(P.map(p=>p[0])).slice(0,10),type:"num"},
+ vuosi:{t:"Kuka oli vallassa?",d:"Näet vuoden, arvaat presidentin. 10 kysymystä",q:()=>shuffle(P.filter(p=>![9,12,20].includes(p[0])).map(p=>p[0])).slice(0,10),type:"year"}
+};
+function home(){
+ const b=getBest();
+ app.innerHTML=`<a class="back" href="pelit.html">‹ Pelit</a><h1>Presidenttivisa</h1><div class="stars">★ ★ ★ ★ ★</div><p class="sub">Yhdysvaltain presidentit 1789–2025</p>
+ <div class="modes">${Object.entries(MODES).map(([k,m])=>`<button class="mode" data-m="${k}"><b>${m.t}</b><span>${m.d}</span>${b[k]!=null?`<span> · paras ${b[k]}%</span>`:""}</button>`).join("")}</div><button class="next" id="lbb" style="background:transparent;color:var(--navy);border:1.5px solid var(--line)">🏆 Tulokset</button>`;
+ document.getElementById("lbb").onclick=()=>board();
+ app.querySelectorAll(".mode").forEach(el=>el.onclick=()=>start(el.dataset.m));
+}
+function start(m){st={m,list:MODES[m].q(),i:0,score:0,miss:[]};ask()}
+function byNum(n){return P[n-1]}
+function yearIn(p){const [a,b]=p[2].split("–");const s=+a;if(!b)return 2026;const e=+b;return e>s+1?s+1+rnd(e-s-1):s}
+function ask(){
+ const n=st.list[st.i],p=byNum(n),type=MODES[st.m].type;
+ let q,opts,correct;
+ const near=()=>{const pool=P.filter(x=>x[1]!==p[1]&&Math.abs(x[0]-n)<=8);const names=[...new Set(shuffle(pool).map(x=>x[1]))];return names.slice(0,3)};
+ if(type==="who"){q=`<div class="num">${n}.</div><div class="q">Kuka oli ${n}. presidentti?</div>`;correct=p[1];opts=shuffle([correct,...near()])}
+ else if(type==="num"){
+  const lbl=p[1]+(p[1]==="Grover Cleveland"||p[1]==="Donald Trump"?(p[0]===22||p[0]===45?" (1. kausi)":" (2. kausi)"):"");
+  q=`<div class="q" style="font-size:1.5rem;margin-top:10px">${lbl}</div><div class="q" style="font-weight:400;color:var(--mut)">Monesko presidentti?</div>`;
+  correct=n+".";const other=P.filter(x=>x[1]===p[1]&&x[0]!==n).map(x=>x[0]);
+  const c=new Set();while(c.size<3){const d=n+(rnd(13)-6);if(d>=1&&d<=47&&d!==n&&!other.includes(d))c.add(d)}
+  opts=shuffle([correct,...[...c].map(x=>x+".")]);
+ } else {const y=yearIn(p);st.year=y;q=`<div class="num">${y}</div><div class="q">Kuka oli presidenttinä vuonna ${y}?</div>`;correct=p[1];opts=shuffle([correct,...near()])}
+ st.correct=correct;
+ const tot=st.list.length;
+ app.innerHTML=`<div class="top"><button id="quit">‹ Valikko</button><span>${st.i+1} / ${tot} · ${st.score} oikein</span></div>
+ <div class="bar"><i style="width:${st.i/tot*100}%"></i></div>
+ <div class="card">${q}<div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join("")}</div><div class="info" id="info"></div></div>`;
+ document.getElementById("quit").onclick=home;
+ app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(b,p));
+}
+function answer(btn,p){
+ const ok=btn.textContent===st.correct;
+ app.querySelectorAll(".opt").forEach(b=>{b.disabled=true;if(b.textContent===st.correct)b.classList.add("ok")});
+ if(ok)st.score++;else{btn.classList.add("bad");st.miss.push(p)}
+ const pa=PARTY[p[3]];const last=st.i===st.list.length-1;
+ const info=document.getElementById("info");
+ info.innerHTML=`<div class="verdict ${ok?"ok":"bad"}">${ok?"Oikein!":"Väärin."}</div>
+ <h3>${p[0]}. ${p[1]}</h3><div class="meta">${p[2]}<span class="party" style="background:${pa[1]}">${pa[0]}</span></div>
+ <div>${(()=>{const a=[p[4],...(F[p[0]]||[])];return a[rnd(a.length)]})()}</div>
+ <a href="https://fi.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(p[1])}" target="_blank" rel="noopener">Lue lisää ja katso kuva Wikipediasta ›</a>
+ <button class="next" id="next">${last?"Katso tulos":"Seuraava ›"}</button>`;
+ info.classList.add("show");
+ document.getElementById("next").onclick=()=>{st.i++;st.i<st.list.length?ask():end()};
+ info.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function end(){
+ const tot=st.list.length,pct=Math.round(st.score/tot*100);setBest(st.m,pct);const q=qualifies(st.m,st.score);let last="";try{last=localStorage.getItem("pv_name")||""}catch(e){}
+ const msg=pct===100?"Täydellinen! 🇺🇸":pct>=80?"Erinomaista!":pct>=50?"Hyvä suoritus!":"Harjoitus tekee mestarin.";
+ app.innerHTML=`<div class="card end"><div class="big">${st.score} / ${tot}</div><div class="q">${msg}</div>
+ ${st.miss.length?`<div class="miss"><b>Kertaa nämä:</b><ul>${st.miss.map(p=>`<li>${p[0]}. ${p[1]} (${p[2]})</li>`).join("")}</ul></div>`:""}
+ ${q?`<form class="entry" id="ef"><b>🏆 Pääsit top 10 -listalle!</b><br><span style="color:var(--mut);font-size:.9rem">Kirjoita nimesi:</span><input id="nm" maxlength="16" autocomplete="off" placeholder="Nimi" value="${esc(last)}"><button class="next" type="submit">Tallenna</button></form>`:""}
+ <button class="next" id="again">Pelaa uudelleen</button><button class="next" id="lbb" style="background:transparent;color:var(--navy);border:1.5px solid var(--line)">🏆 Tulokset</button><button class="next" id="menu" style="background:transparent;color:var(--navy);border:1.5px solid var(--line)">Valikkoon</button></div>`;
+ document.getElementById("lbb").onclick=()=>board(st.m);
+ if(q){const f=document.getElementById("ef");f.onsubmit=ev=>{ev.preventDefault();const n=document.getElementById("nm").value.trim()||"Nimetön";try{localStorage.setItem("pv_name",n)}catch(e){}const id=addLB(st.m,n,st.score,tot);board(st.m,id)}}
+ document.getElementById("again").onclick=()=>start(st.m);document.getElementById("menu").onclick=home;
+}
+home();
+</script></body></html>
