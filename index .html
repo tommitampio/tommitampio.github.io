@@ -303,6 +303,25 @@ footer { font-size: 0.85rem; color: var(--muted); }
   .dd-levels { grid-template-columns: minmax(0, 1fr); }
   .dd-keys button { font-size: 0.9rem; }
 }
+/* Tehtävälista */
+.td-form { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.td-form input { flex: 1; min-width: 0; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 0.5rem 0.75rem; }
+.td-form input:focus-visible, .td-btn:focus-visible, .td-list input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.td-btn { font: inherit; font-size: 0.9rem; color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 6px; padding: 0.45rem 0.9rem; cursor: pointer; min-height: 2.5rem; }
+.td-btn.main { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+.td-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.td-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
+.td-filters { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.td-filters .td-btn { min-height: 2.1rem; padding: 0.25rem 0.7rem; font-size: 0.85rem; }
+.td-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.td-list li { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0; border-bottom: 1px solid var(--rule); min-width: 0; }
+.td-list input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); flex: none; margin: 0; cursor: pointer; }
+.td-list .td-t { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: pointer; }
+.td-list li.done .td-t { color: var(--muted); text-decoration: line-through; }
+.td-del { flex: none; background: none; border: 0; color: var(--muted); font: inherit; font-size: 1.2rem; line-height: 1; width: 2rem; height: 2rem; border-radius: 4px; cursor: pointer; }
+.td-del:hover, .td-del:focus-visible { color: var(--nv-bad); outline: none; background: var(--nv-bad-bg); }
+.td-empty { color: var(--muted); font-size: 0.9rem; padding: 0.75rem 0; border-bottom: 1px solid var(--rule); }
+.td-foot { display: flex; justify-content: flex-end; }
 </style>
 </head>
 <body>
@@ -522,6 +541,27 @@ footer { font-size: 0.85rem; color: var(--muted); }
   <section id="projektit">
     <h2>Projektit</h2>
     <p class="soft">Ensimmäinen projekti tulossa.</p>
+  </section>
+
+  <section id="tehtavat">
+    <h2>Tehtävät</h2>
+    <div>
+      <form class="td-form" id="td-form" autocomplete="off">
+        <input id="td-uusi" maxlength="200" placeholder="Lisää tehtävä" aria-label="Uusi tehtävä">
+        <button class="td-btn main" type="submit">Lisää</button>
+      </form>
+      <div class="td-bar">
+        <span class="count" id="td-maara"></span>
+        <div class="td-filters" role="group" aria-label="Näytä">
+          <button type="button" class="td-btn" data-f="kaikki" aria-pressed="true">Kaikki</button>
+          <button type="button" class="td-btn" data-f="avoimet" aria-pressed="false">Avoimet</button>
+          <button type="button" class="td-btn" data-f="tehdyt" aria-pressed="false">Tehdyt</button>
+        </div>
+      </div>
+      <ul class="td-list" id="td-lista" aria-live="polite"></ul>
+      <div class="td-foot"><button class="more" id="td-tyhjenna" type="button" hidden>Poista tehdyt</button></div>
+      <p class="soft" style="font-size:0.8rem;margin-top:1rem">Lista tallentuu vain tähän selaimeen.</p>
+    </div>
   </section>
 
   <section id="yhteys">
@@ -1411,6 +1451,54 @@ footer { font-size: 0.85rem; color: var(--muted); }
   }
   load();
   setInterval(load, 600000);
+})();
+</script>
+<script>
+(function () {
+  var KEY = 'tehtavat';
+  var items = [], filter = 'kaikki';
+  try { var t = JSON.parse(localStorage.getItem(KEY) || '[]'); if (Array.isArray(t)) items = t.filter(function (x) { return x && typeof x.t === 'string'; }); } catch (e) {}
+  try { var f = localStorage.getItem(KEY + ':suodatin'); if (f === 'avoimet' || f === 'tehdyt') filter = f; } catch (e) {}
+  var form = document.getElementById('td-form'), input = document.getElementById('td-uusi');
+  var list = document.getElementById('td-lista'), count = document.getElementById('td-maara');
+  var clear = document.getElementById('td-tyhjenna');
+  var fbtns = document.querySelectorAll('.td-filters .td-btn');
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} }
+  function render() {
+    list.textContent = '';
+    var shown = items.filter(function (x) { return filter === 'kaikki' || (filter === 'tehdyt') === !!x.d; });
+    shown.forEach(function (x) {
+      var li = document.createElement('li'); if (x.d) li.className = 'done';
+      var id = 'td-' + x.id;
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = id; cb.checked = !!x.d;
+      cb.addEventListener('change', function () { x.d = cb.checked; save(); render(); });
+      var lab = document.createElement('label'); lab.className = 'td-t'; lab.htmlFor = id; lab.textContent = x.t;
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'td-del'; del.textContent = '×';
+      del.setAttribute('aria-label', 'Poista: ' + x.t);
+      del.addEventListener('click', function () { items = items.filter(function (y) { return y !== x; }); save(); render(); });
+      li.append(cb, lab, del); list.appendChild(li);
+    });
+    if (!shown.length) {
+      var e = document.createElement('li'); e.className = 'td-empty';
+      e.textContent = !items.length ? 'Ei vielä tehtäviä.' : filter === 'tehdyt' ? 'Ei tehtyjä tehtäviä.' : 'Kaikki tehty!';
+      list.appendChild(e);
+    }
+    var open = items.filter(function (x) { return !x.d; }).length, done = items.length - open;
+    count.textContent = items.length ? open + ' avoinna · ' + done + ' tehty' : '';
+    clear.hidden = !done;
+    fbtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.f === filter)); });
+  }
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var t = input.value.trim(); if (!t) return;
+    items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: t, d: false });
+    input.value = '';
+    if (filter === 'tehdyt') filter = 'kaikki';
+    save(); render();
+  });
+  fbtns.forEach(function (b) { b.addEventListener('click', function () { filter = b.dataset.f; try { localStorage.setItem(KEY + ':suodatin', filter); } catch (e) {} render(); }); });
+  clear.addEventListener('click', function () { items = items.filter(function (x) { return !x.d; }); save(); render(); });
+  render();
 })();
 </script>
 </body>
