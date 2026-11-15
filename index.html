@@ -231,6 +231,13 @@ a.go:hover { border-color: var(--accent); }
 .nv-settings input { accent-color: var(--accent); width: 1rem; height: 1rem; }
 .nv-fb { display: flex; flex-direction: column; gap: 0.4rem; }
 @media (max-width: 34rem) { .nv { padding: 1rem 0.75rem; } }
+
+.quote { margin: 0; max-width: 34rem; }
+.quote blockquote { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.3rem; line-height: 1.4; text-wrap: balance; }
+.quote .q-day { margin: 0 0 0.5rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.quote .q-orig { margin: 0.75rem 0 0; font-size: 0.9rem; color: var(--muted); font-style: italic; }
+.quote .q-orig span { font-style: normal; }
+.quote figcaption { margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -328,7 +335,7 @@ a.go:hover { border-color: var(--accent); }
   <section id="pelit">
     <h2>Pelit</h2>
     <div>
-      <p>Pieniä selainpelejä, joita olen tehnyt: Doomsday-päivälaskentaa, USA:n presidenttivisa ja miinaharava. Jokaisessa pelissä on oma top-listansa.</p>
+      <p>Pieniä selainpelejä, joita olen tehnyt: Doomsday-päivälaskentaa, USA:n presidenttivisa, miinaharava ja Pisteholvi. Jokaisessa pelissä on oma top-listansa.</p>
       <p><a class="go" href="pelit.html">Avaa pelit →</a></p>
     </div>
   </section>
@@ -354,6 +361,11 @@ a.go:hover { border-color: var(--accent); }
   <section id="yhteys">
     <h2>Yhteys</h2>
     <p>Sähköposti: tommitampio [@] gmail.com</p>
+  </section>
+
+  <section id="sitaatti">
+    <h2>Päivän sitaatti</h2>
+    <figure class="quote" id="sitaatti-box"></figure>
   </section>
 
   <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
@@ -949,6 +961,159 @@ a.go:hover { border-color: var(--accent); }
   }
   load();
   setInterval(load, 600000);
+})();
+</script>
+<script>
+(function () {
+  // Päivän sitaatti: Oscar Wilde ja Mark Twain vuorotellen, juhla- ja teemapäivinä aiheeseen sopiva.
+  // Mukana vain lähteestä varmistettuja sitaatteja (ei netissä kiertäviä väärin nimettyjä).
+  var W = "Oscar Wilde", T = "Mark Twain";
+  // id: [kirjoittaja, alkuperäinen, lähde, suomi, ruotsi]
+  var Q = {
+    w1: [W, "We are all in the gutter, but some of us are looking at the stars.", "Lady Windermere's Fan", "Me kaikki makaamme ojassa, mutta jotkut meistä katsovat tähtiä.", "Vi ligger alla i rännstenen, men några av oss tittar upp mot stjärnorna."],
+    w2: [W, "I can resist everything except temptation.", "Lady Windermere's Fan", "Voin vastustaa kaikkea paitsi kiusausta.", "Jag kan motstå allt utom frestelser."],
+    w3: [W, "There is only one thing in the world worse than being talked about, and that is not being talked about.", "The Picture of Dorian Gray", "Maailmassa on vain yksi asia pahempi kuin se, että sinusta puhutaan, ja se on se, ettei sinusta puhuta.", "Det finns bara en sak i världen som är värre än att bli omtalad, och det är att inte bli omtalad."],
+    w4: [W, "To love oneself is the beginning of a lifelong romance.", "An Ideal Husband", "Itsensä rakastaminen on elinikäisen romanssin alku.", "Att älska sig själv är början på en livslång romans."],
+    w5: [W, "Experience is the name every one gives to their mistakes.", "Lady Windermere's Fan", "Kokemus on nimi, jonka jokainen antaa virheilleen.", "Erfarenhet är det namn alla ger sina misstag."],
+    w6: [W, "The truth is rarely pure and never simple.", "The Importance of Being Earnest", "Totuus on harvoin puhdas eikä koskaan yksinkertainen.", "Sanningen är sällan ren och aldrig enkel."],
+    w7: [W, "I am so clever that sometimes I don't understand a single word of what I am saying.", "The Remarkable Rocket", "Olen niin fiksu, etten joskus ymmärrä sanaakaan siitä, mitä sanon.", "Jag är så klok att jag ibland inte förstår ett enda ord av vad jag säger."],
+    w8: [W, "A cynic is a man who knows the price of everything and the value of nothing.", "Lady Windermere's Fan", "Kyynikko on ihminen, joka tietää kaiken hinnan mutta ei minkään arvoa.", "En cyniker är en människa som vet priset på allt och värdet av ingenting."],
+    w9: [W, "Life is far too important a thing ever to talk seriously about.", "Lady Windermere's Fan", "Elämä on aivan liian tärkeä asia, jotta siitä voisi koskaan puhua vakavasti.", "Livet är alldeles för viktigt för att man någonsin ska tala allvarligt om det."],
+    w10: [W, "The only way to get rid of a temptation is to yield to it.", "The Picture of Dorian Gray", "Ainoa tapa päästä eroon kiusauksesta on antaa sille periksi.", "Det enda sättet att bli av med en frestelse är att ge efter för den."],
+    w11: [W, "Education is an admirable thing, but it is well to remember from time to time that nothing that is worth knowing can be taught.", "A Few Maxims for the Instruction of the Over-Educated", "Koulutus on ihailtava asia, mutta aika ajoin on hyvä muistaa, ettei mitään tietämisen arvoista voi opettaa.", "Utbildning är en beundransvärd sak, men det är bra att då och då minnas att inget som är värt att veta kan läras ut."],
+    w12: [W, "To live is the rarest thing in the world. Most people exist, that is all.", "The Soul of Man under Socialism", "Eläminen on maailman harvinaisin asia. Useimmat ihmiset vain ovat olemassa, siinä kaikki.", "Att leva är det sällsyntaste i världen. De flesta människor existerar, det är allt."],
+    w13: [W, "Man is least himself when he talks in his own person. Give him a mask, and he will tell you the truth.", "The Critic as Artist", "Ihminen on vähiten oma itsensä puhuessaan omissa nimissään. Anna hänelle naamio, niin hän kertoo totuuden.", "Människan är minst sig själv när hon talar i egen person. Ge henne en mask, så säger hon sanningen."],
+    w14: [W, "The only thing to do with good advice is to pass it on. It is never of any use to oneself.", "An Ideal Husband", "Hyvälle neuvolle voi tehdä vain yhden asian: antaa sen eteenpäin. Itselle siitä ei ole koskaan hyötyä.", "Det enda man kan göra med ett gott råd är att föra det vidare. Själv har man aldrig någon nytta av det."],
+    w15: [W, "Children begin by loving their parents; as they grow older they judge them; sometimes they forgive them.", "The Picture of Dorian Gray", "Lapset rakastavat aluksi vanhempiaan. Vanhempina he arvostelevat heitä. Joskus he antavat heille anteeksi.", "Barn börjar med att älska sina föräldrar. När de blir äldre dömer de dem. Ibland förlåter de dem."],
+    w16: [W, "Every saint has a past, and every sinner has a future.", "A Woman of No Importance", "Jokaisella pyhimyksellä on menneisyys ja jokaisella syntisellä tulevaisuus.", "Varje helgon har ett förflutet och varje syndare en framtid."],
+    w17: [W, "Memory, my dear Cecily, is the diary that we all carry about with us.", "The Importance of Being Earnest", "Muisti, rakas Cecily, on päiväkirja, jota me kaikki kannamme mukanamme.", "Minnet, kära Cecily, är den dagbok vi alla bär med oss."],
+    w18: [W, "If one plays good music, people don't listen, and if one plays bad music people don't talk.", "The Importance of Being Earnest", "Jos soittaa hyvää musiikkia, ihmiset eivät kuuntele, ja jos soittaa huonoa musiikkia, ihmiset eivät puhu.", "Spelar man bra musik lyssnar folk inte, och spelar man dålig musik pratar folk inte."],
+    w19: [W, "There is no such thing as a moral or an immoral book. Books are well written, or badly written. That is all.", "The Picture of Dorian Gray", "Ei ole olemassa moraalisia tai moraalittomia kirjoja. Kirjat ovat hyvin tai huonosti kirjoitettuja. Siinä kaikki.", "Det finns inga moraliska eller omoraliska böcker. Böcker är välskrivna eller dåligt skrivna. Det är allt."],
+    w20: [W, "Laughter is not at all a bad beginning for a friendship, and it is far the best ending for one.", "The Picture of Dorian Gray", "Nauru ei ole lainkaan huono alku ystävyydelle, ja se on ylivoimaisesti paras loppu sille.", "Skratt är inte alls en dålig början på en vänskap, och det är det överlägset bästa slutet på en."],
+    w21: [W, "In this world there are only two tragedies. One is not getting what one wants, and the other is getting it.", "Lady Windermere's Fan", "Tässä maailmassa on vain kaksi tragediaa. Toinen on se, ettei saa mitä haluaa, ja toinen se, että saa sen.", "I den här världen finns bara två tragedier. Den ena är att inte få det man vill ha, den andra är att få det."],
+    w22: [W, "Consistency is the last refuge of the unimaginative.", "The Relation of Dress to Art", "Johdonmukaisuus on mielikuvituksettomien viimeinen turvapaikka.", "Konsekvens är den fantasilöses sista tillflykt."],
+    w23: [W, "Disobedience, in the eyes of any one who has read history, is man's original virtue.", "The Soul of Man under Socialism", "Historiaa lukeneen silmissä tottelemattomuus on ihmisen alkuperäinen hyve.", "I ögonen på var och en som har läst historia är olydnad människans ursprungliga dygd."],
+    w24: [W, "Whenever people agree with me I always feel I must be wrong.", "The Critic as Artist", "Aina kun ihmiset ovat kanssani samaa mieltä, minusta tuntuu, että olen varmasti väärässä.", "När folk håller med mig känner jag alltid att jag måste ha fel."],
+    w25: [W, "The old believe everything, the middle-aged suspect everything, the young know everything.", "Phrases and Philosophies for the Use of the Young", "Vanhat uskovat kaiken, keski-ikäiset epäilevät kaikkea ja nuoret tietävät kaiken.", "De gamla tror på allt, de medelålders misstänker allt, de unga vet allt."],
+    w26: [W, "With freedom, books, flowers, and the moon, who could not be happy?", "De Profundis", "Kuka ei olisi onnellinen, kun on vapaus, kirjoja, kukkia ja kuu?", "Vem kunde inte vara lycklig med frihet, böcker, blommor och månen?"],
+    w27: [W, "Arguments are to be avoided: they are always vulgar, and often convincing.", "The Importance of Being Earnest", "Väittelyjä on syytä välttää: ne ovat aina mauttomia ja usein vakuuttavia.", "Diskussioner bör undvikas: de är alltid vulgära och ofta övertygande."],
+    w28: [W, "Questions are never indiscreet. Answers sometimes are.", "An Ideal Husband", "Kysymykset eivät ole koskaan tungettelevia. Vastaukset joskus ovat.", "Frågor är aldrig indiskreta. Svar är det ibland."],
+    w29: [W, "The public is wonderfully tolerant. It forgives everything except genius.", "The Critic as Artist", "Yleisö on ihmeellisen suvaitsevainen. Se antaa anteeksi kaiken paitsi neron.", "Publiken är underbart tolerant. Den förlåter allt utom genialitet."],
+    w30: [W, "All women become like their mothers. That is their tragedy. No man does. That's his.", "The Importance of Being Earnest", "Kaikista naisista tulee äitiensä kaltaisia. Se on heidän tragediansa. Miehistä ei tule. Se on miehen tragedia.", "Alla kvinnor blir som sina mödrar. Det är deras tragedi. Ingen man blir det. Det är hans."],
+    w31: [W, "As long as war is regarded as wicked, it will always have its fascination. When it is looked upon as vulgar, it will cease to be popular.", "The Critic as Artist", "Niin kauan kuin sotaa pidetään pahana, se kiehtoo aina. Kun sitä aletaan pitää mauttomana, se lakkaa olemasta suosittua.", "Så länge kriget betraktas som ondskefullt kommer det alltid att fascinera. När det ses som vulgärt slutar det att vara populärt."],
+    w32: [W, "Selfishness is not living as one wishes to live, it is asking others to live as one wishes to live.", "The Soul of Man under Socialism", "Itsekkyys ei ole sitä, että elää kuten haluaa, vaan sitä, että vaatii muita elämään kuten itse haluaa.", "Själviskhet är inte att leva som man själv vill, utan att begära att andra ska leva som man själv vill."],
+    w33: [W, "Morality is simply the attitude we adopt towards people whom we personally dislike.", "An Ideal Husband", "Moraali on yksinkertaisesti asenne, jonka omaksumme ihmisiin, joista emme henkilökohtaisesti pidä.", "Moral är helt enkelt den hållning vi intar mot människor som vi personligen ogillar."],
+
+    t1: [T, "The report of my death was an exaggeration.", "New York Journal, 1897", "Uutinen kuolemastani oli liioittelua.", "Rapporten om min död var en överdrift."],
+    t2: [T, "Get your facts first, and then you can distort them as much as you please.", "Rudyard Kiplingin haastattelussa, From Sea to Sea", "Hanki ensin faktat, sitten voit vääristellä niitä niin paljon kuin haluat.", "Skaffa fakta först, sedan kan du förvränga dem hur mycket du vill."],
+    t3: [T, "Courage is resistance to fear, mastery of fear—not absence of fear.", "Pudd'nhead Wilson", "Rohkeus on pelon vastustamista ja hallitsemista, ei pelon puuttumista.", "Mod är att stå emot rädslan och bemästra den, inte att sakna rädsla."],
+    t4: [T, "Let us endeavor so to live that when we come to die even the undertaker will be sorry.", "Pudd'nhead Wilson", "Pyrkikäämme elämään niin, että kun kuolemme, jopa hautausurakoitsija on pahoillaan.", "Låt oss sträva efter att leva så att till och med begravningsentreprenören blir ledsen när vi dör."],
+    t5: [T, "Always do right. This will gratify some people and astonish the rest.", "Kortti nuorten seuralle, 1901", "Toimi aina oikein. Se ilahduttaa joitakin ihmisiä ja hämmästyttää loput.", "Gör alltid det rätta. Det glädjer en del människor och förbluffar resten."],
+    t6: [T, "Travel is fatal to prejudice, bigotry, and narrow-mindedness.", "The Innocents Abroad", "Matkustaminen on kohtalokasta ennakkoluuloille, kiihkoilulle ja ahdasmielisyydelle.", "Resor är dödliga för fördomar, trångsynthet och inskränkthet."],
+    t7: [T, "Few things are harder to put up with than the annoyance of a good example.", "Pudd'nhead Wilson", "Harva asia on niin vaikea kestää kuin hyvän esimerkin aiheuttama harmi.", "Få saker är svårare att stå ut med än förargelsen över ett gott exempel."],
+    t8: [T, "Truth is stranger than fiction, but it is because Fiction is obliged to stick to possibilities; Truth isn't.", "Following the Equator", "Totuus on tarua ihmeellisempää, mutta se johtuu siitä, että tarun on pysyttävä mahdollisessa. Totuuden ei tarvitse.", "Sanningen är märkligare än dikten, men det beror på att dikten måste hålla sig till det möjliga. Det måste inte sanningen."],
+    t9: [T, "Man is the only animal that blushes. Or needs to.", "Following the Equator", "Ihminen on ainoa eläin, joka punastuu. Tai jonka tarvitsee.", "Människan är det enda djur som rodnar. Eller behöver göra det."],
+    t10: [T, "If you tell the truth you don't have to remember anything.", "Muistikirja, 1894", "Jos puhut totta, sinun ei tarvitse muistaa mitään.", "Om du talar sanning behöver du inte komma ihåg någonting."],
+    t11: [T, "Grief can take care of itself, but to get the full value of a joy you must have somebody to divide it with.", "Following the Equator", "Suru pärjää kyllä omin päin, mutta saadakseen ilosta täyden arvon tarvitsee jonkun, jonka kanssa jakaa sen.", "Sorgen klarar sig själv, men för att få ut det fulla värdet av en glädje måste man ha någon att dela den med."],
+    t12: [T, "Wrinkles should merely indicate where smiles have been.", "Following the Equator", "Ryppyjen pitäisi vain näyttää, missä hymyt ovat olleet.", "Rynkor borde bara visa var leendena har varit."],
+    t13: [T, "Training is everything. The peach was once a bitter almond; cauliflower is nothing but cabbage with a college education.", "Pudd'nhead Wilson", "Kasvatus on kaikki kaikessa. Persikka oli ennen kitkerä manteli, ja kukkakaali on pelkkää kaalia, jolla on korkeakoulututkinto.", "Uppfostran är allt. Persikan var en gång en bitter mandel, och blomkål är bara kål med högskoleutbildning."],
+    t14: [T, "The holy passion of Friendship is of so sweet and steady and loyal and enduring a nature that it will last through a whole lifetime, if not asked to lend money.", "Pudd'nhead Wilson", "Ystävyyden pyhä intohimo on luonteeltaan niin suloinen, vakaa, uskollinen ja kestävä, että se kestää koko eliniän, kunhan siltä ei pyydetä lainaa.", "Vänskapens heliga lidelse är av så ljuv, stadig, trogen och varaktig natur att den håller ett helt liv, om man inte ber den låna ut pengar."],
+    t15: [T, "When in doubt, tell the truth.", "Following the Equator", "Kun olet epävarma, puhu totta.", "När du tvekar, säg sanningen."],
+    t16: [T, "Good friends, good books, and a sleepy conscience: this is the ideal life.", "Muistikirja", "Hyvät ystävät, hyvät kirjat ja uninen omatunto: siinä ihanteellinen elämä.", "Goda vänner, goda böcker och ett sömnigt samvete: det är det ideala livet."],
+    t17: [T, "Everyone is a moon, and has a dark side which he never shows to anybody.", "Following the Equator", "Jokainen on kuu, jolla on pimeä puoli, jota hän ei näytä kenellekään.", "Var och en är en måne och har en mörk sida som han aldrig visar för någon."],
+    t18: [T, "The difference between the almost right word and the right word is really a large matter—'tis the difference between the lightning-bug and the lightning.", "Kirje George Baintonille, 1888", "Ero lähes oikean sanan ja oikean sanan välillä on todella suuri: se on sama ero kuin tulikärpäsellä ja salamalla.", "Skillnaden mellan det nästan rätta ordet och det rätta ordet är verkligen stor: det är skillnaden mellan en eldfluga och en blixt."],
+    t19: [T, "April 1. This is the day upon which we are reminded of what we are on the other three hundred and sixty-four.", "Pudd'nhead Wilson", "1. huhtikuuta. Tänä päivänä meitä muistutetaan siitä, mitä olemme vuoden muina päivinä.", "1 april. Det här är dagen då vi påminns om vad vi är årets övriga dagar."],
+    t20: [T, "New Year's Day—Now is the accepted time to make your regular annual good resolutions. Next week you can begin paving hell with them as usual.", "Territorial Enterprise, 1863", "Uudenvuodenpäivä: nyt on oikea hetki tehdä tavanomaiset vuotuiset hyvät päätökset. Ensi viikolla voit taas tavalliseen tapaan alkaa kivetä niillä tietä helvettiin.", "Nyårsdagen: nu är det rätta tillfället att fatta sina vanliga årliga goda föresatser. Nästa vecka kan du som vanligt börja stenlägga vägen till helvetet med dem."],
+    t21: [T, "Against the assault of laughter nothing can stand.", "The Mysterious Stranger", "Naurun hyökkäystä vastaan mikään ei kestä.", "Mot skrattets anstormning står sig ingenting."],
+    t22: [T, "Whenever you find yourself on the side of the majority, it is time to pause and reflect.", "Muistikirja, 1904", "Aina kun huomaat olevasi enemmistön puolella, on aika pysähtyä miettimään.", "När du märker att du står på majoritetens sida är det dags att stanna upp och fundera."],
+    t23: [T, "Water, taken in moderation, cannot hurt anybody.", "Muistikirja", "Vesi kohtuudella nautittuna ei voi vahingoittaa ketään.", "Vatten i måttliga mängder kan inte skada någon."],
+    t24: [T, "My kind of loyalty was loyalty to one's country, not to its institutions or its office-holders.", "A Connecticut Yankee in King Arthur's Court", "Minun uskollisuuteni oli uskollisuutta omaa maata kohtaan, ei sen instituutioita tai viranhaltijoita kohtaan.", "Min sorts lojalitet var lojalitet mot ens land, inte mot dess institutioner eller ämbetsmän."],
+    t25: [T, "I should like to see the time come when women shall help to make the laws.", "Puhe naisten äänioikeudesta, 1901", "Haluaisin nähdä sen ajan, jolloin naiset ovat mukana säätämässä lakeja.", "Jag skulle vilja se den tid komma då kvinnor är med och stiftar lagarna."],
+    t26: [T, "Never put off till to-morrow what you can do day after to-morrow just as well.", "The Late Benjamin Franklin", "Älä koskaan lykkää huomiseen sitä, minkä voit tehdä yhtä hyvin ylihuomenna.", "Skjut aldrig upp till i morgon det du lika gärna kan göra i övermorgon."],
+    t27: [T, "Man was made at the end of the week's work, when God was tired.", "Muistikirja", "Ihminen luotiin viikon työn päätteeksi, kun Jumala oli väsynyt.", "Människan skapades i slutet av veckans arbete, när Gud var trött."]
+  };
+  // Lähteiden suomenkieliset kuvaukset käännetään muille kielille
+  var SRC = {
+    "Rudyard Kiplingin haastattelussa, From Sea to Sea": ["I Rudyard Kiplings intervju, From Sea to Sea", "Interview with Rudyard Kipling, From Sea to Sea"],
+    "Kortti nuorten seuralle, 1901": ["Kort till en ungdomsförening, 1901", "Card to the Young People's Society, 1901"],
+    "Muistikirja, 1894": ["Anteckningsbok, 1894", "Notebook, 1894"],
+    "Muistikirja, 1904": ["Anteckningsbok, 1904", "Notebook, 1904"],
+    "Muistikirja": ["Anteckningsbok", "Notebook"],
+    "Kirje George Baintonille, 1888": ["Brev till George Bainton, 1888", "Letter to George Bainton, 1888"],
+    "Puhe naisten äänioikeudesta, 1901": ["Tal om kvinnlig rösträtt, 1901", "Speech “Votes for Women”, 1901"]
+  };
+  // Teemapäivät: "KK-PP": [sitaatti, suomi, ruotsi, englanti]
+  var DAYS = {
+    "01-01": ["t20", "Uudenvuodenpäivä", "Nyårsdagen", "New Year's Day"],
+    "02-14": ["w20", "Ystävänpäivä", "Alla hjärtans dag", "Valentine's Day"],
+    "03-08": ["t25", "Naistenpäivä", "Internationella kvinnodagen", "International Women's Day"],
+    "03-20": ["w26", "Kansainvälinen onnellisuuden päivä", "Internationella lyckodagen", "International Day of Happiness"],
+    "03-21": ["t18", "Runouden päivä", "Världspoesidagen", "World Poetry Day"],
+    "04-01": ["t19", "Aprillipäivä", "Första april", "April Fools' Day"],
+    "04-21": ["t1", "Mark Twainin kuolinpäivä (1910)", "Mark Twains dödsdag (1910)", "Anniversary of Mark Twain's death (1910)"],
+    "04-23": ["w19", "Kirjan ja ruusun päivä", "Världsbokdagen", "World Book Day"],
+    "05-01": ["w9", "Vappu", "Första maj", "May Day"],
+    "05-03": ["t2", "Lehdistönvapauden päivä", "Pressfrihetens dag", "World Press Freedom Day"],
+    "06-21": ["w18", "Musiikin päivä", "Musikens dag", "World Music Day"],
+    "07-30": ["t14", "Ystävyyden päivä", "Internationella vänskapsdagen", "International Day of Friendship"],
+    "08-12": ["w25", "Kansainvälinen nuorisopäivä", "Internationella ungdomsdagen", "International Youth Day"],
+    "09-08": ["t16", "Lukutaitopäivä", "Internationella läskunnighetsdagen", "International Literacy Day"],
+    "09-21": ["w31", "Kansainvälinen rauhanpäivä", "Internationella fredsdagen", "International Day of Peace"],
+    "10-01": ["t12", "Ikääntyneiden päivä", "Internationella äldredagen", "International Day of Older Persons"],
+    "10-05": ["w11", "Opettajien päivä", "Lärarnas dag", "World Teachers' Day"],
+    "10-10": ["w29", "Aleksis Kiven päivä", "Aleksis Kivi-dagen", "Aleksis Kivi Day"],
+    "10-16": ["w4", "Oscar Wilden syntymäpäivä (1854)", "Oscar Wildes födelsedag (1854)", "Oscar Wilde's birthday (1854)"],
+    "10-24": ["t6", "YK:n päivä", "FN-dagen", "United Nations Day"],
+    "11-30": ["t4", "Mark Twainin syntymäpäivä (1835) ja Oscar Wilden kuolinpäivä (1900)", "Mark Twains födelsedag (1835) och Oscar Wildes dödsdag (1900)", "Mark Twain's birthday (1835) and the anniversary of Oscar Wilde's death (1900)"],
+    "12-06": ["t24", "Itsenäisyyspäivä", "Finlands självständighetsdag", "Finnish Independence Day"],
+    "12-10": ["w23", "Ihmisoikeuksien päivä", "Mänskliga rättigheternas dag", "Human Rights Day"],
+    "12-24": ["t11", "Jouluaatto", "Julafton", "Christmas Eve"],
+    "12-31": ["w5", "Uudenvuodenaatto", "Nyårsafton", "New Year's Eve"]
+  };
+  var MOTHERS = ["w30", "Äitienpäivä", "Mors dag", "Mother's Day"];   // toukokuun 2. sunnuntai
+  var FATHERS = ["w15", "Isänpäivä", "Fars dag", "Father's Day"];     // marraskuun 2. sunnuntai
+  var WP = Object.keys(Q).filter(function (k) { return k[0] === "w"; });
+  var TP = Object.keys(Q).filter(function (k) { return k[0] === "t" && k !== "t19" && k !== "t20"; }); // aprillipäivä ja uusivuosi vain omina päivinään
+  var L = { fi: ["Tänään:", "Alkuperäinen:"], sv: ["I dag:", "Original:"], en: ["Today:", ""] };
+
+  function today() {
+    var p = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Helsinki", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()).split("-");
+    return { y: +p[0], m: +p[1], d: +p[2] };
+  }
+  function secondSunday(y, m) {
+    var first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+    return 1 + (7 - first) % 7 + 7;
+  }
+  function pick(t) {
+    var key = String(t.m).padStart(2, "0") + "-" + String(t.d).padStart(2, "0");
+    if (DAYS[key]) return DAYS[key];
+    if (t.m === 5 && t.d === secondSunday(t.y, 5)) return MOTHERS;
+    if (t.m === 11 && t.d === secondSunday(t.y, 11)) return FATHERS;
+    var n = Math.floor(Date.UTC(t.y, t.m - 1, t.d) / 864e5);
+    var pool = n % 2 === 0 ? WP : TP;
+    // Hypitään 7 kerrallaan, jotta peräkkäiset päivät eivät tule listan järjestyksessä
+    return [pool[(Math.floor(n / 2) * 7) % pool.length]];
+  }
+  var box = document.getElementById("sitaatti-box"), shown = "";
+  function render() {
+    if (!box) return;
+    var lang = document.documentElement.lang || "fi", li = lang === "sv" ? 1 : lang === "en" ? 2 : 0;
+    if (!L[lang]) { lang = "fi"; li = 0; }
+    var t = today(), p = pick(t), q = Q[p[0]];
+    var text = li === 2 ? "“" + q[1] + "”" : "”" + q[3 + li] + "”";
+    var src = SRC[q[2]] ? (li === 0 ? q[2] : SRC[q[2]][li - 1]) : q[2];
+    var h = "";
+    if (p.length > 1) h += '<p class="q-day">' + L[lang][0] + " " + p[1 + li] + "</p>";
+    h += "<blockquote>" + esc(text) + "</blockquote>";
+    if (li !== 2) h += '<p class="q-orig"><span>' + L[lang][1] + "</span> “" + esc(q[1]) + "”</p>";
+    h += "<figcaption>— " + esc(q[0]) + ", <cite>" + esc(src) + "</cite></figcaption>";
+    box.innerHTML = h;
+    shown = t.y + "-" + t.m + "-" + t.d;
+  }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  render();
+  document.addEventListener("kielivaihto", render);
+  setInterval(function () { var t = today(); if (t.y + "-" + t.m + "-" + t.d !== shown) render(); }, 60000);
 })();
 </script>
 </body>
