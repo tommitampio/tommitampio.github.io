@@ -243,15 +243,15 @@ details summary { cursor: pointer; }
     <div class="top"><h3>Top 10 · Suurimmat voitot</h3><div id="toplist"></div></div>
     <details class="help">
       <summary>Säännöt ja voittotaulu</summary>
-      <p>Voitto syntyy, kun samaa kuviota on voittolinjalla vähintään kolme peräkkäin vasemmasta reunasta alkaen. Linjoja on kymmenen. Avain 🗝️ on jokeri ja korvaa minkä tahansa kuvion paitsi kolikon.</p>
+      <p data-i18n="ph-r1">Voitto syntyy, kun samaa kuviota on voittolinjalla vähintään kolme peräkkäin vasemmasta reunasta alkaen. Linjoja on kymmenen. Avain 🗝️ on jokeri ja korvaa minkä tahansa kuvion paitsi kolikon.</p>
       <table class="pt" id="pt"></table>
       <p>Luvut ovat pisteitä valitulla panoksella.</p>
       <div class="lines" id="lines"></div>
-      <p><b>Holvibonus:</b> kun ruudulla on vähintään kuusi kolikkoa, holvi aukeaa. Kolikot lukittuvat ja saat kolme lisäpyöräytystä. Jokainen uusi kolikko palauttaa pyöräytykset kolmeen. Lopuksi saat kaikkien kolikoiden pisteet. Jos koko ruutu täyttyy, saat lisäksi 250 kertaa panoksen.</p>
-      <p><b>Viisi kolikkoa:</b> jos kolikoita on tasan viisi, ne lukittuvat ja muut ruudut pyörivät vielä kerran. Yksikin uusi kolikko avaa holvin. Tämä uusintapyöräytys ei maksa linjavoittoja.</p>
-      <p><b>2×-kierros:</b> holvibonuksessa mikä tahansa pyöräytys voi olla 2×-kierros. Silloin sillä pyöräytyksellä putoavat kolikot ovat kaksinkertaisia.</p>
-      <p><b>Tuplaus:</b> voiton jälkeen voit arvata, tuleeko kruuna vai klaava. Oikea arvaus tuplaa voiton, väärä vie sen. Tuplata voi enintään viisi kertaa peräkkäin.</p>
-      <p>Tulokset arvotaan satunnaisesti. Pitkällä aikavälillä peli palauttaa suunnilleen yhtä paljon pisteitä kuin panoksiin kuluu, joten voitot ja tappiot tasoittuvat. Pisteitä saa aina lisää ilmaiseksi.</p>
+      <p data-i18n="ph-r2"><b>Holvibonus:</b> kun ruudulla on vähintään kuusi kolikkoa, holvi aukeaa. Kolikot lukittuvat ja saat kolme lisäpyöräytystä. Jokainen uusi kolikko palauttaa pyöräytykset kolmeen. Lopuksi saat kaikkien kolikoiden pisteet. Jos koko ruutu täyttyy, saat lisäksi 250 kertaa panoksen.</p>
+      <p data-i18n="ph-r3"><b>Viisi kolikkoa:</b> jos kolikoita on tasan viisi, ne lukittuvat ja muut ruudut pyörivät vielä kerran. Yksikin uusi kolikko avaa holvin. Tämä uusintapyöräytys ei maksa linjavoittoja.</p>
+      <p data-i18n="ph-r4"><b>2×-kierros:</b> holvibonuksessa mikä tahansa pyöräytys voi olla 2×-kierros. Silloin sillä pyöräytyksellä putoavat kolikot ovat kaksinkertaisia.</p>
+      <p data-i18n="ph-r5"><b>Tuplaus:</b> voiton jälkeen voit arvata, tuleeko kruuna vai klaava. Oikea arvaus tuplaa voiton, väärä vie sen. Tuplata voi enintään viisi kertaa peräkkäin.</p>
+      <p data-i18n="ph-r6">Tulokset arvotaan satunnaisesti. Pitkällä aikavälillä peli palauttaa suunnilleen yhtä paljon pisteitä kuin panoksiin kuluu, joten voitot ja tappiot tasoittuvat. Pisteitä saa aina lisää ilmaiseksi.</p>
     </details>
   </div>
   <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
@@ -435,5 +435,6 @@ build();table();show(H.spin(Math.random));hud();drawTop();
 say("<span>Valitse panos ja paina Pyöritä.</span>");
 })();
 </script>
+<script src="i18n.js"></script>
 </body>
 </html>

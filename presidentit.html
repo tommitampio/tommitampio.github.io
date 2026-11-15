@@ -203,7 +203,7 @@ function answer(btn,p){
  info.innerHTML=`<div class="verdict ${ok?"ok":"bad"}">${ok?"Oikein!":"Väärin."}</div>
  <h3>${p[0]}. ${p[1]}</h3><div class="meta">${p[2]}<span class="party" style="background:${pa[1]}">${pa[0]}</span></div>
  <div>${(()=>{const a=[p[4],...(F[p[0]]||[])];return a[rnd(a.length)]})()}</div>
- <a href="https://fi.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(p[1])}" target="_blank" rel="noopener">Lue lisää ja katso kuva Wikipediasta ›</a>
+ <a href="https://${document.documentElement.lang||"fi"}.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(p[1])}" target="_blank" rel="noopener">Lue lisää ja katso kuva Wikipediasta ›</a>
  <button class="next" id="next">${last?"Katso tulos":"Seuraava ›"}</button>`;
  info.classList.add("show");
  document.getElementById("next").onclick=()=>{st.i++;st.i<st.list.length?ask():end()};
@@ -221,4 +221,5 @@ function end(){
  document.getElementById("again").onclick=()=>start(st.m);document.getElementById("menu").onclick=home;
 }
 home();
-</script></body></html>
+</script><script src="i18n.js"></script>
+</body></html>
