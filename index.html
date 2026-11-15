@@ -238,6 +238,15 @@ a.go:hover { border-color: var(--accent); }
 .quote .q-orig { margin: 0.75rem 0 0; font-size: 0.9rem; color: var(--muted); font-style: italic; }
 .quote .q-orig span { font-style: normal; }
 .quote figcaption { margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted); }
+
+header .meta { padding-right: 4.75rem; }
+.lang { position: absolute; top: 1rem; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 20; }
+.lang-btn { display: inline-flex; align-items: center; gap: 0.35rem; font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; }
+.lang-btn:hover, .lang-btn[aria-expanded="true"] { color: var(--fg); }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 0.35rem); margin: 0; padding: 0.25rem; list-style: none; background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; min-width: 8rem; box-shadow: 0 6px 20px rgba(0,0,0,.15); }
+.lang-menu button { display: block; width: 100%; text-align: left; font: inherit; font-size: 0.95rem; color: var(--fg); background: none; border: 0; border-radius: 6px; padding: 0.45rem 0.6rem; cursor: pointer; }
+.lang-menu button:hover, .lang-menu button:focus-visible { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.lang-menu button[aria-checked="true"] { font-weight: 600; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -322,8 +331,8 @@ a.go:hover { border-color: var(--accent); }
 
         <details class="rk-help">
           <summary>Mitä merkinnät tarkoittavat?</summary>
-          <p>Kirjain kertoo, mitä puolta käännetään: <b>U</b> ylä, <b>D</b> ala, <b>R</b> oikea, <b>L</b> vasen, <b>F</b> etu ja <b>B</b> takapuoli. Pelkkä kirjain tarkoittaa neljänneskierrosta myötäpäivään, kun katsot suoraan kyseistä puolta. Heittomerkki (<b>R'</b>) tarkoittaa vastapäivään ja kakkonen (<b>R2</b>) puolikasta kierrosta.</p>
-          <p>Aloitusasennossa valkoinen on ylhäällä ja sininen edessä. Keskikerroksen pyyhkäisyt näkyvät merkinnöillä <b>M</b>, <b>E</b> ja <b>S</b>, ja koko kuution käännöt merkinnöillä <b>x</b>, <b>y</b> ja <b>z</b>.</p>
+          <p data-i18n="rk-h1">Kirjain kertoo, mitä puolta käännetään: <b>U</b> ylä, <b>D</b> ala, <b>R</b> oikea, <b>L</b> vasen, <b>F</b> etu ja <b>B</b> takapuoli. Pelkkä kirjain tarkoittaa neljänneskierrosta myötäpäivään, kun katsot suoraan kyseistä puolta. Heittomerkki (<b>R'</b>) tarkoittaa vastapäivään ja kakkonen (<b>R2</b>) puolikasta kierrosta.</p>
+          <p data-i18n="rk-h2">Aloitusasennossa valkoinen on ylhäällä ja sininen edessä. Keskikerroksen pyyhkäisyt näkyvät merkinnöillä <b>M</b>, <b>E</b> ja <b>S</b>, ja koko kuution käännöt merkinnöillä <b>x</b>, <b>y</b> ja <b>z</b>.</p>
         </details>
 
         <ol class="rk-steps" id="rk-steps"></ol>
@@ -961,6 +970,259 @@ a.go:hover { border-color: var(--accent); }
   }
   load();
   setInterval(load, 600000);
+})();
+</script>
+<script>
+(function () {
+  // Kielivalinta: suomi (oletus), ruotsi, englanti.
+  // Sivun teksti kirjoitetaan suomeksi; tämä kääntää tekstisolmut ja osan attribuuteista lennossa,
+  // myös pelien itse kirjoittamat viestit (MutationObserver).
+  var LANGS = ["fi", "sv", "en"];
+  // suomi → [ruotsi, englanti]
+  var D = {
+    // Yläosa
+    "Kello": ["Klockan", "Time"],
+    "Helsinki": ["Helsingfors", "Helsinki"],
+    "Tervetuloa kotisivulleni. Tämä on alku, ja tänne tulee lisää sitä mukaa kun tekemistä kertyy.": ["Välkommen till min hemsida. Det här är början, och mer kommer allt eftersom jag hittar på nya saker.", "Welcome to my homepage. This is just the beginning, and more will be added as I go."],
+    "Minusta": ["Om mig", "About me"],
+    "Nimeni on Tommi Tampio ja asun Helsingissä.": ["Jag heter Tommi Tampio och bor i Helsingfors.", "My name is Tommi Tampio and I live in Helsinki."],
+    "Minua kiinnostaa, miten asiat toimivat: ihmismieli, muisti ja historia yhtä lailla kuin kuution mekaniikka. Vapaa-ajallani ratkon Rubikin kuutioita, soitan klassista ja akustista kitaraa ja luen paljon, erityisesti psykologiaa, filosofiaa ja historiaa.": ["Jag är intresserad av hur saker fungerar: människans sinne, minnet och historien lika mycket som kubens mekanik. På fritiden löser jag Rubiks kuber, spelar klassisk och akustisk gitarr och läser mycket, särskilt psykologi, filosofi och historia.", "I'm interested in how things work: the human mind, memory and history just as much as the mechanics of a cube. In my free time I solve Rubik's cubes, play classical and acoustic guitar and read a lot, especially psychology, philosophy and history."],
+    "Pidän asioista, joissa kärsivällinen harjoittelu muuttuu vähitellen taidoksi.": ["Jag gillar saker där tålmodig övning sakta blir till skicklighet.", "I like things where patient practice gradually turns into skill."],
+    "Harrastukset": ["Fritidsintressen", "Hobbies"],
+    "Pelit": ["Spel", "Games"],
+    "Luettua": ["Lästa böcker", "Books I've read"],
+    "Projektit": ["Projekt", "Projects"],
+    "Ensimmäinen projekti tulossa.": ["Första projektet är på väg.", "First project coming soon."],
+    "Yhteys": ["Kontakt", "Contact"],
+    "Päivän sitaatti": ["Dagens citat", "Quote of the day"],
+    "Sähköposti: tommitampio [@] gmail.com": ["E-post: tommitampio [@] gmail.com", "Email: tommitampio [@] gmail.com"],
+
+    // Pelit
+    "Pieniä selainpelejä, joita olen tehnyt: Doomsday-päivälaskentaa, USA:n presidenttivisa, miinaharava ja Pisteholvi. Jokaisessa pelissä on oma top-listansa.": ["Små webbläsarspel som jag har gjort: veckodagsräkning med Doomsday-metoden, ett quiz om USA:s presidenter, minröj och Pisteholvi (Poängvalvet). Varje spel har sin egen topplista.", "Small browser games I've made: Doomsday weekday calculation, a US presidents quiz, minesweeper and Pisteholvi (the Points Vault). Each game has its own top list."],
+    "Avaa pelit →": ["Öppna spelen →", "Open the games →"],
+
+    // Nuottivisa
+    "Kitaransoitto. Soitan sekä klassista että akustista kitaraa.": ["Gitarrspel. Jag spelar både klassisk och akustisk gitarr.", "Guitar. I play both classical and acoustic guitar."],
+    "Tein tähän nuottivisan, jolla voi harjoitella nuottien nimiä. Viivastolla näkyy nuotti ja otelaudalla sen paikka 1. asemassa. Kierroksessa on 20 kysymystä, ja voit vastata myös näppäimistöllä.": ["Här har jag gjort ett notquiz där du kan öva på notnamn. Noten visas i notsystemet och dess plats på greppbrädan i första läget. En omgång har 20 frågor, och du kan också svara med tangentbordet.", "I made a note quiz for practising note names. The note is shown on the staff and its place on the fretboard in first position. A round has 20 questions, and you can also answer with the keyboard."],
+    "Nuottivisa": ["Notquiz", "Note quiz"],
+    "Kysymys": ["Fråga", "Question"],
+    "· Oikein": ["· Rätt", "· Correct"],
+    "· Putki": ["· Svit", "· Streak"],
+    "· Pisteet": ["· Poäng", "· Points"],
+    "Mikä nuotti tämä on?": ["Vilken not är det här?", "Which note is this?"],
+    "Otelauta, 1. asema": ["Greppbräda, första läget", "Fretboard, first position"],
+    "C-juurisävelet": ["C-grundtoner", "C root notes"],
+    "Arvattava nuotti": ["Noten att gissa", "Note to guess"],
+    "Koko 1. asema": ["Hela första läget", "All of first position"],
+    "Otelauta": ["Greppbräda", "Fretboard"],
+    "Ääni": ["Ljud", "Sound"],
+    "Pelaa uudelleen": ["Spela igen", "Play again"],
+    "Arvattava nuotti G-avaimen viivastolla": ["Noten att gissa i G-klavens notsystem", "The note to guess on the treble staff"],
+    "Kitaran otelauta, nauhat 0–4": ["Gitarrens greppbräda, band 0–4", "Guitar fretboard, frets 0–4"],
+    "Nuottialue": ["Notområde", "Note range"],
+    "H vai B": ["H eller B", "H or B"],
+
+    // Kuutio
+    "Rubikin kuutiot. Ratkominen on yksi lempiharrastuksistani.": ["Rubiks kub. Att lösa den är en av mina favorithobbyer.", "Rubik's cubes. Solving them is one of my favourite hobbies."],
+    "Tein tähän harjoitusohjelman, jolla voit opetella kuution ratkaisemisen aloittelijan menetelmällä kerros kerrallaan. Sekoita kuutio, kokeile siirtoja ja harjoittele algoritmit ulkoa. Kerrosta käännetään pyyhkäisemällä peukalolla tai sormella mitä tahansa tarraa haluttuun suuntaan. Koko kuutiota voi katsoa eri suunnista vetämällä sen vierestä.": ["Här har jag gjort ett övningsprogram där du kan lära dig lösa kuben med nybörjarmetoden, ett lager i taget. Blanda kuben, prova vridningar och lär dig algoritmerna utantill. Ett lager vrids genom att svepa med tummen eller fingret över valfri ruta i önskad riktning. Hela kuben kan du se från olika håll genom att dra bredvid den.", "I made a practice tool for learning to solve the cube with the beginner's method, one layer at a time. Scramble the cube, try moves and learn the algorithms by heart. Turn a layer by swiping any sticker with your thumb or finger in the direction you want. You can view the whole cube from different sides by dragging next to it."],
+    "Rubikin kuutio. Pyyhkäise tarraa kääntääksesi kerrosta, vedä kuution vierestä kääntääksesi näkymää.": ["Rubiks kub. Svep över en ruta för att vrida ett lager, dra bredvid kuben för att vrida vyn.", "Rubik's cube. Swipe a sticker to turn a layer, drag next to the cube to rotate the view."],
+    "Ratkaistu": ["Löst", "Solved"],
+    "Sekoitettu": ["Blandad", "Scrambled"],
+    "siirtoa ·": ["drag ·", "moves ·"],
+    "Sekoita": ["Blanda", "Scramble"],
+    "Palauta": ["Återställ", "Reset"],
+    "Peru siirto": ["Ångra drag", "Undo move"],
+    "Takapuoli": ["Baksidan", "Back side"],
+    "Ylösalaisin": ["Upp och ner", "Upside down"],
+    "Siirrot": ["Drag", "Moves"],
+    "Mitä merkinnät tarkoittavat?": ["Vad betyder beteckningarna?", "What does the notation mean?"],
+    "Paras aika sekoitetusta:": ["Bästa tid från blandad kub:", "Best time from a scramble:"],
+    "· Opitut vaiheet:": ["· Inlärda steg:", "· Steps learned:"],
+    "Valkoinen on nyt ylhäällä.": ["Vitt är nu upptill.", "White is now on top."],
+    "Keltainen on nyt ylhäällä.": ["Gult är nu upptill.", "Yellow is now on top."],
+    "Käännä samaan suuntaan kuin äsken.": ["Vrid åt samma håll som nyss.", "Turn the same way as before."],
+    "Vielä toinen neljännes samaan suuntaan.": ["Ett kvarts varv till åt samma håll.", "One more quarter turn the same way."],
+    "Osaat tämän! Vaihe merkitty opituksi ✓": ["Du kan det här! Steget är markerat som inlärt ✓", "You've got it! Step marked as learned ✓"],
+    "Algoritmi peruttu.": ["Algoritmen ångrad.", "Algorithm undone."],
+    "Lopeta harjoitus": ["Avsluta övningen", "Stop practising"],
+    "Paina siirrot järjestyksessä. Toista algoritmi kolme kertaa oppiaksesi sen.": ["Gör dragen i ordning. Upprepa algoritmen tre gånger för att lära dig den.", "Make the moves in order. Repeat the algorithm three times to learn it."],
+    "Katso kuutiota…": ["Titta på kuben…", "Watch the cube…"],
+    "Valmis. Voit perua algoritmin tai harjoitella sen itse.": ["Klart. Du kan ångra algoritmen eller öva på den själv.", "Done. You can undo the algorithm or practise it yourself."],
+    "Näytä kuutiolla": ["Visa på kuben", "Show on cube"],
+    "Harjoittele": ["Öva", "Practise"],
+    "Peru algoritmi": ["Ångra algoritmen", "Undo algorithm"],
+    "✓ opittu": ["✓ inlärt", "✓ learned"],
+    "Valkoinen risti": ["Vitt kors", "White cross"],
+    "Tee valkoinen risti yläpuolelle niin, että kunkin särmäpalan toinen väri osuu saman väriseen keskipalaan. Tähän ei tarvita valmista kaavaa: kokeile ja opi, miten palat liikkuvat. Kun risti on valmis, paina Ylösalaisin, jolloin valkoinen on alhaalla ja keltainen ylhäällä. Seuraavat vaiheet tehdään siinä asennossa.": ["Gör ett vitt kors på ovansidan så att den andra färgen på varje kantbit matchar mittbiten med samma färg. Här behövs ingen färdig formel: prova och lär dig hur bitarna rör sig. När korset är klart, tryck på Upp och ner så att vitt hamnar nertill och gult upptill. De följande stegen görs i det läget.", "Make a white cross on top so that the other colour of each edge piece matches the centre piece of the same colour. No formula is needed here: experiment and learn how the pieces move. When the cross is done, press Upside down so that white is at the bottom and yellow on top. The following steps are done in that position."],
+    "Valkoiset kulmat": ["Vita hörn", "White corners"],
+    "Käännä yläkerrosta, kunnes valkoinen kulmapala on oikean paikkansa yläpuolella oikealla edessä. Toista algoritmia, kunnes kulma on paikallaan ja valkoinen osoittaa alas.": ["Vrid översta lagret tills en vit hörnbit ligger ovanför sin rätta plats, fram till höger. Upprepa algoritmen tills hörnet sitter rätt och vitt pekar nedåt.", "Turn the top layer until a white corner piece is above its correct spot, front right. Repeat the algorithm until the corner is in place with white facing down."],
+    "Toinen kerros, särmä oikealle": ["Andra lagret, kantbit åt höger", "Second layer, edge to the right"],
+    "Etsi yläkerroksesta särmä, jossa ei ole keltaista. Kohdista se edessä oman keskipalansa kanssa. Jos sen pitää mennä oikealle, käytä tätä.": ["Leta upp en kantbit i översta lagret som inte har gult. Rikta in den framtill mot sin egen mittbit. Om den ska åt höger, använd den här.", "Find an edge in the top layer that has no yellow. Line it up at the front with its own centre piece. If it needs to go right, use this one."],
+    "Toinen kerros, särmä vasemmalle": ["Andra lagret, kantbit åt vänster", "Second layer, edge to the left"],
+    "Sama tilanne, mutta särmän paikka on vasemmalla puolella.": ["Samma situation, men kantbitens plats är på vänster sida.", "Same situation, but the edge belongs on the left."],
+    "Keltainen risti": ["Gult kors", "Yellow cross"],
+    "Tee yläpuolelle keltainen risti. Jos näet viivan, pidä se vaakasuorassa. Jos näet L-kuvion, pidä se vasemmalla takana. Toista tarvittaessa.": ["Gör ett gult kors på ovansidan. Ser du ett streck, håll det vågrätt. Ser du ett L, håll det bak till vänster. Upprepa vid behov.", "Make a yellow cross on top. If you see a line, hold it horizontally. If you see an L shape, hold it at the back left. Repeat as needed."],
+    "Keltaiset särmät paikoilleen": ["Gula kantbitar på plats", "Yellow edges into place"],
+    "Käännä yläpuolta, kunnes kaksi särmää osuu oikein. Pidä ne takana ja oikealla, ja tee algoritmi.": ["Vrid ovansidan tills två kantbitar stämmer. Håll dem bak och till höger och gör algoritmen.", "Turn the top until two edges match. Hold them at the back and right, then do the algorithm."],
+    "Keltaiset kulmat paikoilleen": ["Gula hörn på plats", "Yellow corners into place"],
+    "Etsi kulma, joka on jo oikeassa paikassa, ja pidä se oikealla edessä. Toista, kunnes kaikki kulmat ovat paikoillaan.": ["Leta upp ett hörn som redan är på rätt plats och håll det fram till höger. Upprepa tills alla hörn är på plats.", "Find a corner that is already in the right place and hold it front right. Repeat until all corners are in place."],
+    "Keltaiset kulmat oikein päin": ["Gula hörn rättvända", "Orient the yellow corners"],
+    "Pidä kääntämätön kulma oikealla edessä ja toista algoritmia, kunnes keltainen osoittaa ylös. Käännä sitten vain yläkerrosta U:lla seuraavaan kulmaan. Älä hätäile, alakerros palaa lopuksi ennalleen.": ["Håll ett felvänt hörn fram till höger och upprepa algoritmen tills gult pekar uppåt. Vrid sedan bara översta lagret med U till nästa hörn. Ingen panik, de undre lagren återställs till slut.", "Hold an unsolved corner front right and repeat the algorithm until yellow points up. Then turn only the top layer with U to the next corner. Don't panic, the lower layers return to normal at the end."],
+
+    // Kirjat
+    "Hae kirjaa tai kirjoittajaa": ["Sök bok eller författare", "Search for a book or author"],
+    "Tähän mennessä noin 62 000 sivua.": ["Hittills ungefär 62 000 sidor.", "About 62,000 pages so far."],
+    "Näytä vähemmän": ["Visa färre", "Show less"],
+    "Filosofian ja ajattelun klassikot": ["Klassiker inom filosofi och tänkande", "Classics of philosophy and thought"],
+    "Pyhät kirjat ja hengelliset klassikot": ["Heliga skrifter och andliga klassiker", "Sacred texts and spiritual classics"],
+    "Kirjallisuuden klassikot": ["Litterära klassiker", "Literary classics"],
+    "Tunnetut tietokirjat ja elämäkerrat": ["Kända fackböcker och biografier", "Well-known non-fiction and biographies"],
+    "Psykologia, itsekehitys ja muisti": ["Psykologi, självutveckling och minne", "Psychology, self-improvement and memory"],
+    "Historia, politiikka ja yhteiskunta": ["Historia, politik och samhälle", "History, politics and society"],
+    "Rikokset ja true crime": ["Brott och true crime", "Crime and true crime"],
+    "Muut": ["Övrigt", "Other"]
+  };
+  // [säännöllinen lauseke, ruotsi, englanti]; $1… viittaavat ryhmiin
+  var P = [
+    [/^(\d+) \/ (\d+) kirjaa$/, "$1 / $2 böcker", "$1 / $2 books"],
+    [/^(\d+) kirjaa$/, "$1 böcker", "$1 books"],
+    [/^Näytä kaikki (\d+)$/, "Visa alla $1", "Show all $1"],
+    [/^Valmis! Sait (\d+)\/(\d+) oikein ensimmäisellä yrityksellä\.$/, "Klart! Du hade $1/$2 rätt på första försöket.", "Done! You got $1/$2 right on the first try."],
+    [/^Oikein, (.+)!$/, "Rätt, $1!", "Correct, $1!"],
+    [/^Ei (.+)\. Kokeile uudelleen\.$/, "Inte $1. Försök igen.", "Not $1. Try again."],
+    [/^Ratkaistu! Uusi ennätys: (.+)$/, "Löst! Nytt rekord: $1", "Solved! New record: $1"],
+    [/^Ratkaistu (\d+) siirrolla\. Hienoa!$/, "Löst på $1 drag. Snyggt!", "Solved in $1 moves. Nice!"],
+    [/^Melkein! Seuraava siirto on (.+)\.$/, "Nästan! Nästa drag är $1.", "Almost! The next move is $1."],
+    [/^Kierros (\d+)\/3 valmis\. Toista sama algoritmi uudelleen\.$/, "Omgång $1/3 klar. Upprepa samma algoritm igen.", "Round $1/3 done. Repeat the same algorithm again."],
+    [/^Oikein! (\d+)\/(\d+)$/, "Rätt! $1/$2", "Correct! $1/$2"],
+    [/^Sekoitettu: (.+)\. Ajanotto alkaa ensimmäisestä siirrosta\.$/, "Blandad: $1. Tidtagningen startar vid första draget.", "Scrambled: $1. The timer starts on your first move."]
+  ];
+
+  // Rikkaat kappaleet (sisältävät lihavointeja), käännetään kokonaisina
+  var RICH = {
+    "rk-h1": ["Bokstaven anger vilken sida som vrids: <b>U</b> upp, <b>D</b> ner, <b>R</b> höger, <b>L</b> vänster, <b>F</b> fram och <b>B</b> bak. En ensam bokstav betyder ett kvarts varv medurs, sett rakt mot den sidan. Apostrof (<b>R'</b>) betyder moturs och en tvåa (<b>R2</b>) ett halvt varv.",
+              "The letter tells you which face to turn: <b>U</b> up, <b>D</b> down, <b>R</b> right, <b>L</b> left, <b>F</b> front and <b>B</b> back. A letter on its own means a quarter turn clockwise, looking straight at that face. A prime (<b>R'</b>) means anticlockwise and a two (<b>R2</b>) a half turn."],
+    "rk-h2": ["I startläget är vitt upptill och blått framtill. Svep på mittlagret visas som <b>M</b>, <b>E</b> och <b>S</b>, och vridningar av hela kuben som <b>x</b>, <b>y</b> och <b>z</b>.",
+              "In the starting position white is on top and blue at the front. Swipes on a middle layer are shown as <b>M</b>, <b>E</b> and <b>S</b>, and turns of the whole cube as <b>x</b>, <b>y</b> and <b>z</b>."]
+  };
+
+  var lang = "fi";
+  try { var saved = localStorage.getItem("kieli"); if (LANGS.indexOf(saved) > 0) lang = saved; } catch (e) {}
+  var orig = new WeakMap(), out = new WeakMap();
+  var ATTRS = ["aria-label", "placeholder", "title", "alt"];
+
+  function trCore(s) {
+    if (lang === "fi" || !s) return s;
+    var i = lang === "sv" ? 0 : 1;
+    if (D.hasOwnProperty(s)) return D[s][i];
+    for (var k = 0; k < P.length; k++) {
+      var m = s.match(P[k][0]);
+      if (m) return P[k][1 + i].replace(/\$(\d)/g, function (_, g) { return m[+g]; });
+    }
+    return s;
+  }
+  function tr(s) {
+    var m = s.match(/^(\s*)([\s\S]*?)(\s*)$/);
+    return m[1] + trCore(m[2]) + m[3];
+  }
+  function skip(el) {
+    for (; el && el !== document.body; el = el.parentNode) {
+      var t = el.nodeName;
+      if (t === "SCRIPT" || t === "STYLE" || t === "svg" || t === "TEXTAREA") return true;
+      if (el.hasAttribute && (el.hasAttribute("data-i18n") || el.hasAttribute("data-noi18n"))) return true;
+      if (el.id === "sitaatti-box") return true;
+      if (el.classList && (el.classList.contains("t") || el.classList.contains("a")) && el.parentNode && el.parentNode.parentNode && el.parentNode.parentNode.id === "kirjat") return true;
+    }
+    return false;
+  }
+  function doText(n) {
+    if (!/[A-Za-zÅÄÖåäö]/.test(n.data)) return;
+    var base = out.has(n) && out.get(n) === n.data ? orig.get(n) : n.data;
+    orig.set(n, base);
+    var r = tr(base);
+    out.set(n, r);
+    if (n.data !== r) n.data = r;
+  }
+  function doAttrs(el) {
+    ATTRS.forEach(function (a) {
+      if (!el.hasAttribute(a)) return;
+      var key = "__i18n_" + a, cur = el.getAttribute(a);
+      var base = el[key] && el[key].out === cur ? el[key].orig : cur;
+      var r = tr(base);
+      el[key] = { orig: base, out: r };
+      if (cur !== r) el.setAttribute(a, r);
+    });
+  }
+  function walk(root) {
+    if (root.nodeType === 3) { if (!skip(root.parentNode)) doText(root); return; }
+    if (root.nodeType === 1 && root.nodeName === "svg") { doAttrs(root); return; }
+    if (root.nodeType !== 1 || skip(root)) return;
+    doAttrs(root);
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+      acceptNode: function (n) {
+        if (n.nodeType === 1 && n.nodeName === "svg") { doAttrs(n); return NodeFilter.FILTER_REJECT; }
+        if (n.nodeType === 1) return skip(n) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var n;
+    while ((n = w.nextNode())) { if (n.nodeType === 3) doText(n); else doAttrs(n); }
+  }
+  function rich() {
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      if (!el.__fi) el.__fi = el.innerHTML;
+      var t = RICH[el.getAttribute("data-i18n")];
+      el.innerHTML = lang === "fi" || !t ? el.__fi : t[lang === "sv" ? 0 : 1];
+    });
+  }
+
+  // Valitsin
+  var NAMES = { fi: "Suomi", sv: "Svenska", en: "English" };
+  var box = document.createElement("div");
+  box.className = "lang"; box.setAttribute("data-noi18n", "");
+  box.innerHTML = '<button type="button" class="lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Kieli / Språk / Language">' +
+    '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>' +
+    '<span class="lang-code"></span></button><ul class="lang-menu" role="menu" hidden></ul>';
+  document.body.insertBefore(box, document.body.firstChild);
+  var btn = box.querySelector(".lang-btn"), menu = box.querySelector(".lang-menu"), code = box.querySelector(".lang-code");
+  LANGS.forEach(function (l) {
+    var li = document.createElement("li"), b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "menuitemradio"); b.lang = l; b.dataset.l = l; b.textContent = NAMES[l];
+    b.addEventListener("click", function () { setLang(l); close(); btn.focus(); });
+    li.appendChild(b); menu.appendChild(li);
+  });
+  function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = menu.hidden;
+    menu.hidden = !open; btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) { var cur = menu.querySelector('[data-l="' + lang + '"]'); if (cur) cur.focus(); }
+  });
+  document.addEventListener("click", function (e) { if (!box.contains(e.target)) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); } });
+
+  var mo;
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem("kieli", l); } catch (e) {}
+    document.documentElement.lang = l;
+    code.textContent = l.toUpperCase();
+    menu.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-checked", b.dataset.l === l ? "true" : "false"); });
+    if (mo) mo.disconnect();
+    rich(); walk(document.body);
+    try { document.dispatchEvent(new CustomEvent("kielivaihto", { detail: l })); } catch (e) {}
+    if (mo) mo.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  }
+  mo = new MutationObserver(function (list) {
+    mo.disconnect();
+    list.forEach(function (r) {
+      if (r.type === "childList") r.addedNodes.forEach(walk);
+      else if (r.type === "characterData") { if (!skip(r.target.parentNode)) doText(r.target); }
+      else if (r.target.nodeName === "svg" || !skip(r.target)) doAttrs(r.target);
+    });
+    mo.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  });
+  setLang(lang);
 })();
 </script>
 <script>
