@@ -34,6 +34,15 @@
     "Katso tulos": ["Se resultatet", "See result"],
     "Oikein!": ["Rätt!", "Correct!"],
 
+    // Vastausten kirja
+    "Vastausten kirja": ["Svarens bok", "The Book of Answers"],
+    "Ajattele kysymystäsi hetki.": ["Tänk på din fråga en stund.", "Think about your question for a moment."],
+    "Kun olet valmis, kosketa kirjaa.": ["När du är redo, tryck på boken.", "When you're ready, touch the book."],
+    "Kirja miettii…": ["Boken funderar…", "The book is thinking…"],
+    "Kysy uudestaan": ["Fråga igen", "Ask again"],
+    "Avaa kirja": ["Öppna boken", "Open the book"],
+    "Kirja vastaa, mutta päätös on sinun.": ["Boken svarar, men beslutet är ditt.", "The book answers, but the decision is yours."],
+
     // Arkineuvoja
     "Arkineuvoja": ["Vardagsrådgivaren", "Everyday adviser"],
     "Kerro, mikä tympii. Saat suoran neuvon ja yhden asian, jonka voit tehdä heti.": ["Berätta vad som tynger dig. Du får ett rakt råd och en sak du kan göra genast.", "Tell it what's getting you down. You get a straight piece of advice and one thing you can do right away."],

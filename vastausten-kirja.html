@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vastausten kirja – Tommi Tampio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&family=Cormorant+Garamond:wght@600&display=swap">
+<style>
+/* Sama kapea palsta ja värit kuin muilla sivuilla. Keskellä kirja, jonka kansi aukeaa. */
+:root {
+  --bg: #F2F5F7; --fg: #14202A; --muted: #566672; --rule: #CBD5DC; --accent: #1F5C8B; --surface: #FFFFFF;
+  --paper: #F6EEDD; --ink: #2B2118; --cover1: #5B2A22; --cover2: #3B1813; --gold: #C9A45C;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-book: "Cormorant Garamond", Georgia, serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B; --fg: #E6ECF0; --muted: #93A3AE; --rule: #26343E; --accent: #78B6E4; --surface: #16212A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B; --fg: #E6ECF0; --muted: #93A3AE; --rule: #26343E; --accent: #78B6E4; --surface: #16212A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible, button:focus-visible, .nayttamo:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1.02; letter-spacing: -0.02em;
+  margin: 0.75rem 0 0.5rem; text-wrap: balance;
+}
+.ohje { margin: 0; color: var(--muted); text-align: center; min-height: 3.3em; }
+
+/* Kirja */
+.nayttamo { perspective: 1400px; width: min(320px, 86vw); aspect-ratio: 3 / 4; position: relative; cursor: pointer; margin: 0 auto; }
+.kirja { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .25s; }
+.nayttamo:active .kirja { transform: scale(.98); }
+.sivu {
+  position: absolute; inset: 0; border-radius: 4px 10px 10px 4px;
+  background: var(--paper); color: var(--ink);
+  box-shadow: 0 16px 36px rgba(0,0,0,.28), inset 10px 0 18px -10px rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center; text-align: center; padding: 34px 26px;
+  background-image: repeating-linear-gradient(0deg, transparent 0 27px, rgba(120,90,50,.06) 27px 28px);
+}
+.vastaus {
+  font-family: var(--font-book); font-weight: 600;
+  font-size: clamp(1.6rem, 7vw, 2.2rem); line-height: 1.2; text-wrap: balance;
+  opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease;
+}
+.vastaus.nakyy { opacity: 1; transform: none; }
+.kansi {
+  position: absolute; inset: 0; border-radius: 4px 10px 10px 4px;
+  background: linear-gradient(135deg, var(--cover1), var(--cover2));
+  box-shadow: 0 16px 36px rgba(0,0,0,.35), inset 0 0 0 2px rgba(201,164,92,.35), inset 14px 0 20px -8px rgba(0,0,0,.5);
+  transform-origin: left center; transition: transform 1.1s cubic-bezier(.6,.05,.3,1);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  backface-visibility: hidden; z-index: 2; padding: 0 30px;
+}
+.kansi .kehys { position: absolute; inset: 16px; border: 1.5px solid rgba(201,164,92,.55); border-radius: 4px; }
+.kansi .otsikko { font-family: var(--font-book); color: var(--gold); font-size: 2rem; font-weight: 600; text-align: center; line-height: 1.1; text-wrap: balance; }
+.kansi .tahti { color: var(--gold); font-size: 1.3rem; opacity: .8; }
+.kirja.auki .kansi { transform: rotateY(-165deg); }
+.kirja.miettii { animation: huoju 1s ease-in-out; }
+@keyframes huoju {
+  0%,100% { transform: rotate(0); } 20% { transform: rotate(-2deg); } 40% { transform: rotate(2deg); }
+  60% { transform: rotate(-1.5deg); } 80% { transform: rotate(1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kansi { transition-duration: .3s; } .kirja.miettii { animation: none; }
+}
+
+.napit { display: flex; justify-content: center; min-height: 2.75rem; }
+button {
+  font: inherit; font-weight: 500; cursor: pointer;
+  background: var(--accent); color: var(--bg);
+  border: 0; border-radius: 999px; padding: 0.6rem 1.3rem; min-height: 2.75rem;
+  opacity: 0; pointer-events: none; transition: opacity .5s;
+}
+button.nakyy { opacity: 1; pointer-events: auto; }
+.huomio { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; margin: 0; text-align: center; }
+footer { font-size: 0.85rem; color: var(--muted); margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <nav class="top-nav"><a href="index.html">‹ Etusivu</a></nav>
+    <h1>Vastausten kirja</h1>
+  </header>
+
+  <p class="ohje" id="ohje" aria-live="polite">Ajattele kysymystäsi hetki.<br>Kun olet valmis, kosketa kirjaa.</p>
+
+  <div class="nayttamo" id="nayttamo" role="button" tabindex="0" aria-label="Avaa kirja">
+    <div class="kirja" id="kirja">
+      <div class="sivu"><div class="vastaus" id="vastaus" data-noi18n aria-live="polite"></div></div>
+      <div class="kansi" data-noi18n>
+        <div class="kehys"></div>
+        <div class="tahti">✦</div>
+        <div class="otsikko" id="kansiteksti">Vastausten kirja</div>
+        <div class="tahti">✦</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="napit"><button id="uudelleen" type="button">Kysy uudestaan</button></div>
+
+  <p class="huomio">Kirja vastaa, mutta päätös on sinun.</p>
+
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+</main>
+<script>try{document.getElementById("vuosi").textContent=new Date().getFullYear()}catch(e){}</script>
+<script>
+(function () {
+  // [suomi, ruotsi, englanti]
+  var V = [
+    // Selvät
+    ["Kyllä.", "Ja.", "Yes."],
+    ["Ei.", "Nej.", "No."],
+    ["Ehdottomasti.", "Absolut.", "Absolutely."],
+    ["Ei tällä kertaa.", "Inte den här gången.", "Not this time."],
+    ["Ilman muuta.", "Självklart.", "Of course."],
+    ["Ei missään tapauksessa.", "Under inga omständigheter.", "Under no circumstances."],
+    ["Todennäköisesti.", "Troligen.", "Probably."],
+    ["Tuskin.", "Knappast.", "Hardly."],
+    ["Kyllä, mutta ei tänään.", "Ja, men inte i dag.", "Yes, but not today."],
+    ["Ei vielä.", "Inte än.", "Not yet."],
+    ["Jo on aikakin.", "Det var på tiden.", "About time."],
+    ["Miksipä ei?", "Varför inte?", "Why not?"],
+    ["Ei kannata.", "Det lönar sig inte.", "Not worth it."],
+    ["Kannattaa.", "Det lönar sig.", "It's worth it."],
+
+    // Mieti tarkemmin
+    ["Punnitse asiaa tarkoin.", "Väg saken noga.", "Weigh it carefully."],
+    ["Nuku yön yli.", "Sov på saken.", "Sleep on it."],
+    ["Odota vielä hetki.", "Vänta en stund till.", "Wait a little longer."],
+    ["Kysy uudelleen huomenna.", "Fråga igen i morgon.", "Ask again tomorrow."],
+    ["Tarvitset lisää tietoa.", "Du behöver mer information.", "You need more information."],
+    ["Kaikki ei ole sitä, miltä näyttää.", "Allt är inte vad det ser ut att vara.", "Not everything is as it seems."],
+    ["Ilmeisin ratkaisu ei välttämättä ole paras.", "Den självklara lösningen är inte alltid den bästa.", "The obvious choice may not be the best one."],
+    ["Voit joutua luopumaan jostain muusta.", "Du kan bli tvungen att avstå från något annat.", "You may have to give up something else."],
+    ["Katso asiaa toisen silmin.", "Se saken med någon annans ögon.", "Look at it through someone else's eyes."],
+    ["Lue pienellä painettu teksti.", "Läs det finstilta.", "Read the small print."],
+    ["Laske kustannukset ensin.", "Räkna på kostnaderna först.", "Count the cost first."],
+    ["Mieti, mitä toivoit kirjan sanovan.", "Tänk på vad du hoppades att boken skulle säga.", "Notice what you hoped the book would say."],
+    ["Ajoitus ratkaisee.", "Rätt tidpunkt avgör.", "Timing is everything."],
+    ["Älä päätä nälkäisenä.", "Bestäm dig inte när du är hungrig.", "Don't decide on an empty stomach."],
+    ["Ensin muut asiat.", "Andra saker först.", "Other things first."],
+    ["Selvitä, mitä oikeasti haluat.", "Ta reda på vad du egentligen vill.", "Find out what you really want."],
+    ["Tee lista puolesta ja vastaan.", "Gör en lista för och emot.", "Make a list of pros and cons."],
+
+    // Toimi
+    ["Älä haaskaa aikaasi.", "Slösa inte bort din tid.", "Don't waste your time."],
+    ["Tee se nyt.", "Gör det nu.", "Do it now."],
+    ["Lähde liikkeelle.", "Sätt i gång.", "Get going."],
+    ["Hyppää.", "Hoppa.", "Jump."],
+    ["Ota ensimmäinen askel.", "Ta det första steget.", "Take the first step."],
+    ["Tartu tilaisuuteen.", "Ta chansen.", "Seize the chance."],
+    ["Yritä ainakin.", "Försök åtminstone.", "At least try."],
+    ["Tee se, mutta tee se kunnolla.", "Gör det, men gör det ordentligt.", "Do it, but do it properly."],
+    ["Nosta asiasta haloo.", "Säg ifrån.", "Make some noise about it."],
+    ["Sano se ääneen.", "Säg det högt.", "Say it out loud."],
+    ["Puhu asiasta jonkun kanssa.", "Prata med någon om det.", "Talk it over with someone."],
+    ["Pyydä apua.", "Be om hjälp.", "Ask for help."],
+    ["Ota riski.", "Ta risken.", "Take the risk."],
+    ["Uskalla.", "Våga.", "Dare."],
+    ["Tee se omalla tavallasi.", "Gör det på ditt eget sätt.", "Do it your own way."],
+
+    // Varovaisuus
+    ["Noudata sääntöjä.", "Följ reglerna.", "Follow the rules."],
+    ["Ei, jos olet yksin.", "Nej, om du är ensam.", "Not if you're alone."],
+    ["Ole varovainen.", "Var försiktig.", "Be careful."],
+    ["Pidä pää kylmänä.", "Håll huvudet kallt.", "Keep a cool head."],
+    ["Älä lupaa liikoja.", "Lova inte för mycket.", "Don't promise too much."],
+    ["Älä polta siltoja.", "Bränn inte dina broar.", "Don't burn your bridges."],
+    ["Säästä voimiasi.", "Spara på krafterna.", "Save your strength."],
+    ["Älä ole ahne.", "Var inte girig.", "Don't be greedy."],
+    ["Pidä takaportti auki.", "Håll en bakdörr öppen.", "Keep a back door open."],
+    ["Kuuntele vaistoasi.", "Lyssna på din magkänsla.", "Trust your gut."],
+    ["Älä anna muiden päättää puolestasi.", "Låt inte andra bestämma åt dig.", "Don't let others decide for you."],
+    ["Pidä se omana tietonasi.", "Behåll det för dig själv.", "Keep it to yourself."],
+    ["Hiljaa hyvä tulee.", "Skynda långsamt.", "Slowly but surely."],
+
+    // Ihmiset
+    ["Kysy joltakulta, johon luotat.", "Fråga någon du litar på.", "Ask someone you trust."],
+    ["Ota joku mukaan.", "Ta med någon.", "Bring someone along."],
+    ["Soita äidille.", "Ring mamma.", "Call your mother."],
+    ["Joku muu tietää vastauksen.", "Någon annan vet svaret.", "Someone else knows the answer."],
+    ["Älä tee sitä yksin.", "Gör det inte ensam.", "Don't do it alone."],
+    ["Anna toisen päättää tällä kertaa.", "Låt någon annan bestämma den här gången.", "Let someone else decide this time."],
+    ["Ole ystävällinen.", "Var vänlig.", "Be kind."],
+    ["Anna anteeksi.", "Förlåt.", "Forgive."],
+    ["Pyydä anteeksi.", "Be om förlåtelse.", "Apologise."],
+    ["Kiitä jotakuta.", "Tacka någon.", "Thank someone."],
+
+    // Elämänviisaudet
+    ["Pienistä puroista syntyy suuri virta.", "Många bäckar små blir en stor å.", "Little streams make a great river."],
+    ["Hyvää kannattaa odottaa.", "Det goda är värt att vänta på.", "Good things are worth waiting for."],
+    ["Parempi myöhään kuin ei milloinkaan.", "Bättre sent än aldrig.", "Better late than never."],
+    ["Tästä tulee hyvä tarina.", "Det här blir en bra historia.", "This will make a good story."],
+    ["Se on pienempi asia kuin luulet.", "Det är mindre än du tror.", "It's smaller than you think."],
+    ["Se on isompi asia kuin luulet.", "Det är större än du tror.", "It's bigger than you think."],
+    ["Aloita pienestä.", "Börja i liten skala.", "Start small."],
+    ["Kaikki järjestyy.", "Allt ordnar sig.", "It will all work out."],
+    ["Huominen näyttää toiselta.", "I morgon ser allt annorlunda ut.", "Tomorrow will look different."],
+    ["Aikaa on enemmän kuin luulet.", "Du har mer tid än du tror.", "You have more time than you think."],
+    ["Aikaa on vähemmän kuin luulet.", "Du har mindre tid än du tror.", "You have less time than you think."],
+    ["Opit tästä jotain.", "Du lär dig något av det här.", "You'll learn something from this."],
+    ["Ei se haittaa, vaikka menisi pieleen.", "Det gör inget om det går snett.", "It's fine if it goes wrong."],
+    ["Rohkeus palkitaan.", "Mod lönar sig.", "Courage pays off."],
+    ["Sinä tiedät jo vastauksen.", "Du vet redan svaret.", "You already know the answer."],
+    ["Seuraa sydäntäsi, mutta ota järki mukaan.", "Följ ditt hjärta, men ta med förnuftet.", "Follow your heart, but bring your head."],
+    ["Yksi asia kerrallaan.", "En sak i taget.", "One thing at a time."],
+    ["Hyvä on tarpeeksi hyvä.", "Bra är bra nog.", "Good is good enough."],
+    ["Keskity olennaiseen.", "Fokusera på det viktiga.", "Focus on what matters."],
+    ["Myöhemmin kiität itseäsi.", "Du kommer att tacka dig själv senare.", "You'll thank yourself later."],
+
+    // Suunta
+    ["Pysy suunnitelmassa.", "Håll dig till planen.", "Stick to the plan."],
+    ["Muuta suunnitelmaa.", "Ändra planen.", "Change the plan."],
+    ["Tee päinvastoin kuin yleensä.", "Gör tvärtom mot vad du brukar.", "Do the opposite of what you usually do."],
+    ["Kokeile jotain uutta.", "Prova något nytt.", "Try something new."],
+    ["Palaa vanhaan tuttuun.", "Gå tillbaka till det gamla vanliga.", "Go back to what you know."],
+    ["Hellitä vähän.", "Släpp lite på kraven.", "Ease up a little."],
+    ["Päästä irti.", "Släpp taget.", "Let go."],
+    ["Pidä kiinni.", "Håll fast.", "Hold on."],
+    ["Anna asian olla.", "Låt det vara.", "Let it be."],
+    ["Kirjoita se ylös.", "Skriv ner det.", "Write it down."],
+    ["Unohda koko juttu.", "Glöm alltihop.", "Forget the whole thing."],
+    ["Pidä lupauksesi.", "Håll ditt löfte.", "Keep your promise."],
+    ["Älä vertaa itseäsi muihin.", "Jämför dig inte med andra.", "Don't compare yourself to others."],
+    ["Odota merkkiä.", "Vänta på ett tecken.", "Wait for a sign."],
+    ["Tämä on se merkki.", "Det här är tecknet.", "This is the sign."],
+
+    // Leikkisät
+    ["Lähde, ja ota sateenvarjo mukaan.", "Gå, och ta med paraply.", "Go, and take an umbrella."],
+    ["Ensin kahvia.", "Kaffe först.", "Coffee first."],
+    ["Syö jotain ja kysy sitten uudestaan.", "Ät något och fråga sedan igen.", "Eat something, then ask again."],
+    ["Kysy kissalta.", "Fråga katten.", "Ask the cat."],
+    ["Heitä kolikkoa ja katso, mitä toivoit.", "Singla slant och se vad du hoppades på.", "Flip a coin and notice what you hoped for."],
+    ["Kyllä, jos aurinko paistaa.", "Ja, om solen skiner.", "Yes, if the sun is shining."],
+    ["Jos se saa sinut hymyilemään, niin kyllä.", "Om det får dig att le, så ja.", "If it makes you smile, then yes."],
+    ["Pukeudu lämpimästi.", "Klä dig varmt.", "Dress warmly."],
+    ["Käy ensin kävelyllä.", "Ta en promenad först.", "Go for a walk first."],
+    ["Mene ajoissa nukkumaan.", "Gå och lägg dig i tid.", "Go to bed early."],
+    ["Ota eväät mukaan.", "Ta med matsäck.", "Pack a lunch."],
+    ["Vain jos saat kakkua.", "Bara om du får tårta.", "Only if there's cake."],
+    ["Laita hyvä levy soimaan ja päätä sitten.", "Sätt på en bra skiva och bestäm dig sedan.", "Put on a good record, then decide."],
+    ["Kirja kohauttaa olkiaan.", "Boken rycker på axlarna.", "The book shrugs."],
+    ["Kirja ei ota tähän kantaa.", "Boken tar ingen ställning till det här.", "The book has no opinion on this."],
+    ["Kysy jotain helpompaa.", "Fråga något lättare.", "Ask something easier."],
+    ["Kyllä, ja kerro sitten, miten kävi.", "Ja, och berätta sedan hur det gick.", "Yes, and then tell me how it went."],
+
+    // Ruotsiksi kaikilla kielillä, Kalmarin muistoksi
+    ["Lagom är bäst.", "Lagom är bäst.", "Lagom är bäst."],
+    ["Ta det lugnt.", "Ta det lugnt.", "Ta det lugnt."],
+    ["Det ordnar sig.", "Det ordnar sig.", "Det ordnar sig."],
+    ["Fika först.", "Fika först.", "Fika först."]
+  ];
+
+  var KANSI = ["Vastausten kirja", "Svarens bok", "The Book of Answers"];
+
+  var nayttamo = document.getElementById("nayttamo");
+  var kirja = document.getElementById("kirja");
+  var vastausEl = document.getElementById("vastaus");
+  var ohje = document.getElementById("ohje");
+  var nappi = document.getElementById("uudelleen");
+  var kansiEl = document.getElementById("kansiteksti");
+
+  var tila = "kiinni";
+  var nyt = -1;
+  var viimeiset = [];
+
+  function k() {
+    var l = document.documentElement.lang;
+    return l === "sv" ? 1 : l === "en" ? 2 : 0;
+  }
+  function piirra() {
+    kansiEl.textContent = KANSI[k()];
+    if (nyt >= 0) vastausEl.textContent = V[nyt][k()];
+  }
+  function arvo() {
+    var i;
+    do { i = Math.floor(Math.random() * V.length); } while (viimeiset.indexOf(i) !== -1);
+    viimeiset.push(i);
+    if (viimeiset.length > 20) viimeiset.shift();
+    return i;
+  }
+  var OHJE = "Ajattele kysymystäsi hetki.<br>Kun olet valmis, kosketa kirjaa.";
+
+  function avaa() {
+    if (tila !== "kiinni") return;
+    tila = "miettii";
+    ohje.innerHTML = "Kirja miettii…";
+    nyt = arvo(); piirra();
+    kirja.classList.add("miettii");
+    setTimeout(function () {
+      kirja.classList.remove("miettii");
+      kirja.classList.add("auki");
+      setTimeout(function () {
+        vastausEl.classList.add("nakyy");
+        ohje.innerHTML = "&nbsp;";
+        nappi.classList.add("nakyy");
+        tila = "auki";
+        try { nappi.focus({ preventScroll: true }); } catch (e) {}
+      }, 700);
+    }, 1000);
+  }
+  function sulje() {
+    if (tila !== "auki") return;
+    tila = "sulkeutuu";
+    nappi.classList.remove("nakyy");
+    vastausEl.classList.remove("nakyy");
+    kirja.classList.remove("auki");
+    setTimeout(function () {
+      ohje.innerHTML = OHJE;
+      tila = "kiinni";
+      try { nayttamo.focus({ preventScroll: true }); } catch (e) {}
+    }, 1100);
+  }
+
+  nayttamo.addEventListener("click", avaa);
+  nayttamo.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); avaa(); }
+  });
+  nappi.addEventListener("click", sulje);
+  document.addEventListener("kielivaihto", piirra);
+  piirra();
+})();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>
