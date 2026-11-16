@@ -241,6 +241,26 @@ function insufficient(){
 if(typeof document!=='undefined'){
 const GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
 const VS='︎';
+/* Nappulat piirretään kuvina (canvas), jotta selaimen tumma tila ei muuta niiden värejä */
+function pieceCanvas(t,white,size){
+  size=Math.max(20,Math.floor(size*0.9));
+  const dpr=window.devicePixelRatio||1,c=document.createElement('canvas');
+  c.width=c.height=Math.round(size*dpr);c.style.width=c.style.height=size+'px';
+  c.style.pointerEvents='none';
+  const x=c.getContext('2d');x.scale(dpr,dpr);
+  x.font=Math.round(size*0.9)+'px "Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans",serif';
+  x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  const g=GLYPH[t]+VS,cx=size/2,cy=size*0.54;
+  if(white){
+    x.shadowColor='rgba(0,0,0,.5)';x.shadowOffsetY=size*0.03;x.shadowBlur=size*0.05;
+    x.lineWidth=size*0.08;x.strokeStyle='#000';x.strokeText(g,cx,cy);
+    x.shadowColor='transparent';x.fillStyle='#fff';x.fillText(g,cx,cy);
+  }else{
+    x.lineWidth=size*0.05;x.strokeStyle='rgba(255,255,255,.75)';x.strokeText(g,cx,cy);
+    x.fillStyle='#111';x.fillText(g,cx,cy);
+  }
+  return c;
+}
 const boardEl=document.getElementById('board'),levelEl=document.getElementById('level'),colorEl=document.getElementById('color');
 let human=store('chessColor')||'w',level=+(store('chessLevel')||2),sel=-1,lastMove=null,over=false,thinking=false,statusKey='',pendingPromo=null;
 levelEl.value=level;colorEl.value=human;
@@ -273,7 +293,7 @@ function render(){
     if(sq===chkSq)d.classList.add('chk');
     const tg=targets.find(m=>m.t===sq);
     if(tg)d.classList.add(tg.x||tg.fl==='e'?'cap':'dot');
-    if(p){const s=document.createElement('span');s.className=isW(p)?'pw':'pb';s.textContent=GLYPH[p.toLowerCase()]+VS;d.appendChild(s);}
+    if(p)d.appendChild(pieceCanvas(p.toLowerCase(),isW(p),boardEl.clientWidth/8));
     if(i%8===0){const co=document.createElement('span');co.className='co cr';co.textContent=8-r;d.appendChild(co);}
     if(i>=56){const co=document.createElement('span');co.className='co cf';co.textContent='abcdefgh'[c];d.appendChild(co);}
     d.onclick=()=>tap(sq);
@@ -314,7 +334,7 @@ function askPromo(ms){
   for(const t of 'qrnb'){
     const m=ms.find(x=>x.pr.toLowerCase()===t);
     const b=document.createElement('button');
-    b.innerHTML='<span class="'+(human==='w'?'pw':'pb')+'">'+GLYPH[t]+VS+'</span>';
+    b.appendChild(pieceCanvas(t,human==='w',60));
     b.onclick=()=>{document.getElementById('promo').classList.remove('on');play(m);};
     box.appendChild(b);
   }
