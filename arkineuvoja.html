@@ -168,15 +168,25 @@ footer { font-size: 0.85rem; color: var(--muted); margin-top: 1.5rem; }
     }).then(function (r) {
       return r.json().then(function (d) { return { ok: r.ok, d: d }; });
     }).then(function (t) {
-      if (!t.ok || !t.d || !t.d.vastaus) throw new Error("ei vastausta");
+      if (!t.ok || !t.d || !t.d.vastaus) {
+        var e = new Error("ei vastausta");
+        e.lisa = t.d ? [t.d.virhe, t.d.koodi ? "koodi " + t.d.koodi : ""].join(" ").trim() : "";
+        throw e;
+      }
       var v = lisaa("vastaus", t.d.vastaus, "Neuvoja");
       historia.push({ role: "user", content: kysymys }, { role: "assistant", content: t.d.vastaus });
       kentta.value = "";
       viesti.textContent = "";
       try { v.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e2) {}
-    }).catch(function () {
+    }).catch(function (err) {
       kupla.remove();
       viesti.textContent = "Vastausta ei saatu. Yritä hetken päästä uudelleen.";
+      if (err && err.lisa) {
+        var s = document.createElement("span");
+        s.setAttribute("data-noi18n", "");
+        s.textContent = " (" + err.lisa + ")";
+        viesti.appendChild(s);
+      }
     }).then(function () {
       kesken = false; nappi.disabled = false;
     });
