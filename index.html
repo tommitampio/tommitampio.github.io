@@ -129,7 +129,9 @@ button.more {
   padding: 0.75rem 0 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em;
 }
 footer { font-size: 0.85rem; color: var(--muted); }
-.sivuhaku { display: flex; gap: 0.5rem; margin-top: 1.25rem; max-width: 22rem; }
+.sivuhaku { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; max-width: 30rem; }
+.sivuhaku input[type="search"] { flex: 1 1 10rem; }
+.sivuhaku-ei { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--muted); }
 .sivuhaku input[type="search"] { flex: 1; max-width: none; }
 .sivuhaku button { font: 500 0.95rem var(--font-display); color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer; }
 .sivuhaku button:hover { border-color: var(--accent); }
@@ -277,10 +279,11 @@ header .meta { padding-right: 4.75rem; }
     <h1>Tommi <span>Tampio</span></h1>
     <p class="lead">Tervetuloa kotisivulleni. Tämä on alku, ja tänne tulee lisää sitä mukaa kun tekemistä kertyy.</p>
     <form class="sivuhaku" action="https://www.google.com/search" method="get" target="_blank" role="search">
-      <input type="hidden" name="as_sitesearch" value="tommitampio.github.io">
-      <input type="search" name="q" placeholder="Hae sivuiltani" aria-label="Hae sivuiltani" required>
-      <button type="submit">Hae</button>
+      <input type="search" name="q" id="sivuhaku-q" placeholder="Hae…" aria-label="Hakusana" required>
+      <button type="submit">Google</button>
+      <button type="button" id="sivuhaku-oma">Tältä sivulta</button>
     </form>
+    <p class="sivuhaku-ei" id="sivuhaku-ei" hidden>Tältä sivulta ei löytynyt osumia.</p>
   </header>
 
   <section id="minusta">
@@ -513,6 +516,44 @@ header .meta { padding-right: 4.75rem; }
       more.textContent = expanded ? "Näytä vähemmän" : "Näytä kaikki " + TOTAL;
     };
     search.addEventListener("input", render);
+    // Yläosan haku: "Tältä sivulta" etsii ensin kirjalistasta, sitten muusta sivun tekstistä.
+    var sq = document.getElementById("sivuhaku-q"), ei = document.getElementById("sivuhaku-ei");
+    sq.addEventListener("input", function () { ei.hidden = true; });
+    document.getElementById("sivuhaku-oma").addEventListener("click", function () {
+      var q = sq.value.trim();
+      ei.hidden = true;
+      if (!q) { sq.focus(); return; }
+      search.value = q;
+      render();
+      if (list.querySelector("li:not(.grp)")) {
+        document.getElementById("luettua").scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+      search.value = "";
+      render();
+      var found = false, ql = q.toLowerCase();
+      try {
+        var w = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT, {
+          acceptNode: function (n) {
+            var el = n.parentNode;
+            if (el.closest("form, script, style, [hidden]") || !el.offsetParent) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+        var n;
+        while ((n = w.nextNode())) {
+          var i = n.data.toLowerCase().indexOf(ql);
+          if (i < 0) continue;
+          var r = document.createRange();
+          r.setStart(n, i); r.setEnd(n, i + q.length);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+          n.parentNode.scrollIntoView({ behavior: "smooth", block: "center" });
+          found = true;
+          break;
+        }
+      } catch (e) {}
+      if (!found) ei.hidden = false;
+    });
     more.addEventListener("click", function () { expanded = !expanded; render(); });
     render();
   } catch (e) {}
@@ -1132,8 +1173,10 @@ header .meta { padding-right: 4.75rem; }
 
     // Kirjat
     "Hae kirjaa tai kirjoittajaa": ["Sök bok eller författare", "Search for a book or author"],
-    "Hae sivuiltani": ["Sök på mina sidor", "Search my pages"],
-    "Hae": ["Sök", "Search"],
+    "Hae…": ["Sök…", "Search…"],
+    "Hakusana": ["Sökord", "Search term"],
+    "Tältä sivulta": ["På den här sidan", "On this page"],
+    "Tältä sivulta ei löytynyt osumia.": ["Inga träffar på den här sidan.", "No matches on this page."],
     "Tähän mennessä noin 62 000 sivua.": ["Hittills ungefär 62 000 sidor.", "About 62,000 pages so far."],
     "Näytä vähemmän": ["Visa färre", "Show less"],
     "Filosofian ja ajattelun klassikot": ["Klassiker inom filosofi och tänkande", "Classics of philosophy and thought"],
