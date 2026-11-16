@@ -314,8 +314,9 @@ function table(){
   $("pt").innerHTML=h;
 }
 function hud(){
+  if(!busy&&saldo<bet&&saldo>=BETS[0]){var fit=BETS.filter(function(v){return v<=saldo});bet=fit[fit.length-1];ls("ph_bet",bet);try{table()}catch(e){}}
   $("saldo").textContent=fmt(saldo);$("panos").textContent=fmt(bet);$("voitto").textContent=fmt(roundWin);
-  [].forEach.call($("bets").children,function(x){x.classList.toggle("on",+x.dataset.b===bet);x.disabled=busy});
+  [].forEach.call($("bets").children,function(x){x.classList.toggle("on",+x.dataset.b===bet);x.disabled=busy||(+x.dataset.b>saldo&&saldo>=BETS[0])});
   var broke=saldo<BETS[0]&&!pending;
   $("refill").hidden=!broke||busy;
   $("go").disabled=busy||saldo<bet;
