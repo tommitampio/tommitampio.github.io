@@ -44,6 +44,8 @@
     "Klassinen miinaharava puhelimelle sopivana. Kolme tasoa ja nopeimpien aikojen top-lista.": ["Klassiskt minröj anpassat för mobilen. Tre nivåer och en topplista över de snabbaste tiderna.", "Classic minesweeper made for the phone. Three levels and a top list of the fastest times."],
     "Pisteholvi": ["Poängvalvet", "Points Vault"],
     "Viiden kiekon holvipeli, jossa pelataan pisteillä eikä rahalla. Holvibonus, tuplaus ja suurimpien voittojen top-lista.": ["Ett valvspel med fem hjul där man spelar om poäng, inte pengar. Valvbonus, dubbling och en topplista över de största vinsterna.", "A five-reel vault game played for points, not money. Vault bonus, double-up and a top list of the biggest wins."],
+    "Shakki": ["Schack", "Chess"],
+    "Pelaa shakkia konetta vastaan valkoisilla tai mustilla. Kolme vaikeustasoa ja siirron peruutus.": ["Spela schack mot datorn med vita eller svarta pjäser. Tre svårighetsnivåer och ångra drag.", "Play chess against the computer as white or black. Three difficulty levels and undo."],
 
     // Miinaharava
     "Avaa kaikki ruudut, joissa ei ole miinaa. Numero kertoo, montako miinaa ympäröivissä ruuduissa on.": ["Öppna alla rutor som inte har en mina. Siffran visar hur många minor det finns i rutorna runt omkring.", "Open every square that has no mine. The number tells you how many mines are in the surrounding squares."],

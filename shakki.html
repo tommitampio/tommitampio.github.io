@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shakki</title>
+<style>
+:root{--light:#f0d9b5;--dark:#b58863;--bg:#1f2933;--fg:#f5f7fa;--accent:#e3b341}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:12px}
+header{width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center}
+a{color:var(--accent);text-decoration:none;font-weight:600}
+.lang button{background:none;border:1px solid #556;color:var(--fg);border-radius:6px;padding:4px 8px;margin-left:4px;cursor:pointer;font-size:.85rem}
+.lang button.on{background:var(--accent);color:#111;border-color:var(--accent)}
+h1{margin:8px 0 10px;font-size:1.7rem}
+.controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px;max-width:520px}
+.controls label{display:flex;align-items:center;gap:6px;font-size:.95rem}
+select,.btn{font-size:1rem;padding:8px 10px;border-radius:8px;border:none;background:#323f4b;color:var(--fg)}
+.btn{background:var(--accent);color:#111;font-weight:600;cursor:pointer}
+.btn.alt{background:#52606d;color:var(--fg)}
+#board{width:min(94vw,480px);height:min(94vw,480px);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:5px solid #3e2c1c;border-radius:4px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;font-size:min(9.6vw,50px);line-height:1;cursor:pointer;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans",serif}
+.l{background-color:var(--light)}.d{background-color:var(--dark)}
+.pw{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,0 0 1px #000,0 2px 3px rgba(0,0,0,.6)}
+.pb{color:#151515;text-shadow:0 0 2px rgba(255,255,255,.5)}
+.last{background-image:linear-gradient(rgba(255,230,60,.5),rgba(255,230,60,.5))}
+.sel{background-image:linear-gradient(rgba(60,170,80,.6),rgba(60,170,80,.6))}
+.chk{background-image:radial-gradient(circle,rgba(255,0,0,.9) 15%,rgba(255,0,0,0) 72%)}
+.dot::after{content:'';position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(0,0,0,.28)}
+.cap::after{content:'';position:absolute;inset:5%;border-radius:50%;border:5px solid rgba(0,0,0,.28)}
+.co{position:absolute;font-size:10px;font-weight:700;font-family:system-ui,sans-serif}
+.l .co{color:var(--dark)}.d .co{color:var(--light)}
+.cf{bottom:1px;right:3px}.cr{top:1px;left:3px}
+#status{margin:12px 0;font-size:1.15rem;min-height:1.6em;text-align:center;font-weight:600}
+#promo{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#promo.on{display:flex}
+#promo div{display:flex;gap:8px}
+#promo button{font-size:44px;width:68px;height:68px;border-radius:10px;border:none;background:var(--light);cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <a id="back" href="pelit.html">← Pelit</a>
+  <div class="lang">
+    <button data-l="fi">FI</button><button data-l="sv">SV</button><button data-l="en">EN</button>
+  </div>
+</header>
+<h1 id="title">Shakki</h1>
+<div class="controls">
+  <label><span id="lvlLbl">Taso</span>
+    <select id="level"><option value="1"></option><option value="2"></option><option value="3"></option></select>
+  </label>
+  <label><span id="colLbl">Väri</span>
+    <select id="color"><option value="w"></option><option value="b"></option></select>
+  </label>
+  <button class="btn" id="newBtn">Uusi peli</button>
+  <button class="btn alt" id="undoBtn">Peru siirto</button>
+</div>
+<div id="board"></div>
+<div id="status"></div>
+<div id="promo"><span id="promoTxt"></span><div id="promoBtns"></div></div>
+
+<script>
+/* ===================== Kielet ===================== */
+const T={
+fi:{title:'Shakki',back:'← Pelit',level:'Taso',l1:'Helppo',l2:'Keskitaso',l3:'Vaikea',color:'Väri',w:'Valkoinen',b:'Musta',newg:'Uusi peli',undo:'Peru siirto',
+ your:'Sinun vuorosi',think:'Kone miettii…',check:'Shakki!',win:'Shakkimatti – voitit! 🎉',lose:'Shakkimatti – kone voitti.',stale:'Patti – tasapeli.',
+ d50:'Tasapeli (50 siirron sääntö).',drep:'Tasapeli (sama asema kolmesti).',dmat:'Tasapeli (liian vähän nappuloita mattiin).',promo:'Mihin sotilas korotetaan?'},
+sv:{title:'Schack',back:'← Spel',level:'Nivå',l1:'Lätt',l2:'Medel',l3:'Svår',color:'Färg',w:'Vit',b:'Svart',newg:'Nytt parti',undo:'Ångra drag',
+ your:'Din tur',think:'Datorn tänker…',check:'Schack!',win:'Schackmatt – du vann! 🎉',lose:'Schackmatt – datorn vann.',stale:'Patt – remi.',
+ d50:'Remi (50-dragsregeln).',drep:'Remi (samma ställning tre gånger).',dmat:'Remi (för lite material för matt).',promo:'Vad ska bonden bli?'},
+en:{title:'Chess',back:'← Games',level:'Level',l1:'Easy',l2:'Medium',l3:'Hard',color:'Color',w:'White',b:'Black',newg:'New game',undo:'Undo',
+ your:'Your turn',think:'Computer is thinking…',check:'Check!',win:'Checkmate – you win! 🎉',lose:'Checkmate – the computer wins.',stale:'Stalemate – draw.',
+ d50:'Draw (50-move rule).',drep:'Draw (threefold repetition).',dmat:'Draw (not enough pieces to mate).',promo:'Promote the pawn to:'}
+};
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+let lang=new URLSearchParams(location.search).get('lang')||store('kieli')||'fi';
+if(!T[lang])lang='fi';
+
+/* ===================== Shakkimoottori ===================== */
+let B,turn,castle,ep,half,undoStack,keys;
+const KN=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const KG=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]],ORTH=[[-1,0],[1,0],[0,-1],[0,1]],ALL=DIAG.concat(ORTH);
+const isW=p=>p!==''&&p===p.toUpperCase();
+const sideOf=p=>p===''?null:(isW(p)?'w':'b');
+const other=s=>s==='w'?'b':'w';
+
+function loadFEN(f){
+  const [pos,t,c,e,h]=f.split(' ');B=[];
+  for(const ch of pos){if(ch==='/')continue;if(/\d/.test(ch))for(let i=0;i<+ch;i++)B.push('');else B.push(ch);}
+  turn=t;castle={K:+c.includes('K'),Q:+c.includes('Q'),k:+c.includes('k'),q:+c.includes('q')};
+  ep=e==='-'?-1:(8-+e[1])*8+(e.charCodeAt(0)-97);half=+(h||0);undoStack=[];keys=[posKey()];
+}
+function posKey(){return B.join(',')+turn+castle.K+castle.Q+castle.k+castle.q+ep;}
+
+function attacked(sq,by){
+  const r=sq>>3,c=sq&7,W=by==='w';
+  const pr=W?r+1:r-1,pp=W?'P':'p';
+  if(pr>=0&&pr<8){if(c>0&&B[pr*8+c-1]===pp)return true;if(c<7&&B[pr*8+c+1]===pp)return true;}
+  const n=W?'N':'n',k=W?'K':'k',bi=W?'B':'b',ro=W?'R':'r',q=W?'Q':'q';
+  for(const[dr,dc]of KN){const rr=r+dr,cc=c+dc;if(rr>=0&&rr<8&&cc>=0&&cc<8&&B[rr*8+cc]===n)return true;}
+  for(const[dr,dc]of KG){const rr=r+dr,cc=c+dc;if(rr>=0&&rr<8&&cc>=0&&cc<8&&B[rr*8+cc]===k)return true;}
+  for(const[dr,dc]of DIAG){let rr=r+dr,cc=c+dc;while(rr>=0&&rr<8&&cc>=0&&cc<8){const p=B[rr*8+cc];if(p){if(p===bi||p===q)return true;break;}rr+=dr;cc+=dc;}}
+  for(const[dr,dc]of ORTH){let rr=r+dr,cc=c+dc;while(rr>=0&&rr<8&&cc>=0&&cc<8){const p=B[rr*8+cc];if(p){if(p===ro||p===q)return true;break;}rr+=dr;cc+=dc;}}
+  return false;
+}
+function inCheck(side){return attacked(B.indexOf(side==='w'?'K':'k'),other(side));}
+
+function genMoves(){
+  const mv=[],me=turn,op=other(me);
+  for(let s=0;s<64;s++){
+    const p=B[s];if(!p||sideOf(p)!==me)continue;
+    const r=s>>3,c=s&7,t=p.toLowerCase();
+    const add=(to,fl,pr)=>mv.push({f:s,t:to,p:p,x:B[to],fl:fl||'',pr:pr||''});
+    if(t==='p'){
+      const dir=me==='w'?-1:1,start=me==='w'?6:1,last=me==='w'?0:7;
+      const pushP=to=>{if((to>>3)===last){for(const q of 'qrbn')add(to,'',me==='w'?q.toUpperCase():q);}else add(to);};
+      const r1=r+dir;
+      if(!B[r1*8+c]){pushP(r1*8+c);if(r===start&&!B[(r+2*dir)*8+c])add((r+2*dir)*8+c,'d');}
+      for(const dc of[-1,1]){const cc=c+dc;if(cc<0||cc>7)continue;const to=r1*8+cc;
+        if(B[to]&&sideOf(B[to])===op)pushP(to);else if(to===ep)add(to,'e');}
+    }else if(t==='n'||t==='k'){
+      for(const[dr,dc]of(t==='n'?KN:KG)){const rr=r+dr,cc=c+dc;if(rr<0||rr>7||cc<0||cc>7)continue;const to=rr*8+cc;if(!B[to]||sideOf(B[to])===op)add(to);}
+      if(t==='k'){
+        if(me==='w'&&s===60){
+          if(castle.K&&!B[61]&&!B[62]&&B[63]==='R'&&!attacked(60,'b')&&!attacked(61,'b')&&!attacked(62,'b'))add(62,'K');
+          if(castle.Q&&!B[59]&&!B[58]&&!B[57]&&B[56]==='R'&&!attacked(60,'b')&&!attacked(59,'b')&&!attacked(58,'b'))add(58,'Q');
+        }
+        if(me==='b'&&s===4){
+          if(castle.k&&!B[5]&&!B[6]&&B[7]==='r'&&!attacked(4,'w')&&!attacked(5,'w')&&!attacked(6,'w'))add(6,'K');
+          if(castle.q&&!B[3]&&!B[2]&&!B[1]&&B[0]==='r'&&!attacked(4,'w')&&!attacked(3,'w')&&!attacked(2,'w'))add(2,'Q');
+        }
+      }
+    }else{
+      for(const[dr,dc]of(t==='b'?DIAG:t==='r'?ORTH:ALL)){
+        let rr=r+dr,cc=c+dc;
+        while(rr>=0&&rr<8&&cc>=0&&cc<8){const to=rr*8+cc;if(!B[to])add(to);else{if(sideOf(B[to])===op)add(to);break;}rr+=dr;cc+=dc;}
+      }
+    }
+  }
+  return mv;
+}
+function make(m){
+  undoStack.push({m:m,castle:{K:castle.K,Q:castle.Q,k:castle.k,q:castle.q},ep:ep,half:half});
+  const me=turn;
+  B[m.t]=m.pr||m.p;B[m.f]='';
+  if(m.fl==='e')B[m.t+(me==='w'?8:-8)]='';
+  if(m.fl==='K'){if(me==='w'){B[61]='R';B[63]='';}else{B[5]='r';B[7]='';}}
+  if(m.fl==='Q'){if(me==='w'){B[59]='R';B[56]='';}else{B[3]='r';B[0]='';}}
+  if(m.p==='K'){castle.K=0;castle.Q=0;}
+  if(m.p==='k'){castle.k=0;castle.q=0;}
+  if(m.f===63||m.t===63)castle.K=0;if(m.f===56||m.t===56)castle.Q=0;
+  if(m.f===7||m.t===7)castle.k=0;if(m.f===0||m.t===0)castle.q=0;
+  ep=m.fl==='d'?(m.f+m.t)/2:-1;
+  half=(m.p==='P'||m.p==='p'||m.x)?0:half+1;
+  turn=other(me);
+}
+function unmake(){
+  const u=undoStack.pop(),m=u.m;
+  turn=other(turn);const me=turn;
+  B[m.f]=m.p;B[m.t]=m.x;
+  if(m.fl==='e')B[m.t+(me==='w'?8:-8)]=me==='w'?'p':'P';
+  if(m.fl==='K'){if(me==='w'){B[63]='R';B[61]='';}else{B[7]='r';B[5]='';}}
+  if(m.fl==='Q'){if(me==='w'){B[56]='R';B[59]='';}else{B[0]='r';B[3]='';}}
+  castle=u.castle;ep=u.ep;half=u.half;
+  return m;
+}
+function legal(){const me=turn;return genMoves().filter(m=>{make(m);const ok=!inCheck(me);unmake();return ok;});}
+
+/* ----- Arviointi ----- */
+const VAL={p:100,n:320,b:330,r:500,q:900,k:0};
+const PST={
+p:[0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0],
+n:[-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50],
+b:[-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20],
+r:[0,0,0,0,0,0,0,0,5,10,10,10,10,10,10,5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,0,0,0,5,5,0,0,0],
+q:[-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20],
+k:[-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20],
+ke:[-50,-40,-30,-20,-20,-30,-40,-50,-30,-20,-10,0,0,-10,-20,-30,-30,-10,20,30,30,20,-10,-30,-30,-10,30,40,40,30,-10,-30,-30,-10,30,40,40,30,-10,-30,-30,-10,20,30,30,20,-10,-30,-30,-30,0,0,0,0,-30,-30,-50,-30,-30,-30,-30,-30,-30,-50]
+};
+function evaluate(){
+  let s=0,heavy=0;
+  for(let i=0;i<64;i++){const p=B[i];if(p&&p!=='P'&&p!=='p'&&p!=='K'&&p!=='k')heavy+=VAL[p.toLowerCase()];}
+  const end=heavy<=1700;
+  for(let i=0;i<64;i++){
+    const p=B[i];if(!p)continue;
+    const t=p.toLowerCase(),w=isW(p),idx=w?i:((7-(i>>3))*8+(i&7));
+    const v=VAL[t]+(t==='k'&&end?PST.ke:PST[t])[idx];
+    s+=w?v:-v;
+  }
+  return turn==='w'?s:-s;
+}
+
+/* ----- Haku ----- */
+const MATE=100000;
+function order(ms){
+  for(let i=ms.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ms[i],ms[j]]=[ms[j],ms[i]];}
+  for(const m of ms)m.s=(m.x?10*VAL[m.x.toLowerCase()]-VAL[m.p.toLowerCase()]/10+1000:0)+(m.pr?VAL[m.pr.toLowerCase()]:0);
+  ms.sort((a,b)=>b.s-a.s);
+}
+function quies(a,b,d){
+  const stand=evaluate();
+  if(stand>=b)return b;if(stand>a)a=stand;if(d<=0)return a;
+  const ms=genMoves().filter(m=>m.x||m.fl==='e'||m.pr);order(ms);
+  const me=turn;
+  for(const m of ms){make(m);if(inCheck(me)){unmake();continue;}const sc=-quies(-b,-a,d-1);unmake();
+    if(sc>=b)return b;if(sc>a)a=sc;}
+  return a;
+}
+function negamax(depth,a,b,ply){
+  if(half>=100)return 0;
+  if(depth<=0)return quies(a,b,6);
+  const ms=genMoves();order(ms);const me=turn;let any=false;
+  for(const m of ms){make(m);if(inCheck(me)){unmake();continue;}any=true;
+    const sc=-negamax(depth-1,-b,-a,ply+1);unmake();
+    if(sc>=b)return b;if(sc>a)a=sc;}
+  if(!any)return inCheck(me)?-MATE+ply:0;
+  return a;
+}
+function bestMove(level){
+  const ms=legal();order(ms);
+  if(level===1){
+    if(Math.random()<0.3)return ms[Math.floor(Math.random()*ms.length)];
+    let best=null,bs=-Infinity;
+    for(const m of ms){make(m);const sc=-evaluate()+Math.random()*180;unmake();if(sc>bs){bs=sc;best=m;}}
+    return best;
+  }
+  const depth=level===2?2:4;
+  let best=ms[0],a=-Infinity;
+  for(const m of ms){make(m);const sc=-negamax(depth-1,-Infinity,-a,1);unmake();if(sc>a){a=sc;best=m;}}
+  return best;
+}
+function insufficient(){
+  const rest=B.filter(p=>p&&p!=='K'&&p!=='k');
+  return rest.length===0||(rest.length===1&&'nNbB'.includes(rest[0]));
+}
+
+/* ===================== Käyttöliittymä ===================== */
+if(typeof document!=='undefined'){
+const GLYPH={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const VS='︎';
+const boardEl=document.getElementById('board'),levelEl=document.getElementById('level'),colorEl=document.getElementById('color');
+let human=store('chessColor')||'w',level=+(store('chessLevel')||2),sel=-1,lastMove=null,over=false,thinking=false,statusKey='',pendingPromo=null;
+levelEl.value=level;colorEl.value=human;
+
+function applyLang(){
+  const L=T[lang];document.documentElement.lang=lang;document.title=L.title;
+  document.getElementById('title').textContent=L.title;document.getElementById('back').textContent=L.back;
+  document.getElementById('lvlLbl').textContent=L.level;document.getElementById('colLbl').textContent=L.color;
+  levelEl.options[0].text=L.l1;levelEl.options[1].text=L.l2;levelEl.options[2].text=L.l3;
+  colorEl.options[0].text=L.w;colorEl.options[1].text=L.b;
+  document.getElementById('newBtn').textContent=L.newg;document.getElementById('undoBtn').textContent=L.undo;
+  document.getElementById('promoTxt').textContent=L.promo;
+  document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));
+  showStatus();
+}
+function showStatus(){
+  const L=T[lang];let s=statusKey.split('+').map(k=>L[k]||'').join(' ');
+  document.getElementById('status').textContent=s;
+}
+function render(){
+  const targets=sel>=0?legal().filter(m=>m.f===sel):[];
+  const chkSq=inCheck(turn)?B.indexOf(turn==='w'?'K':'k'):-1;
+  boardEl.innerHTML='';
+  for(let i=0;i<64;i++){
+    const sq=human==='w'?i:63-i,r=sq>>3,c=sq&7,p=B[sq];
+    const d=document.createElement('div');
+    d.className='sq '+((r+c)%2?'d':'l');
+    if(lastMove&&(sq===lastMove.f||sq===lastMove.t))d.classList.add('last');
+    if(sq===sel)d.classList.add('sel');
+    if(sq===chkSq)d.classList.add('chk');
+    const tg=targets.find(m=>m.t===sq);
+    if(tg)d.classList.add(tg.x||tg.fl==='e'?'cap':'dot');
+    if(p){const s=document.createElement('span');s.className=isW(p)?'pw':'pb';s.textContent=GLYPH[p.toLowerCase()]+VS;d.appendChild(s);}
+    if(i%8===0){const co=document.createElement('span');co.className='co cr';co.textContent=8-r;d.appendChild(co);}
+    if(i>=56){const co=document.createElement('span');co.className='co cf';co.textContent='abcdefgh'[c];d.appendChild(co);}
+    d.onclick=()=>tap(sq);
+    boardEl.appendChild(d);
+  }
+}
+function checkEnd(){
+  const ms=legal(),ck=inCheck(turn);
+  over=true;
+  if(!ms.length)statusKey=ck?(turn===human?'lose':'win'):'stale';
+  else if(half>=100)statusKey='d50';
+  else if(keys.filter(k=>k===keys[keys.length-1]).length>=3)statusKey='drep';
+  else if(insufficient())statusKey='dmat';
+  else{over=false;statusKey=turn===human?(ck?'check+your':'your'):'think';}
+  showStatus();
+}
+function play(m){
+  make(m);keys.push(posKey());lastMove=m;sel=-1;
+  render();checkEnd();
+  if(!over&&turn!==human)computer();
+}
+function computer(){
+  thinking=true;statusKey='think';showStatus();
+  setTimeout(()=>{const m=bestMove(level);thinking=false;if(m)play(m);},60);
+}
+function tap(sq){
+  if(over||thinking||turn!==human)return;
+  if(sel>=0){
+    const ms=legal().filter(m=>m.f===sel&&m.t===sq);
+    if(ms.length===1){play(ms[0]);return;}
+    if(ms.length>1){askPromo(ms);return;}
+  }
+  sel=(B[sq]&&sideOf(B[sq])===human&&sq!==sel)?sq:-1;
+  render();
+}
+function askPromo(ms){
+  const box=document.getElementById('promoBtns');box.innerHTML='';
+  for(const t of 'qrnb'){
+    const m=ms.find(x=>x.pr.toLowerCase()===t);
+    const b=document.createElement('button');
+    b.innerHTML='<span class="'+(human==='w'?'pw':'pb')+'">'+GLYPH[t]+VS+'</span>';
+    b.onclick=()=>{document.getElementById('promo').classList.remove('on');play(m);};
+    box.appendChild(b);
+  }
+  document.getElementById('promo').classList.add('on');
+}
+function newGame(){
+  loadFEN('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0');
+  sel=-1;lastMove=null;over=false;render();checkEnd();
+  if(turn!==human)computer();
+}
+document.getElementById('newBtn').onclick=()=>{if(!thinking)newGame();};
+document.getElementById('undoBtn').onclick=()=>{
+  if(thinking)return;
+  const myMoves=undoStack.filter((u,i)=>(human==='w')===(i%2===0)).length;
+  if(!myMoves)return;
+  unmake();keys.pop();
+  while(turn!==human&&undoStack.length){unmake();keys.pop();}
+  lastMove=undoStack.length?undoStack[undoStack.length-1].m:null;
+  sel=-1;over=false;render();checkEnd();
+};
+levelEl.onchange=()=>{level=+levelEl.value;store('chessLevel',level);};
+colorEl.onchange=()=>{if(thinking){colorEl.value=human;return;}human=colorEl.value;store('chessColor',human);newGame();};
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;store('kieli',lang);applyLang();});
+applyLang();newGame();
+}
+</script>
+</body>
+</html>
