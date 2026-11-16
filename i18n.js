@@ -34,6 +34,23 @@
     "Katso tulos": ["Se resultatet", "See result"],
     "Oikein!": ["Rätt!", "Correct!"],
 
+    // Arkineuvoja
+    "Arkineuvoja": ["Vardagsrådgivaren", "Everyday adviser"],
+    "Kerro, mikä tympii. Saat suoran neuvon ja yhden asian, jonka voit tehdä heti.": ["Berätta vad som tynger dig. Du får ett rakt råd och en sak du kan göra genast.", "Tell it what's getting you down. You get a straight piece of advice and one thing you can do right away."],
+    "Mikä on hätänä?": ["Vad är det som skaver?", "What's the trouble?"],
+    "Esimerkiksi: vanttuut ovat jäässä, kissa oksensi karvapallon ja alkaa tympiä.": ["Till exempel: vantarna är frusna, katten spydde upp en hårboll och allt börjar kännas trist.", "For example: my mittens are frozen, the cat threw up a hairball and I'm getting fed up."],
+    "Kysy neuvoa": ["Be om råd", "Ask for advice"],
+    "Mitä teen nyt, kun vanttuut ovat jäässä, kissa oksensi karvapalloja ja alkaa tympiä?": ["Vad gör jag nu när vantarna är frusna, katten spydde upp hårbollar och allt börjar kännas trist?", "What do I do now that my mittens are frozen, the cat threw up hairballs and I'm getting fed up?"],
+    "Esimerkkivastaus": ["Exempelsvar", "Example answer"],
+    "Kolme pientä harmia tuntuu yhdeltä isolta, kun niitä katsoo kerralla. Älä katso kerralla. Siivoa ensin karvapallo, koska se vie kaksi minuuttia ja kissakin arvostaa. Nosta sitten vanttuut patterin viereen sulamaan. Kun kaksi asiaa kolmesta on hoidettu, huomaat, että tympiminen oli enimmäkseen sitä, ettei mikään ollut vielä hoidettu. Aloita karvapallosta.": ["Tre små förtretligheter känns som en stor när man ser på dem samtidigt. Gör inte det. Städa först upp hårbollen, det tar två minuter och katten uppskattar det också. Lägg sedan vantarna vid elementet för att tina. När två saker av tre är avklarade märker du att ledan mest handlade om att ingenting ännu var gjort. Börja med hårbollen.", "Three small annoyances feel like one big one when you look at them all at once. So don't. Clean up the hairball first: it takes two minutes and the cat will appreciate it too. Then put the mittens by the radiator to thaw. Once two things out of three are done, you'll notice the gloom was mostly about nothing being done yet. Start with the hairball."],
+    "Neuvoja": ["Rådgivaren", "Adviser"],
+    "Vastaaja on tekoäly, ei oikea psykologi. Neuvot ovat arkeen, eivät hoidoksi.": ["Den som svarar är en AI, ingen riktig psykolog. Råden är för vardagen, inte för vård.", "The adviser is an AI, not a real psychologist. The advice is for everyday life, not treatment."],
+    "Jos olo on oikeasti paha, soita MIELI ry:n kriisipuhelimeen tai hätätilanteessa numeroon 112.": ["Om du verkligen mår dåligt, ring MIELI rf:s kristelefon eller 112 i en nödsituation.", "If you are really struggling, call the MIELI crisis helpline, or 112 in an emergency."],
+    "Kysymyksesi lähetetään tekoälylle vastausta varten. Älä kirjoita siihen nimiä tai muita henkilötietoja.": ["Din fråga skickas till en AI för att få ett svar. Skriv inga namn eller andra personuppgifter i den.", "Your question is sent to an AI to get an answer. Don't put names or other personal details in it."],
+    "Kirjoita ensin, mikä on hätänä.": ["Skriv först vad som skaver.", "First write what the trouble is."],
+    "Neuvoja miettii…": ["Rådgivaren funderar…", "The adviser is thinking…"],
+    "Vastausta ei saatu. Yritä hetken päästä uudelleen.": ["Inget svar kom. Försök igen om en stund.", "No answer came. Try again in a moment."],
+
     // Pelit-sivu
     "Valitse peli. Tulokset ja top-listat tallentuvat omaan selaimeesi.": ["Välj ett spel. Resultat och topplistor sparas i din egen webbläsare.", "Pick a game. Results and top lists are saved in your own browser."],
     "Laske minkä tahansa päivämäärän viikonpäivä päässä John Horton Conwayn menetelmällä. Kolme vaikeustasoa ja ohjeet.": ["Räkna ut veckodagen för vilket datum som helst i huvudet med John Horton Conways metod. Tre svårighetsnivåer och instruktioner.", "Work out the weekday of any date in your head with John Horton Conway's method. Three difficulty levels and instructions."],

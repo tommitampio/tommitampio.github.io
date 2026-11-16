@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arkineuvoja – Tommi Tampio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: sama kapea palsta kuin muilla sivuilla. Kysymys ylhäällä, vastaukset alla kuin kirjeenvaihto. */
+:root {
+  --bg: #F2F5F7;
+  --fg: #14202A;
+  --muted: #566672;
+  --rule: #CBD5DC;
+  --accent: #1F5C8B;
+  --surface: #FFFFFF;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B; --fg: #E6ECF0; --muted: #93A3AE; --rule: #26343E; --accent: #78B6E4; --surface: #16212A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B; --fg: #E6ECF0; --muted: #93A3AE; --rule: #26343E; --accent: #78B6E4; --surface: #16212A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible, button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 8vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0.75rem 0 0.5rem;
+  text-wrap: balance;
+}
+.lead { font-size: 1.05rem; max-width: 34rem; margin: 0; color: var(--muted); }
+form { display: flex; flex-direction: column; gap: 0.7rem; }
+label { font-weight: 500; }
+textarea {
+  width: 100%; min-height: 7rem; resize: vertical;
+  font: inherit; color: inherit; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 10px; padding: 0.8rem;
+}
+button {
+  font: inherit; font-weight: 500; cursor: pointer; align-self: flex-start;
+  background: var(--accent); color: var(--bg);
+  border: 0; border-radius: 999px; padding: 0.6rem 1.3rem; min-height: 2.75rem;
+}
+button:disabled { opacity: 0.55; cursor: default; }
+#viesti { color: var(--muted); margin: 0; min-height: 1.65em; font-size: 0.95rem; }
+#ketju { display: flex; flex-direction: column; gap: 0.9rem; }
+.kysymys {
+  align-self: flex-end; max-width: 88%;
+  background: var(--accent); color: var(--bg);
+  border-radius: 14px 14px 4px 14px; padding: 0.6rem 0.9rem;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.vastaus {
+  max-width: 94%; background: var(--surface);
+  border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+  border-radius: 4px 14px 14px 14px; padding: 0.75rem 1rem;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.merkki {
+  display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem;
+}
+.huomio { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1rem; }
+.huomio p { margin: 0 0 0.4rem; }
+footer { font-size: 0.85rem; color: var(--muted); margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <nav class="top-nav"><a href="index.html">‹ Etusivu</a></nav>
+    <h1>Arkineuvoja</h1>
+    <p class="lead">Kerro, mikä tympii. Saat suoran neuvon ja yhden asian, jonka voit tehdä heti.</p>
+  </header>
+
+  <form id="lomake">
+    <label for="kysymys">Mikä on hätänä?</label>
+    <textarea id="kysymys" maxlength="800" placeholder="Esimerkiksi: vanttuut ovat jäässä, kissa oksensi karvapallon ja alkaa tympiä."></textarea>
+    <button id="nappi" type="submit">Kysy neuvoa</button>
+    <p id="viesti" role="status" aria-live="polite"></p>
+  </form>
+
+  <section id="ketju" aria-label="Kysymykset ja vastaukset">
+    <div class="kysymys" data-esimerkki>Mitä teen nyt, kun vanttuut ovat jäässä, kissa oksensi karvapalloja ja alkaa tympiä?</div>
+    <div class="vastaus" data-esimerkki><span class="merkki">Esimerkkivastaus</span><span>Kolme pientä harmia tuntuu yhdeltä isolta, kun niitä katsoo kerralla. Älä katso kerralla. Siivoa ensin karvapallo, koska se vie kaksi minuuttia ja kissakin arvostaa. Nosta sitten vanttuut patterin viereen sulamaan. Kun kaksi asiaa kolmesta on hoidettu, huomaat, että tympiminen oli enimmäkseen sitä, ettei mikään ollut vielä hoidettu. Aloita karvapallosta.</span></div>
+  </section>
+
+  <div class="huomio">
+    <p>Vastaaja on tekoäly, ei oikea psykologi. Neuvot ovat arkeen, eivät hoidoksi.</p>
+    <p>Jos olo on oikeasti paha, soita MIELI ry:n kriisipuhelimeen tai hätätilanteessa numeroon 112.</p>
+    <p>Kysymyksesi lähetetään tekoälylle vastausta varten. Älä kirjoita siihen nimiä tai muita henkilötietoja.</p>
+  </div>
+
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+</main>
+<script>try{document.getElementById("vuosi").textContent=new Date().getFullYear()}catch(e){}</script>
+<script>
+(function () {
+  var PALVELIN = "https://arkineuvoja.tommitampio.workers.dev/";
+  var lomake = document.getElementById("lomake");
+  var kentta = document.getElementById("kysymys");
+  var nappi = document.getElementById("nappi");
+  var viesti = document.getElementById("viesti");
+  var ketju = document.getElementById("ketju");
+  var historia = [];
+  var kesken = false;
+
+  function lisaa(luokka, teksti, merkki) {
+    var d = document.createElement("div");
+    d.className = luokka;
+    if (merkki) {
+      var m = document.createElement("span");
+      m.className = "merkki"; m.textContent = merkki;
+      d.appendChild(m);
+    }
+    var t = document.createElement("span");
+    t.setAttribute("data-noi18n", "");
+    t.textContent = teksti;
+    d.appendChild(t);
+    ketju.appendChild(d);
+    return d;
+  }
+
+  lomake.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var kysymys = kentta.value.trim();
+    if (kesken) return;
+    if (!kysymys) { viesti.textContent = "Kirjoita ensin, mikä on hätänä."; kentta.focus(); return; }
+
+    kesken = true; nappi.disabled = true;
+    viesti.textContent = "Neuvoja miettii…";
+    var esim = ketju.querySelectorAll("[data-esimerkki]");
+    for (var i = 0; i < esim.length; i++) esim[i].remove();
+    var kupla = lisaa("kysymys", kysymys);
+    var viestit = historia.concat([{ role: "user", content: kysymys }]).slice(-8);
+
+    fetch(PALVELIN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ viestit: viestit })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+    }).then(function (t) {
+      if (!t.ok || !t.d || !t.d.vastaus) throw new Error("ei vastausta");
+      var v = lisaa("vastaus", t.d.vastaus, "Neuvoja");
+      historia.push({ role: "user", content: kysymys }, { role: "assistant", content: t.d.vastaus });
+      kentta.value = "";
+      viesti.textContent = "";
+      try { v.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e2) {}
+    }).catch(function () {
+      kupla.remove();
+      viesti.textContent = "Vastausta ei saatu. Yritä hetken päästä uudelleen.";
+    }).then(function () {
+      kesken = false; nappi.disabled = false;
+    });
+  });
+})();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>
