@@ -206,6 +206,11 @@ details summary { cursor: pointer; }
 .pt td { text-align: right; } .pt td:first-child, .pt th:first-child { text-align: left; }
 .empty, .help { color: var(--muted); font-size: 0.9rem; }
 .help p { margin: 0.5rem 0 0; }
+h1.pg { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.sk { display: flex; justify-content: center; }
+.sk input { font: inherit; text-align: center; letter-spacing: .3em; text-transform: uppercase; width: 8rem; padding: .4rem .5rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--fg); }
+.sk.no input { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 .lines { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 0.6rem; }
 .lines i { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
 .lines u { aspect-ratio: 1; background: var(--rule); border-radius: 1px; }
@@ -217,7 +222,8 @@ details summary { cursor: pointer; }
 <main class="wrap">
   <header>
     <nav class="top-nav"><a href="pelit.html">‹ Pelit</a><a href="index.html">Etusivu</a></nav>
-    <h1 class="pg">Pisteholvi</h1>
+    <h1 class="pg" id="otsikko">Pisteholvi</h1>
+    <form class="sk" id="sk" hidden><input id="skc" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Koodi"></form>
     <p class="soft">Pyöritä kiekkoja ja kerää pisteitä. Kuusi kolikkoa avaa holvin. Pelissä ei ole rahaa, vain pisteitä.</p>
   </header>
   <div class="ph">
@@ -265,21 +271,24 @@ var HOLVI=(function(){
   var LINES=[[1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],[0,0,1,2,2],[2,2,1,0,0],[1,0,0,0,1],[1,2,2,2,1],[1,0,1,2,1]];
   var CV=[1,2,3,5,10,25], CW=[40,30,15,10,4,1];
   var RESPIN_P=0.035, NEAR_P=0.06, DBL_P=0.15, FULL_BONUS=250, NEED=6;
+  var E=0;
+  function ease(l){E=Math.max(0,Math.min(5,l|0))}
+  function wt(mid){var w=(mid?WMID:W).slice();w[COIN]*=1+0.3*E;return w}
   function pick(w,r){var t=0,i;for(i=0;i<w.length;i++)t+=w[i];var x=r()*t;for(i=0;i<w.length;i++){x-=w[i];if(x<0)return i}return w.length-1}
   function coinVal(r){return CV[pick(CW,r)]}
-  function spin(r){var g=[],c,y;for(c=0;c<COLS;c++){g[c]=[];for(y=0;y<ROWS;y++){var s=pick(c>0&&c<4?WMID:W,r);g[c][y]=s===COIN?{s:COIN,v:coinVal(r)}:{s:s}}}return g}
+  function spin(r){var g=[],c,y;for(c=0;c<COLS;c++){g[c]=[];for(y=0;y<ROWS;y++){var s=pick(wt(c>0&&c<4),r);g[c][y]=s===COIN?{s:COIN,v:coinVal(r)}:{s:s}}}return g}
   function wins(g){var out=[],i,c;for(i=0;i<LINES.length;i++){var L=LINES[i],base=-1,n=0;
     for(c=0;c<COLS;c++){var s=g[c][L[c]].s;if(s===COIN)break;if(s===WILD){n++;continue}if(base<0){base=s;n++}else if(s===base)n++;else break}
-    if(base>=0&&n>=3)out.push({line:i,sym:base,n:n,mult:PAY[base][n-3]})}
+    if(base>=0&&n>=3)out.push({line:i,sym:base,n:n,mult:PAY[base][n-3]*(1+0.2*E)})}
     return out}
   function coins(g){var k=0,c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s===COIN)k++;return k}
   // one respin step: returns list of new coin cells
-  function respin(g,r,m){var add=[],c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s!==COIN&&r()<RESPIN_P){g[c][y]={s:COIN,v:coinVal(r)*(m||1),m:m||1};add.push([c,y])}return add}
+  function respin(g,r,m){var add=[],c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s!==COIN&&r()<RESPIN_P*(1+0.4*E)){g[c][y]={s:COIN,v:coinVal(r)*(m||1),m:m||1};add.push([c,y])}return add}
   // near miss: exactly NEED-1 coins -> the other cells spin once more
-  function near(g,r){var add=[],c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s!==COIN){if(r()<NEAR_P){g[c][y]={s:COIN,v:coinVal(r)};add.push([c,y])}else{var s;do{s=pick(c>0&&c<4?WMID:W,r)}while(s===COIN);g[c][y]={s:s}}}return add}
+  function near(g,r){var add=[],c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s!==COIN){if(r()<NEAR_P*(1+0.5*E)){g[c][y]={s:COIN,v:coinVal(r)};add.push([c,y])}else{var s;do{s=pick(wt(c>0&&c<4),r)}while(s===COIN);g[c][y]={s:s}}}return add}
   function isDouble(r){return r()<DBL_P}
   function coinSum(g){var t=0,c,y;for(c=0;c<COLS;c++)for(y=0;y<ROWS;y++)if(g[c][y].s===COIN)t+=g[c][y].v;return t}
-  return {COLS:COLS,ROWS:ROWS,WILD:WILD,COIN:COIN,LINES:LINES,PAY:PAY,NEED:NEED,FULL_BONUS:FULL_BONUS,spin:spin,wins:wins,coins:coins,respin:respin,near:near,isDouble:isDouble,coinSum:coinSum};
+  return {COLS:COLS,ROWS:ROWS,WILD:WILD,COIN:COIN,LINES:LINES,PAY:PAY,NEED:NEED,FULL_BONUS:FULL_BONUS,spin:spin,wins:wins,coins:coins,respin:respin,near:near,isDouble:isDouble,coinSum:coinSum,ease:ease,level:function(){return E}};
 })();
 if(typeof module!=="undefined")module.exports=HOLVI;
 
@@ -399,7 +408,7 @@ function closeDbl(){$("dbl").hidden=true;$("ctl").hidden=false}
 async function guess(side){
   if(busy||!pending)return;busy=true;
   [].forEach.call($("dbl").querySelectorAll("button"),function(b){b.disabled=true});
-  saldo-=pending;var f=$("flip"),res=Math.random()<.5?0:1;
+  saldo-=pending;var f=$("flip"),res=Math.random()<.5+.1*H.level()?side:1-side;
   for(var i=0;i<8;i++){f.textContent=i%2?"👑":"🦅";await sleep(90)}
   f.textContent=res?"🦅":"👑";
   var name=res?"Klaava":"Kruuna";
@@ -426,6 +435,28 @@ $("entry").onsubmit=function(e){
   t.sort(function(a,b){return b.s-a.s||a.id-b.id});ls("ph_top",JSON.stringify(t.slice(0,10)));
   $("entry").hidden=true;$("entry").dataset.s="";drawTop();
 };
+// salainen koodi: 5 nopeaa napautusta otsikkoon avaa kentän
+(function(){
+  var SALT="2e54fda21fe4ba38",HASH="f7ab4e48e75ef7f13b501c44b74e840858469821ce0519ecc1ed886e29bb621d";
+  var lv=parseInt(ls("ph_k"),10);if(lv>=1&&lv<=5)H.ease(lv);
+  var taps=[];
+  $("otsikko").addEventListener("click",function(){
+    var t=Date.now();taps=taps.filter(function(x){return t-x<1500});taps.push(t);
+    if(taps.length>=5){taps=[];var f=$("sk");f.hidden=!f.hidden;if(!f.hidden){$("skc").value="";$("skc").focus()}}
+  });
+  async function check(k){
+    try{var e=new TextEncoder(),key=await crypto.subtle.importKey("raw",e.encode(k),"PBKDF2",false,["deriveBits"]);
+      var b=await crypto.subtle.deriveBits({name:"PBKDF2",salt:e.encode(SALT),iterations:150000,hash:"SHA-256"},key,256);
+      return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")===HASH}catch(err){return false}
+  }
+  $("sk").onsubmit=async function(ev){
+    ev.preventDefault();var f=$("sk"),v=$("skc").value.trim().toUpperCase(),l=+v.charAt(4);
+    if(v.length===5&&/^[0-5]$/.test(v.charAt(4))&&await check(v.slice(0,4))){
+      H.ease(l);ls("ph_k",String(l));$("skc").value=l?"✓ "+l:"✓ 0";$("skc").blur();
+      setTimeout(function(){f.hidden=true},900);
+    }else{f.classList.remove("no");void f.offsetWidth;f.classList.add("no");$("skc").value=""}
+  };
+})();
 $("go").onclick=spin;
 $("dblBtn").onclick=openDbl;
 $("take").onclick=take;
