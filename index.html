@@ -233,6 +233,14 @@ a.go:hover { border-color: var(--accent); }
 .nv-fb { display: flex; flex-direction: column; gap: 0.4rem; }
 @media (max-width: 34rem) { .nv { padding: 1rem 0.75rem; } }
 
+/* Päivän oivallus */
+.oiv { --h: 250; margin: 0; max-width: 34rem; background: color-mix(in oklch, oklch(0.7 0.13 var(--h)) 24%, var(--bg)); border-radius: 4px 16px 16px 16px; padding: 0 1.15rem 1rem; }
+.oiv-top { padding: 0.7rem 0 0.55rem; border-bottom: 1px solid color-mix(in oklch, oklch(0.6 0.13 var(--h)) 55%, transparent); font: 500 0.78rem var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.oiv h3 { font: 700 1.45rem/1.12 var(--font-display); letter-spacing: -0.02em; margin: 1rem 0 0.6rem; text-wrap: balance; }
+.oiv p { margin: 0; }
+.oiv .oiv-src { margin-top: 0.85rem; font-size: 0.88rem; color: var(--muted); }
+.oiv-more { margin-top: 0.9rem !important; }
+
 .quote { margin: 0; max-width: 34rem; }
 .quote blockquote { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 1.3rem; line-height: 1.4; text-wrap: balance; }
 .quote .q-day { margin: 0 0 0.5rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
@@ -360,6 +368,14 @@ header .meta { padding-right: 4.75rem; }
       <ul class="books" id="kirjat"></ul>
       <button class="more" id="lisaa" type="button"></button>
       <p class="soft" style="font-size:0.8rem;margin-top:1.25rem;font-variant-numeric:tabular-nums">Tähän mennessä noin 62 000 sivua.</p>
+    </div>
+  </section>
+
+  <section id="oivallus">
+    <h2>Päivän oivallus</h2>
+    <div>
+      <article class="oiv" id="oivallus-box" data-noi18n></article>
+      <p class="oiv-more"><a class="go" id="oivallus-linkki" href="oivallukset.html">Kaikki kortit →</a></p>
     </div>
   </section>
 
@@ -996,6 +1012,8 @@ header .meta { padding-right: 4.75rem; }
     "Ensimmäinen projekti tulossa.": ["Första projektet är på väg.", "First project coming soon."],
     "Yhteys": ["Kontakt", "Contact"],
     "Päivän sitaatti": ["Dagens citat", "Quote of the day"],
+    "Päivän oivallus": ["Dagens insikt", "Insight of the day"],
+    "Kaikki kortit →": ["Alla kort →", "All cards →"],
     "Sähköposti: tommitampio [@] gmail.com": ["E-post: tommitampio [@] gmail.com", "Email: tommitampio [@] gmail.com"],
 
     // Pelit
@@ -1377,6 +1395,39 @@ header .meta { padding-right: 4.75rem; }
   render();
   document.addEventListener("kielivaihto", render);
   setInterval(function () { var t = today(); if (t.y + "-" + t.m + "-" + t.d !== shown) render(); }, 60000);
+})();
+</script>
+<script src="oivallukset.js"></script>
+<script>
+(function () {
+  // Päivän oivallus: yksi kortti päivässä (Helsingin aikaa), kaikki kortit käydään läpi ennen kuin kierros alkaa alusta.
+  var DATA = window.OIVALLUKSET, box = document.getElementById("oivallus-box"), link = document.getElementById("oivallus-linkki");
+  if (!DATA || !box) return;
+  var C = DATA.kortit, shown = "";
+  function dayNo() {
+    var d = new Date(), y, m, dd;
+    try {
+      var p = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Helsinki", year: "numeric", month: "2-digit", day: "2-digit" }).format(d).split("-");
+      y = +p[0]; m = +p[1]; dd = +p[2];
+    } catch (e) {}
+    if (!y || !m || !dd) { y = d.getFullYear(); m = d.getMonth() + 1; dd = d.getDate(); }
+    return Math.floor(Date.UTC(y, m - 1, dd) / 864e5);
+  }
+  function step() { var s = 7; while (gcd(s, C.length) !== 1) s++; return s; }
+  function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function render() {
+    var lang = document.documentElement.lang, li = lang === "sv" ? 1 : lang === "en" ? 2 : 0;
+    var n = dayNo(), i = (n * step()) % C.length, c = C[i], k = null;
+    DATA.kokoelmat.forEach(function (x) { if (x.id === c.k) k = x; });
+    box.style.setProperty("--h", k ? k.h : 250);
+    box.innerHTML = '<div class="oiv-top">' + esc(k ? k.n[li] : "") + "</div><h3>" + esc(c.o[li]) + "</h3><p>" + esc(c.t[li]) + '</p><p class="oiv-src">' + esc(c.l[li]) + "</p>";
+    if (link) link.setAttribute("href", "oivallukset.html#kortti-" + (i + 1));
+    shown = String(n);
+  }
+  render();
+  document.addEventListener("kielivaihto", render);
+  setInterval(function () { if (String(dayNo()) !== shown) render(); }, 60000);
 })();
 </script>
 </body>

@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Oivalluskortit – Tommi Tampio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: sama kapea palsta kuin muilla sivuilla. Yksi iso kortti kerrallaan, kortti saa kokoelmansa värin. */
+:root {
+  --bg: #F2F5F7;
+  --fg: #14202A;
+  --muted: #566672;
+  --rule: #CBD5DC;
+  --accent: #1F5C8B;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B;
+    --fg: #E6ECF0;
+    --muted: #93A3AE;
+    --rule: #26343E;
+    --accent: #78B6E4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B;
+  --fg: #E6ECF0;
+  --muted: #93A3AE;
+  --rule: #26343E;
+  --accent: #78B6E4;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 8vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0.75rem 0 0.5rem;
+  text-wrap: balance;
+}
+.lead { font-size: 1.05rem; max-width: 34rem; margin: 0; color: var(--muted); }
+#app { display: flex; flex-direction: column; gap: 1.1rem; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.chip {
+  font-size: 0.9rem; background: transparent; color: var(--fg);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem;
+  display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.25rem;
+}
+.chip i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: oklch(0.68 0.14 var(--h)); }
+.chip span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+.chip[aria-pressed="true"] span { color: inherit; opacity: 0.75; }
+
+.card {
+  --h: 250;
+  background: color-mix(in oklch, oklch(0.7 0.13 var(--h)) 24%, var(--bg));
+  border-radius: 4px 18px 18px 18px;
+  padding: 0 1.35rem 1.2rem;
+  min-height: 22rem;
+  display: flex; flex-direction: column;
+  touch-action: pan-y;
+  user-select: none; -webkit-user-select: none;
+}
+.card.back { transition: transform 0.22s ease-out; }
+.card.in-r { animation: in-r 0.24s ease-out; }
+.card.in-l { animation: in-l 0.24s ease-out; }
+@keyframes in-r { from { transform: translateX(32px); opacity: 0.5; } }
+@keyframes in-l { from { transform: translateX(-32px); opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .card.back { transition: none; }
+  .card.in-r, .card.in-l { animation: none; }
+}
+.card-top {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.85rem 0 0.7rem;
+  border-bottom: 1px solid color-mix(in oklch, oklch(0.6 0.13 var(--h)) 55%, transparent);
+  font-family: var(--font-display); font-weight: 500; font-size: 0.8rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.card-top .num { font-variant-numeric: tabular-nums; color: var(--muted); }
+.card-body { flex: 1; padding: 1.4rem 0 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.card h2 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.6rem, 7vw, 2.15rem); line-height: 1.08; letter-spacing: -0.02em;
+  margin: 0; text-wrap: balance;
+}
+.card p { margin: 0; font-size: 1.08rem; line-height: 1.55; max-width: 34rem; }
+.card-src {
+  padding-top: 0.7rem;
+  border-top: 1px solid color-mix(in oklch, oklch(0.6 0.13 var(--h)) 55%, transparent);
+  font-size: 0.88rem; line-height: 1.4;
+}
+.card-src b {
+  display: block; font-family: var(--font-display); font-weight: 500; font-size: 0.72rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.empty { border: 1px dashed var(--rule); border-radius: 4px 18px 18px 18px; padding: 2rem 1.35rem; min-height: 12rem; }
+.empty h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; margin: 0 0 0.4rem; }
+.empty p { margin: 0; color: var(--muted); }
+
+.ctrl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; }
+.btn {
+  font-size: clamp(0.8rem, 3.6vw, 0.95rem); font-weight: 500; background: transparent; color: var(--fg);
+  border: 1px solid var(--rule); border-radius: 8px; min-height: 3rem; padding: 0.4rem 0.25rem; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.save[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.shuffle { align-self: flex-start; background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 0.2em; font-size: 0.95rem; }
+footer { font-size: 0.85rem; color: var(--muted); margin-top: 1.5rem; }
+[hidden] { display: none !important; }
+@media (max-width: 34rem) { body { padding-block: 2.5rem 2rem; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <nav class="top-nav"><a href="index.html">‹ Etusivu</a></nav>
+    <div data-noi18n>
+      <h1 id="o-h1">Oivalluskortit</h1>
+      <p class="lead" id="o-lead">Yksi ajatus per kortti. Selaa pyyhkäisemällä tai napeilla. Tallennetut kortit pysyvät omassa selaimessasi.</p>
+    </div>
+  </header>
+
+  <div id="app" data-noi18n>
+    <div class="chips" id="o-chips"></div>
+
+    <article class="card" id="o-card" aria-live="polite">
+      <div class="card-top"><span id="o-coll"></span><span class="num" id="o-num"></span></div>
+      <div class="card-body">
+        <h2 id="o-title"></h2>
+        <p id="o-text"></p>
+      </div>
+      <div class="card-src"><b id="o-srclabel">Lähde</b><span id="o-src"></span></div>
+    </article>
+    <div class="empty" id="o-empty" hidden>
+      <h2 id="o-empty-h"></h2>
+      <p id="o-empty-p"></p>
+    </div>
+
+    <div class="ctrl">
+      <button class="btn" id="o-prev" type="button">← Edellinen</button>
+      <button class="btn save" id="o-save" type="button" aria-pressed="false">Tallenna</button>
+      <button class="btn" id="o-next" type="button">Seuraava →</button>
+    </div>
+    <button class="shuffle" id="o-shuffle" type="button">Sekoita pakka</button>
+  </div>
+
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+</main>
+<script>try{document.getElementById("vuosi").textContent=new Date().getFullYear()}catch(e){}</script>
+<script src="oivallukset.js"></script>
+<script>
+(function () {
+  var DATA = window.OIVALLUKSET;
+  if (!DATA) return;
+  var K = DATA.kokoelmat, C = DATA.kortit;
+  var LANGS = ["fi", "sv", "en"];
+  // [suomi, ruotsi, englanti]
+  var UI = {
+    h1: ["Oivalluskortit", "Insiktskort", "Insight cards"],
+    lead: ["Yksi ajatus per kortti. Selaa pyyhkäisemällä tai napeilla. Tallennetut kortit pysyvät omassa selaimessasi.",
+           "En tanke per kort. Bläddra genom att svepa eller med knapparna. Sparade kort stannar i din egen webbläsare.",
+           "One idea per card. Swipe or use the buttons. Saved cards stay in your own browser."],
+    all: ["Kaikki", "Alla", "All"],
+    saved: ["Tallennetut", "Sparade", "Saved"],
+    prev: ["← Edellinen", "← Föregående", "← Previous"],
+    next: ["Seuraava →", "Nästa →", "Next →"],
+    save: ["Tallenna", "Spara", "Save"],
+    isSaved: ["Tallennettu ✓", "Sparat ✓", "Saved ✓"],
+    shuffle: ["Sekoita pakka", "Blanda leken", "Shuffle the deck"],
+    src: ["Lähde", "Källa", "Source"],
+    emptyH: ["Ei vielä tallennettuja", "Inga sparade kort än", "Nothing saved yet"],
+    emptyP: ["Kun jokin kortti kolahtaa, paina sen alla Tallenna. Löydät sen sitten täältä.",
+             "När ett kort träffar rätt, tryck på Spara under det. Sedan hittar du det här.",
+             "When a card hits home, press Save below it. You will then find it here."]
+  };
+  var KEY = "oivalluskortit";
+  var $ = function (id) { return document.getElementById(id); };
+  var li = 0;
+  try { var s = LANGS.indexOf(localStorage.getItem("kieli")); if (s > 0) li = s; } catch (e) {}
+
+  var st = { f: "kaikki", order: C.map(function (_, i) { return i; }), pos: 0, saved: [] };
+  try {
+    var raw = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (raw) {
+      if (Array.isArray(raw.saved)) st.saved = raw.saved.filter(function (i) { return !!C[i]; });
+      if (Array.isArray(raw.order)) {
+        // Säilytä tuttu järjestys ja lisää mahdolliset uudet kortit loppuun
+        var seen = {}, ord = [];
+        raw.order.forEach(function (i) { if (C[i] && !seen[i]) { seen[i] = 1; ord.push(i); } });
+        C.forEach(function (_, i) { if (!seen[i]) ord.push(i); });
+        st.order = ord;
+      }
+      if (typeof raw.f === "string") st.f = raw.f;
+      if (typeof raw.pos === "number" && isFinite(raw.pos)) st.pos = Math.floor(raw.pos);
+    }
+  } catch (e) {}
+  function coll(id) { for (var i = 0; i < K.length; i++) if (K[i].id === id) return K[i]; return null; }
+  if (st.f !== "kaikki" && st.f !== "tallennetut" && !coll(st.f)) st.f = "kaikki";
+  // Etusivun Päivän oivallus voi avata tietyn kortin: oivallukset.html#kortti-12
+  var hm = /^#kortti-(\d+)$/.exec(location.hash);
+  if (hm && C[+hm[1] - 1]) { st.f = "kaikki"; st.pos = st.order.indexOf(+hm[1] - 1); }
+
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function list() {
+    if (st.f === "kaikki") return st.order;
+    if (st.f === "tallennetut") return st.order.filter(function (i) { return st.saved.indexOf(i) >= 0; });
+    return st.order.filter(function (i) { return C[i].k === st.f; });
+  }
+
+  function chips() {
+    var box = $("o-chips");
+    box.textContent = "";
+    var items = [{ id: "kaikki", n: UI.all[li], c: C.length }];
+    K.forEach(function (k) {
+      items.push({ id: k.id, n: k.n[li], h: k.h, c: C.filter(function (x) { return x.k === k.id; }).length });
+    });
+    items.push({ id: "tallennetut", n: UI.saved[li], c: st.saved.length });
+    items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.id = "o-chip-" + it.id;
+      b.setAttribute("aria-pressed", st.f === it.id ? "true" : "false");
+      if (it.h !== undefined) { var d = document.createElement("i"); d.style.setProperty("--h", it.h); b.appendChild(d); }
+      b.appendChild(document.createTextNode(it.n + " "));
+      var c = document.createElement("span"); c.textContent = it.c; b.appendChild(c);
+      b.addEventListener("click", function () { st.f = it.id; st.pos = 0; render(); });
+      box.appendChild(b);
+    });
+  }
+
+  function render(dir) {
+    $("o-h1").textContent = UI.h1[li];
+    $("o-lead").textContent = UI.lead[li];
+    $("o-prev").textContent = UI.prev[li];
+    $("o-next").textContent = UI.next[li];
+    $("o-shuffle").textContent = UI.shuffle[li];
+    $("o-srclabel").textContent = UI.src[li];
+    $("o-empty-h").textContent = UI.emptyH[li];
+    $("o-empty-p").textContent = UI.emptyP[li];
+    chips();
+
+    var l = list(), card = $("o-card"), has = l.length > 0;
+    card.hidden = !has;
+    $("o-empty").hidden = has;
+    $("o-prev").disabled = $("o-next").disabled = l.length < 2;
+    $("o-save").disabled = !has;
+    if (!has) {
+      $("o-save").setAttribute("aria-pressed", "false");
+      $("o-save").textContent = UI.save[li];
+      persist();
+      return;
+    }
+    st.pos = ((st.pos % l.length) + l.length) % l.length;
+    var i = l[st.pos], c = C[i], k = coll(c.k);
+    card.style.setProperty("--h", k.h);
+    card.style.transform = "";
+    $("o-coll").textContent = k.n[li];
+    $("o-num").textContent = (st.pos + 1) + " / " + l.length;
+    $("o-title").textContent = c.o[li];
+    $("o-text").textContent = c.t[li];
+    $("o-src").textContent = c.l[li];
+    var on = st.saved.indexOf(i) >= 0;
+    $("o-save").setAttribute("aria-pressed", on ? "true" : "false");
+    $("o-save").textContent = on ? UI.isSaved[li] : UI.save[li];
+    card.classList.remove("back", "in-r", "in-l");
+    if (dir) { void card.offsetWidth; card.classList.add(dir > 0 ? "in-r" : "in-l"); }
+    persist();
+  }
+  function go(step) { if (list().length < 2) return; st.pos += step; render(step); }
+
+  $("o-next").addEventListener("click", function () { go(1); });
+  $("o-prev").addEventListener("click", function () { go(-1); });
+  $("o-save").addEventListener("click", function () {
+    var l = list(); if (!l.length) return;
+    var i = l[st.pos], p = st.saved.indexOf(i);
+    if (p >= 0) st.saved.splice(p, 1); else st.saved.push(i);
+    render();
+  });
+  $("o-shuffle").addEventListener("click", function () {
+    var a = st.order.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    st.order = a; st.pos = 0; render(1);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight") go(1);
+    if (e.key === "ArrowLeft") go(-1);
+  });
+  document.addEventListener("kielivaihto", function (e) {
+    var n = LANGS.indexOf(e.detail);
+    li = n > 0 ? n : 0;
+    render();
+  });
+
+  // Pyyhkäisy
+  var card = $("o-card"), x0 = 0, y0 = 0, dx = 0, down = false, horiz = false, pid = null;
+  card.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    down = true; horiz = false; dx = 0; x0 = e.clientX; y0 = e.clientY; pid = e.pointerId;
+    card.classList.remove("back", "in-r", "in-l");
+  });
+  card.addEventListener("pointermove", function (e) {
+    if (!down || e.pointerId !== pid) return;
+    var x = e.clientX - x0, y = e.clientY - y0;
+    if (!horiz) {
+      if (Math.abs(x) > 12 && Math.abs(x) > Math.abs(y) * 1.3) { horiz = true; try { card.setPointerCapture(pid); } catch (err) {} }
+      else return;
+    }
+    dx = x;
+    card.style.transform = "translateX(" + dx + "px) rotate(" + (dx / 50) + "deg)";
+  });
+  function end(e) {
+    if (!down || (e && e.pointerId !== pid)) return;
+    down = false;
+    if (horiz && Math.abs(dx) > 70 && list().length > 1) go(dx < 0 ? 1 : -1);
+    else { card.classList.add("back"); card.style.transform = ""; }
+    dx = 0; horiz = false;
+  }
+  card.addEventListener("pointerup", end);
+  card.addEventListener("pointercancel", end);
+
+  render();
+})();
+</script>
+<script src="i18n.js"></script>
+</body>
+</html>
