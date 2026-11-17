@@ -129,6 +129,7 @@ button.more {
   padding: 0.75rem 0 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em;
 }
 footer { font-size: 0.85rem; color: var(--muted); }
+.kavijat { display: block; margin-top: 0.35rem; font-size: 0.8rem; opacity: 0.8; font-variant-numeric: tabular-nums; }
 .sivuhaku { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; max-width: 30rem; }
 .sivuhaku input[type="search"] { flex: 1 1 10rem; }
 .sivuhaku-ei { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--muted); }
@@ -419,7 +420,7 @@ header .meta { padding-right: 4.75rem; }
     <figure class="quote" id="sitaatti-box"></figure>
   </section>
 
-  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio<span class="kavijat" id="kavijat" data-noi18n hidden></span></footer>
 </main>
 
 <script>
@@ -1515,6 +1516,37 @@ header .meta { padding-right: 4.75rem; }
   render();
   document.addEventListener("kielivaihto", render);
   setInterval(function () { if (String(dayNo()) !== shown) render(); }, 60000);
+})();
+</script>
+<script>
+// Kävijälaskuri: sama kävijä lasketaan vain kerran päivässä.
+(function () {
+  var URL = "https://laskuri.tommitampio.workers.dev";
+  var el = document.getElementById("kavijat");
+  if (!el || !window.fetch) return;
+  var TXT = { fi: "Kävijöitä tähän mennessä: ", sv: "Besökare hittills: ", en: "Visitors so far: " };
+  var NUM = { fi: "fi-FI", sv: "sv-SE", en: "en-GB" };
+  var luku = null;
+  function nayta() {
+    if (luku === null) return;
+    var l = TXT[document.documentElement.lang] ? document.documentElement.lang : "fi";
+    el.textContent = TXT[l] + luku.toLocaleString(NUM[l]);
+    el.hidden = false;
+  }
+  var tanaan = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Helsinki" }).format(new Date());
+  var viimeksi = null;
+  try { viimeksi = localStorage.getItem("laskuri-pvm"); } catch (e) {}
+  var uusi = viimeksi !== tanaan;
+  fetch(URL + (uusi ? "/hit" : "/count"), { method: uusi ? "POST" : "GET" })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (typeof d.count !== "number") return;
+      luku = d.count;
+      if (uusi) { try { localStorage.setItem("laskuri-pvm", tanaan); } catch (e) {} }
+      nayta();
+    })
+    .catch(function () {});
+  new MutationObserver(nayta).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
 })();
 </script>
 </body>
