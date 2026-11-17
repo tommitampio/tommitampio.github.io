@@ -256,22 +256,15 @@ a.go:hover { border-color: var(--accent); }
 .quote .q-orig span { font-style: normal; }
 .quote figcaption { margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted); }
 
-header .meta { padding-right: 7.5rem; }
-.lang { display: flex; align-items: center; gap: 0.4rem; }
-.musa-btn { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0; font: inherit; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; cursor: pointer; }
-.musa-btn:hover { color: var(--fg); }
-.musa-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
-.musa-btn[aria-pressed="true"] svg { animation: musa-kei 1.6s ease-in-out infinite; }
-@keyframes musa-kei { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
-@media (prefers-reduced-motion: reduce) { .musa-btn[aria-pressed="true"] svg { animation: none; } }
-.musa-palkki { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 0.6rem; max-width: calc(100vw - 24px); padding: 0.45rem 0.5rem 0.45rem 0.9rem; font-size: 0.85rem; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
-.musa-palkki[hidden] { display: none; }
-.musa-tiedot { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-.musa-nimi { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.musa-tekija { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
-.musa-tekija a { color: inherit; }
-.musa-pieni { flex: none; width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); background: none; border: 1px solid var(--rule); border-radius: 999px; cursor: pointer; font: inherit; }
-.musa-pieni:hover { color: var(--fg); }
+.biisit { list-style: none; margin: 1rem 0 0; padding: 0; max-width: 34rem; }
+.biisit li { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0; border-top: 1px solid var(--rule); }
+.biisit li:last-child { border-bottom: 1px solid var(--rule); }
+.biisi-btn { flex: none; width: 2.4rem; height: 2.4rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 999px; cursor: pointer; }
+.biisi-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.biisi-nimi { flex: 1; min-width: 0; font-weight: 500; }
+.biisi-aika { flex: none; font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.biisit li.soi .biisi-nimi { color: var(--accent); }
+header .meta { padding-right: 4.75rem; }
 .lang { position: absolute; top: 1rem; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 20; }
 .lang-btn { display: inline-flex; align-items: center; gap: 0.35rem; font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; }
 .lang-btn:hover, .lang-btn[aria-expanded="true"] { color: var(--fg); }
@@ -422,6 +415,15 @@ header .meta { padding-right: 7.5rem; }
     <div>
       <p>Epäröitkö jotain? Ajattele kysymystäsi ja avaa kirja, niin saat vastauksen. Päätös on silti sinun.</p>
       <p><a class="go" href="vastausten-kirja.html">Avaa kirja →</a></p>
+    </div>
+  </section>
+
+  <section id="kappaleet">
+    <h2>Omat kappaleet</h2>
+    <div>
+      <p>Musiikkikokeiluja, jotka olen tehnyt Sunolla. Raakileita, mutta omiani.</p>
+      <ul class="biisit" id="biisit"></ul>
+      <p class="soft" id="biisi-virhe" style="font-size:0.85rem;margin-top:0.75rem" hidden>Kappale ei juuri nyt lataudu. Yritä myöhemmin uudelleen.</p>
     </div>
   </section>
 
@@ -1094,6 +1096,11 @@ header .meta { padding-right: 7.5rem; }
   var D = {
     // Yläosa
     "Kello": ["Klockan", "Time"],
+    "Omat kappaleet": ["Mina låtar", "My songs"],
+    "Musiikkikokeiluja, jotka olen tehnyt Sunolla. Raakileita, mutta omiani.": ["Musikexperiment som jag har gjort med Suno. Råa skisser, men mina egna.", "Music experiments I have made with Suno. Rough sketches, but my own."],
+    "Kappale ei juuri nyt lataudu. Yritä myöhemmin uudelleen.": ["Låten laddas inte just nu. Försök igen senare.", "The song won't load right now. Please try again later."],
+    "Soita": ["Spela", "Play"],
+    "Tauko": ["Paus", "Pause"],
     "Helsinki": ["Helsingfors", "Helsinki"],
     "Tervetuloa kotisivulleni. Tämä on alku, ja tänne tulee lisää sitä mukaa kun tekemistä kertyy.": ["Välkommen till min hemsida. Det här är början, och mer kommer allt eftersom jag hittar på nya saker.", "Welcome to my homepage. This is just the beginning, and more will be added as I go."],
     "Minusta": ["Om mig", "About me"],
@@ -1565,98 +1572,52 @@ header .meta { padding-right: 7.5rem; }
 })();
 </script>
 <script>
-/* Taustamusiikki: oletuksena hiljaa. Nappi kielivalitsimen vieressä.
-   Soittaa Tommin omia Suno-kappaleita. */
+/* Omat kappaleet: soivat suoraan sivulla, vain kun kävijä painaa ▶.
+   Uuden kappaleen saa lisäämällä rivin listaan (nimi + Suno-kappaleen tunnus). */
 (function () {
-  var LABEL = {
-    fi: ["Soita taustamusiikkia", "Hiljennä musiikki"],
-    sv: ["Spela bakgrundsmusik", "Stäng av musiken"],
-    en: ["Play background music", "Stop the music"]
-  };
-  var soi = false;
-
-  var nappi = document.createElement("button");
-  nappi.type = "button"; nappi.className = "musa-btn";
-  nappi.setAttribute("data-noi18n", ""); nappi.setAttribute("aria-pressed", "false");
-  nappi.innerHTML = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
-  function otsikko() {
-    var l = LABEL[document.documentElement.lang] || LABEL.fi;
-    var t = l[soi ? 1 : 0];
-    nappi.setAttribute("aria-label", t); nappi.title = t;
-  }
-  // Omat kappaleet (Suno). Uuden kappaleen saa lisäämällä rivin tähän listaan.
   var KAPPALEET = [
     { nimi: "Painakaa numeroa 1", id: "40e0b864-8802-4991-959a-fe2d4acefd7e" },
     { nimi: "Mikko, Marskin mies", id: "b7c367ce-4b2b-4f89-9079-fbfddd04c5de" }
   ];
-  var TEKSTIT = {
-    fi: { virhe: "Ei lataudu – kuuntele ", virheLinkki: "Sunossa", tekija: "Tommi Tampio · tehty ", linkki: "Sunolla", seur: "Seuraava kappale", sulje: "Sulje" },
-    sv: { virhe: "Laddas inte – lyssna på ", virheLinkki: "Suno", tekija: "Tommi Tampio · gjord med ", linkki: "Suno", seur: "Nästa låt", sulje: "Stäng" },
-    en: { virhe: "Won’t load – listen on ", virheLinkki: "Suno", tekija: "Tommi Tampio · made with ", linkki: "Suno", seur: "Next song", sulje: "Close" }
-  };
-  var soitin = new Audio(), nro = 0, eiLataudu = false, virheita = 0;
-  soitin.preload = "none";
-  var palkki = document.createElement("div");
-  palkki.className = "musa-palkki"; palkki.hidden = true; palkki.setAttribute("data-noi18n", "");
-  palkki.setAttribute("role", "status");
-  palkki.innerHTML = '<div class="musa-tiedot"><span class="musa-nimi"></span><span class="musa-tekija"></span></div>' +
-    '<button type="button" class="musa-pieni musa-seur"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5 5l10 7-10 7zM17 5h2.5v14H17z"/></svg></button>';
-  document.body.appendChild(palkki);
-  var nimiEl = palkki.querySelector(".musa-nimi"), tekijaEl = palkki.querySelector(".musa-tekija"), seurBtn = palkki.querySelector(".musa-seur");
-
-  function palkkiTeksti() {
-    var t = TEKSTIT[document.documentElement.lang] || TEKSTIT.fi;
-    var k = KAPPALEET[nro];
-    seurBtn.hidden = KAPPALEET.length < 2;
-    nimiEl.textContent = k.nimi;
-    tekijaEl.textContent = eiLataudu ? t.virhe : t.tekija;
-    var a = document.createElement("a");
-    a.href = "https://suno.com/song/" + k.id; a.target = "_blank"; a.rel = "noopener"; a.textContent = eiLataudu ? t.virheLinkki : t.linkki;
-    tekijaEl.appendChild(a);
-    seurBtn.setAttribute("aria-label", t.seur); seurBtn.title = t.seur;
+  var lista = document.getElementById("biisit"), virhe = document.getElementById("biisi-virhe");
+  if (!lista) return;
+  var PLAY = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>';
+  var PAUSE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+  var soitin = new Audio(); soitin.preload = "none";
+  var nyt = -1, rivit = [];
+  function aika(t) { if (!isFinite(t)) return ""; t = Math.floor(t); return Math.floor(t / 60) + ":" + ("0" + t % 60).slice(-2); }
+  function paivita() {
+    rivit.forEach(function (r, i) {
+      var soi = i === nyt && !soitin.paused;
+      r.li.classList.toggle("soi", i === nyt);
+      r.btn.innerHTML = soi ? PAUSE : PLAY;
+      r.btn.setAttribute("aria-label", soi ? "Tauko" : "Soita");
+      r.btn.title = soi ? "Tauko" : "Soita";
+      r.aika.textContent = i === nyt && soitin.currentTime > 0 ? aika(soitin.currentTime) + (soitin.duration ? " / " + aika(soitin.duration) : "") : "";
+    });
   }
-  function soitaKappale(i) {
-    nro = (i + KAPPALEET.length) % KAPPALEET.length;
-    eiLataudu = false;
-    soitin.src = "https://cdn1.suno.ai/" + KAPPALEET[nro].id + ".mp3";
-    palkkiTeksti();
-    var lupaus = soitin.play();
-    if (lupaus && lupaus.catch) lupaus.catch(function () {});
-  }
-  soitin.addEventListener("ended", function () { soitaKappale(nro + 1); });
-  soitin.addEventListener("playing", function () { virheita = 0; });
-  soitin.addEventListener("error", function () {
-    if (!soi) return;
-    virheita++;
-    if (virheita < KAPPALEET.length) { soitaKappale(nro + 1); return; }
-    // Mikään kappale ei lataudu: näytetään linkki Sunoon
-    eiLataudu = true; palkkiTeksti();
+  KAPPALEET.forEach(function (k, i) {
+    var li = document.createElement("li");
+    li.innerHTML = '<button type="button" class="biisi-btn"></button><span class="biisi-nimi" data-noi18n></span><span class="biisi-aika" data-noi18n></span>';
+    li.querySelector(".biisi-nimi").textContent = k.nimi;
+    var btn = li.querySelector(".biisi-btn");
+    btn.addEventListener("click", function () {
+      virhe.hidden = true;
+      if (i === nyt) { if (soitin.paused) soitin.play().catch(function () {}); else soitin.pause(); return; }
+      nyt = i;
+      soitin.src = "https://cdn1.suno.ai/" + k.id + ".mp3";
+      soitin.play().catch(function () {});
+      paivita();
+    });
+    lista.appendChild(li);
+    rivit.push({ li: li, btn: btn, aika: li.querySelector(".biisi-aika") });
   });
-  seurBtn.addEventListener("click", function () { virheita = 0; soitaKappale(nro + 1); });
-
-  nappi.addEventListener("click", function () {
-    soi = !soi;
-    nappi.setAttribute("aria-pressed", soi ? "true" : "false");
-    if (soi) {
-      palkki.hidden = false;
-      if (soitin.src && soitin.currentTime > 0 && !soitin.ended) { soitin.play().catch(function () {}); palkkiTeksti(); }
-      else soitaKappale(nro);
-    } else {
-      palkki.hidden = true;
-      soitin.pause();
-    }
-    otsikko();
+  ["play", "pause", "timeupdate", "loadedmetadata"].forEach(function (e) { soitin.addEventListener(e, paivita); });
+  soitin.addEventListener("ended", function () {
+    if (nyt + 1 < KAPPALEET.length) rivit[nyt + 1].btn.click(); else { nyt = -1; paivita(); }
   });
-  new MutationObserver(palkkiTeksti).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
-  new MutationObserver(otsikko).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
-  otsikko();
-
-  function kiinnita() {
-    var box = document.querySelector(".lang");
-    if (box) box.insertBefore(nappi, box.firstChild);
-    else { setTimeout(kiinnita, 50); }
-  }
-  kiinnita();
+  soitin.addEventListener("error", function () { if (nyt < 0) return; virhe.hidden = false; nyt = -1; paivita(); });
+  paivita();
 })();
 </script>
 <script data-goatcounter="https://tommitampio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
