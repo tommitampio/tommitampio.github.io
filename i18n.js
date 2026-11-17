@@ -64,6 +64,8 @@
     "Valitse peli. Tulokset ja top-listat tallentuvat omaan selaimeesi.": ["Välj ett spel. Resultat och topplistor sparas i din egen webbläsare.", "Pick a game. Results and top lists are saved in your own browser."],
     "Laske minkä tahansa päivämäärän viikonpäivä päässä John Horton Conwayn menetelmällä. Kolme vaikeustasoa ja ohjeet.": ["Räkna ut veckodagen för vilket datum som helst i huvudet med John Horton Conways metod. Tre svårighetsnivåer och instruktioner.", "Work out the weekday of any date in your head with John Horton Conway's method. Three difficulty levels and instructions."],
     "Pelaa →": ["Spela →", "Play →"],
+    "Kielipeli": ["Språkspel", "Language game"],
+    "Kielten alkeita suomeksi: ruotsi, saksa, ranska, englanti, espanja, kiina, zulu, esperanto ja latina. Sanoja ja lauseiden täydennystä A–D-vaihtoehdoilla.": ["Grunderna i språk, förklarade på finska: svenska, tyska, franska, engelska, spanska, kinesiska, zulu, esperanto och latin. Ord och luckmeningar med svarsalternativ A–D.", "Language basics, explained in Finnish: Swedish, German, French, English, Spanish, Chinese, Zulu, Esperanto and Latin. Words and fill-in-the-blank sentences with options A–D."],
     "Presidenttivisa": ["Presidentquiz", "Presidents quiz"],
     "Tunnetko Yhdysvaltain 47 presidenttiä? Neljä pelitapaa järjestyksestä vuosilukuihin.": ["Känner du till USA:s 47 presidenter? Fyra spelsätt, från ordningsföljd till årtal.", "Do you know the 47 presidents of the United States? Four ways to play, from order to years."],
     "Miinaharava": ["Minröj", "Minesweeper"],

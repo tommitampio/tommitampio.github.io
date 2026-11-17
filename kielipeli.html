@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fi"><head><meta charset="utf-8"><meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kielipeli – Tommi Tampio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{--bg:#F2F5F7;--card:#fff;--fg:#14202A;--mut:#566672;--line:#CBD5DC;--navy:#1F5C8B;--soft:#eef2f6;--ok:#2e7d4f;--okbg:#dff3e6;--bad:#c0392b;--badbg:#fbe3e1;--gold:#c68512}
+@media (prefers-color-scheme:dark){:root{--bg:#0E151B;--card:#141e26;--fg:#E6ECF0;--mut:#93A3AE;--line:#26343E;--navy:#78B6E4;--soft:#1b2832;--ok:#5cc489;--okbg:#173524;--bad:#ef6f5e;--badbg:#3d1c1a;--gold:#e2ac4a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;justify-content:center;padding:18px 14px 40px}
+.app{width:100%;max-width:520px}
+h1{margin:0 0 2px;font-size:2rem;letter-spacing:-.02em;font-family:"Space Grotesk",sans-serif}
+.back{display:inline-block;margin-bottom:14px;color:var(--navy);text-decoration:none;font-size:.9rem}
+.sub{color:var(--mut);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.lbl{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px;font-weight:600}
+.langs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.langs button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.95rem;background:var(--card)}
+.langs button[aria-pressed="true"]{border-color:var(--navy);background:var(--navy);color:var(--bg);font-weight:600}
+.modes{display:grid;gap:10px}
+.mode{all:unset;cursor:pointer;display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.mode:hover{border-color:var(--navy)}
+.mode b{display:block;font-size:1.05rem}.mode span{color:var(--mut);font-size:.9rem}
+.best{color:var(--mut);font-size:.85rem;margin-top:14px;text-align:center}
+.top{display:flex;justify-content:space-between;font-size:.85rem;color:var(--mut);margin-bottom:8px}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.bar div{height:100%;background:var(--navy);transition:width .3s}
+.kind{font-size:.8rem;color:var(--navy);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.q{font-size:1.3rem;margin:6px 0 4px;line-height:1.4;font-family:"Space Grotesk",sans-serif}
+.blank{display:inline-block;min-width:64px;border-bottom:3px solid var(--navy);text-align:center;color:var(--navy)}
+.hint{color:var(--mut);font-size:.95rem;min-height:1.2em;margin-bottom:8px}
+.say{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:.85rem;margin-bottom:8px}
+.opts button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;margin:8px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:1.05rem;background:var(--card)}
+.opts button:hover:not(:disabled){border-color:var(--navy)}
+.opts b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--navy);flex:none;font-size:.9rem}
+.opts button.right{border-color:var(--ok);background:var(--okbg)}.opts button.right b{background:var(--ok);color:var(--bg)}
+.opts button.wrong{border-color:var(--bad);background:var(--badbg)}.opts button.wrong b{background:var(--bad);color:var(--bg)}
+.opts button:disabled{cursor:default}
+.fb{margin-top:10px;padding:12px 14px;border-radius:12px;line-height:1.5}
+.fb.ok{background:var(--okbg)}.fb.no{background:var(--badbg)}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;text-align:center;margin-top:12px;padding:13px;border-radius:12px;font-weight:600;background:var(--navy);color:var(--bg)}
+.btn.alt{background:var(--soft);color:var(--fg)}
+.big{font-size:2.6rem;text-align:center;color:var(--gold)}
+.score{text-align:center;font-size:1.3rem;font-weight:700;font-family:"Space Grotesk",sans-serif}
+.msg{text-align:center;color:var(--mut);margin:4px 0 6px}
+.review{font-size:.95rem;margin-top:14px}.review li{margin:6px 0}
+.hidden{display:none!important}
+</style></head>
+<body>
+<div class="app">
+  <a class="back" href="pelit.html">‹ Pelit</a>
+  <h1>Kielipeli</h1>
+  <p class="sub">Kielten alkeita suomeksi: valitse oikea vaihtoehto A, B, C tai D.</p>
+
+  <section id="start" class="card">
+    <p class="lbl">Kieli</p>
+    <div class="langs" id="langs"></div>
+    <p class="lbl">Pelitapa</p>
+    <div class="modes">
+      <button class="mode" data-mode="words"><b>📖 Sanat</b><span>Mitä sana tarkoittaa – ja toisin päin</span></button>
+      <button class="mode" data-mode="fill"><b>✏️ Täydennä lause</b><span>Valitse lauseesta puuttuva sana</span></button>
+      <button class="mode" data-mode="mix"><b>🎲 Sekaisin</b><span>Molempia vuorotellen</span></button>
+    </div>
+    <div class="best" id="best"></div>
+  </section>
+
+  <section id="game" class="card hidden">
+    <div class="top"><span id="count"></span><span id="pts"></span></div>
+    <div class="bar"><div id="prog"></div></div>
+    <div class="kind" id="kind"></div>
+    <div class="q" id="question"></div>
+    <div class="hint" id="hint"></div>
+    <button class="say hidden" id="say">🔊 Kuuntele</button>
+    <div class="opts" id="opts"></div>
+    <div id="fb" class="fb hidden"></div>
+    <button class="btn hidden" id="next">Seuraava →</button>
+  </section>
+
+  <section id="end" class="card hidden">
+    <div class="big" id="stars"></div>
+    <div class="score" id="final"></div>
+    <div class="msg" id="msg"></div>
+    <button class="btn" id="again">Pelaa uudestaan</button>
+    <button class="btn alt" id="home">Vaihda kieltä tai pelitapaa</button>
+    <div class="review" id="review"></div>
+  </section>
+</div>
+
+<script>
+/* Suomenkieliset sanat; jokaisella kielellä samat sanat samassa järjestyksessä. */
+const FI = ["hei","kiitos","koira","kissa","talo","vesi","leipä","maito","punainen","iso","pieni","tänään","huomenna","eilen","kirja","omena","kylmä","lämmin","ystävä","juna","meri","metsä","kala","iloinen","väsynyt","nälkäinen","avain","ikkuna","ovi","aurinko"];
+
+/* Lauseet: [lause, oikea, [väärät], suomennos, selitys, vihje?] */
+const L = {
+sv:{name:"Ruotsi",flag:"🇸🇪",tts:"sv-SE",
+ words:["hej","tack","hund","katt","hus","vatten","bröd","mjölk","röd","stor","liten","i dag","i morgon","i går","bok","äpple","kall","varm","vän","tåg","hav","skog","fisk","glad","trött","hungrig","nyckel","fönster","dörr","sol"],
+ tips:{"hund":"Englannin ”hound” = koira.","hav":"Kuten Havis Amanda – meren neito!","tåg":"å äännetään melkein kuin o: ”toog”.","fönster":"Saksaksi ”Fenster” – sama sana.","dörr":"Englannin ”door” – sama juuri.","glad":"Englannin ”glad” = iloinen – sama sana!","i går":"i går = eilen, i morgon = huomenna."},
+ fill:[
+  ["Jag ___ Tommi.","heter",["har","är","bor"],"Minun nimeni on Tommi.","”Heter” = on nimeltään. Jag heter… = Minun nimeni on…"],
+  ["Jag ___ i Helsingfors.","bor",["heter","äter","går"],"Asun Helsingissä.","”Bo” = asua. Jag bor = minä asun."],
+  ["Hon ___ en hund.","har",["är","heter","bor"],"Hänellä on koira.","”Ha” = omistaa. Hon har = hänellä on."],
+  ["Vi ___ glada.","är",["har","heter","kan"],"Me olemme iloisia.","”Är” = on/olen/olemme. Sama kaikille: jag är, du är, vi är."],
+  ["Jag ___ kaffe.","dricker",["äter","läser","sover"],"Juon kahvia.","Kahvia juodaan → ”dricker” (vrt. englannin drink)."],
+  ["Han ___ en bok.","läser",["dricker","sover","springer"],"Hän lukee kirjaa.","”Läsa” = lukea."],
+  ["Det är ___ hus.","ett",["en","den","de"],"Se on talo.","Ruotsissa on en-sanoja ja ett-sanoja. ”Hus” on ett-sana: ett hus."],
+  ["Jag har ___ katt.","en",["ett","de","det"],"Minulla on kissa.","”Katt” on en-sana: en katt. Suurin osa sanoista on en-sanoja."],
+  ["___ heter du?","Vad",["Var","Vem","När"],"Mikä sinun nimesi on?","”Vad” = mikä/mitä."],
+  ["___ bor du?","Var",["Vad","Hur","Vem"],"Missä asut?","”Var” = missä. Vad (mikä) ja var (missä) on helppo sekoittaa!"],
+  ["___ mår du?","Hur",["Vad","Var","Vem"],"Mitä kuuluu? (Miten voit?)","”Hur” = miten."],
+  ["Jag kommer ___ Finland.","från",["till","på","med"],"Olen kotoisin Suomesta.","”Från” = -sta, jostakin pois. ”Till” olisi johonkin."],
+  ["God ___!","morgon",["natt","kväll","sommar"],"Hyvää huomenta!","Aamulla ”God morgon”, illalla ”God kväll”, yöllä ”God natt”.","(sanotaan aamulla)"],
+  ["Tack så ___!","mycket",["stor","många","mer"],"Kiitos paljon!","”Mycket” = paljon."],
+  ["Jag ___ lite svenska.","talar",["heter","bor","är"],"Puhun vähän ruotsia.","”Tala” = puhua."],
+  ["Klockan är ___.","tre",["två","fyra","sex"],"Kello on kolme.","1 en, 2 två, 3 tre, 4 fyra, 5 fem, 6 sex.","(kello on kolme)"],
+  ["Huset är ___.","rött",["röd","röda","röde"],"Talo on punainen.","Ett-sanan (ett hus) kanssa adjektiiviin tulee -t: röd → rött.","(talo on punainen)"],
+  ["Jag har två ___.","katter",["katt","katten","katts"],"Minulla on kaksi kissaa.","Monikko: en katt → två katter."],
+  ["Det är kallt på ___.","vintern",["sommaren","våren","hösten"],"Talvella on kylmä.","vinter = talvi, sommar = kesä, vår = kevät, höst = syksy.","(talvella)"],
+  ["Kan du ___ mig?","hjälpa",["hjälper","hjälpte","hjälpen"],"Voitko auttaa minua?","”Kan”-sanan jälkeen verbi on perusmuodossa: kan hjälpa."],
+  ["Jag ___ inte.","förstår",["heter","har","äter"],"En ymmärrä.","”Förstå” = ymmärtää. Hyvä lause muistaa matkalla!","(en ymmärrä)"],
+  ["Vi ses i ___!","morgon",["går","natt","kaffe"],"Nähdään huomenna!","”I morgon” = huomenna, ”i går” = eilen."],
+  ["Ett äpple och två ___.","äpplen",["äpple","äpplet","äpplar"],"Yksi omena ja kaksi omenaa.","Ett-sana, joka loppuu vokaaliin, saa monikossa -n: äpple → äpplen."],
+  ["Jag ___ hungrig.","är",["har","heter","bor"],"Minulla on nälkä.","Ruotsiksi sanotaan ”olen nälkäinen”: jag är hungrig."]
+ ]},
+de:{name:"Saksa",flag:"🇩🇪",tts:"de-DE",
+ words:["hallo","danke","der Hund","die Katze","das Haus","das Wasser","das Brot","die Milch","rot","groß","klein","heute","morgen","gestern","das Buch","der Apfel","kalt","warm","der Freund","der Zug","das Meer","der Wald","der Fisch","froh","müde","hungrig","der Schlüssel","das Fenster","die Tür","die Sonne"],
+ tips:{"der Hund":"Saksassa jokainen substantiivi kirjoitetaan isolla – ja opettele sana aina artikkelin kanssa.","das Wasser":"Englannin ”water” – sama juuri.","das Meer":"Ruotsin ”mer” = enemmän, mutta saksan Meer = meri!","morgen":"morgen = huomenna, der Morgen = aamu.","die Sonne":"Englannin ”sun” – sama juuri.","der Zug":"Juna ”vetää” vaunuja: ziehen = vetää.","froh":"Frohe Weihnachten = hyvää joulua (iloista joulua)."},
+ fill:[
+  ["Ich ___ Tommi.","heiße",["habe","wohne","trinke"],"Minun nimeni on Tommi.","”Heißen” = olla nimeltään. Ich heiße… = Minun nimeni on…"],
+  ["Ich ___ in Helsinki.","wohne",["heiße","esse","trinke"],"Asun Helsingissä.","”Wohnen” = asua."],
+  ["Sie ___ einen Hund.","hat",["ist","heißt","wohnt"],"Hänellä on koira.","”Haben” = omistaa: ich habe, du hast, sie hat."],
+  ["Wir ___ müde.","sind",["haben","heißen","wohnen"],"Me olemme väsyneitä.","”Sein” = olla: ich bin, du bist, wir sind."],
+  ["Ich ___ Kaffee.","trinke",["esse","lese","schlafe"],"Juon kahvia.","”Trinken” = juoda (vrt. englannin drink)."],
+  ["Er ___ ein Buch.","liest",["trinkt","schläft","isst"],"Hän lukee kirjaa.","”Lesen” = lukea: er liest."],
+  ["___ Haus ist groß.","Das",["Der","Die","Den"],"Talo on iso.","Saksassa on kolme sukua: der, die, das. Haus on das-sana."],
+  ["___ Katze schläft.","Die",["Der","Das","Den"],"Kissa nukkuu.","Katze on die-sana. Opettele artikkeli aina sanan kanssa!"],
+  ["___ heißt du?","Wie",["Was","Wo","Wer"],"Mikä sinun nimesi on?","Saksaksi kysytään ”miten sinua kutsutaan”: Wie heißt du?"],
+  ["___ wohnst du?","Wo",["Wie","Wer","Was"],"Missä asut?","”Wo” = missä. Huom: ”wer” = kuka, vaikka näyttää englannin where-sanalta!"],
+  ["Wie ___ es dir?","geht",["ist","hat","macht"],"Mitä kuuluu?","Sanatarkasti ”miten sinulle menee?”"],
+  ["Ich komme ___ Finnland.","aus",["nach","in","mit"],"Olen kotoisin Suomesta.","”Aus” = -sta, jostakin. ”Nach” = johonkin."],
+  ["Guten ___!","Morgen",["Abend","Nacht","Tag"],"Hyvää huomenta!","Guten Morgen (aamu), Guten Tag (päivä), Guten Abend (ilta).","(sanotaan aamulla)"],
+  ["Danke ___!","schön",["groß","alt","klein"],"Kiitos kovasti!","”Danke schön” = kiitos kauniisti."],
+  ["Ich ___ ein bisschen Deutsch.","spreche",["heiße","wohne","bin"],"Puhun vähän saksaa.","”Sprechen” = puhua."],
+  ["Es ist ___ Uhr.","drei",["zwei","vier","sechs"],"Kello on kolme.","1 eins, 2 zwei, 3 drei, 4 vier, 5 fünf, 6 sechs.","(kello on kolme)"],
+  ["Ich habe zwei ___.","Katzen",["Katze","Katzes","Katzer"],"Minulla on kaksi kissaa.","Monikko: die Katze → die Katzen."],
+  ["Im ___ ist es kalt.","Winter",["Sommer","Frühling","Herbst"],"Talvella on kylmä.","Winter = talvi, Sommer = kesä, Frühling = kevät, Herbst = syksy.","(talvella)"],
+  ["Kannst du mir ___?","helfen",["hilfst","half","Hilfe"],"Voitko auttaa minua?","”Kannst du” -kysymyksessä verbi on lopussa perusmuodossa."],
+  ["Ich ___ Hunger.","habe",["bin","heiße","wohne"],"Minulla on nälkä.","Saksaksi sanotaan kuin suomeksi: ”minulla on nälkä” = Ich habe Hunger."],
+  ["Ich ___ das nicht.","verstehe",["heiße","wohne","trinke"],"En ymmärrä tätä.","”Verstehen” = ymmärtää."],
+  ["Bis ___!","morgen",["gestern","Nacht","Kaffee"],"Huomiseen!","”Bis morgen” = huomiseen asti.","(huomiseen)"]
+ ]},
+fr:{name:"Ranska",flag:"🇫🇷",tts:"fr-FR",
+ words:["bonjour","merci","le chien","le chat","la maison","l'eau","le pain","le lait","rouge","grand","petit","aujourd'hui","demain","hier","le livre","la pomme","froid","chaud","l'ami","le train","la mer","la forêt","le poisson","content","fatigué","affamé","la clé","la fenêtre","la porte","le soleil"],
+ tips:{"le chien":"Ranskan ch äännetään kuin suomen ”sh”: ”shiã”.","merci":"Merci beaucoup = kiitos paljon.","la mer":"La mer = meri, la mère = äiti – lausutaan samalla tavalla!","le pain":"Muista: espanjaksi pan, ranskaksi pain.","le soleil":"Sol, sun, soleil – sama aurinko monella kielellä.","l'eau":"Lausutaan vain ”oo”!","la maison":"Kuten sana ”maisema” – talo maisemassa."},
+ fill:[
+  ["Je m'___ Tommi.","appelle",["habite","suis","ai"],"Minun nimeni on Tommi.","Je m'appelle = sanatarkasti ”kutsun itseäni”."],
+  ["J'___ à Helsinki.","habite",["appelle","mange","bois"],"Asun Helsingissä.","”Habiter” = asua. Ranskassa h on äänetön!"],
+  ["Elle ___ un chien.","a",["est","dort","habite"],"Hänellä on koira.","”Avoir” = omistaa: j'ai, tu as, elle a."],
+  ["Nous ___ fatigués.","sommes",["avons","sont","êtes"],"Me olemme väsyneitä.","”Être” = olla: je suis, nous sommes, ils sont."],
+  ["Je ___ du café.","bois",["mange","lis","dors"],"Juon kahvia.","”Boire” = juoda: je bois."],
+  ["Il ___ un livre.","lit",["boit","dort","mange"],"Hän lukee kirjaa.","”Lire” = lukea: il lit."],
+  ["___ maison est grande.","La",["Le","Les","Un"],"Talo on iso.","Ranskassa on le-sanoja (maskuliini) ja la-sanoja (feminiini). Maison on la-sana."],
+  ["J'ai ___ chat.","un",["une","la","des"],"Minulla on kissa.","Chat on maskuliini: un chat. Feminiini olisi une."],
+  ["___ t'appelles-tu?","Comment",["Où","Qui","Quand"],"Mikä sinun nimesi on?","”Comment” = miten. Sanatarkasti: miten kutsut itseäsi?"],
+  ["___ habites-tu?","Où",["Comment","Qui","Quand"],"Missä asut?","”Où” = missä."],
+  ["Comment ___-vous?","allez",["êtes","avez","faites"],"Mitä kuuluu? (teititellen)","Sanatarkasti ”miten menette?” – aller = mennä."],
+  ["Je viens ___ Finlande.","de",["à","en","avec"],"Olen kotoisin Suomesta.","”De” = -sta, jostakin."],
+  ["Bonne ___!","nuit",["jour","matin","soir"],"Hyvää yötä!","nuit = yö, jour = päivä, matin = aamu, soir = ilta.","(hyvää yötä)"],
+  ["Merci ___!","beaucoup",["grand","très","plus"],"Kiitos paljon!","”Beaucoup” = paljon."],
+  ["Je ___ un peu français.","parle",["habite","suis","bois"],"Puhun vähän ranskaa.","”Parler” = puhua."],
+  ["Il est ___ heures.","trois",["deux","quatre","six"],"Kello on kolme.","1 un, 2 deux, 3 trois, 4 quatre, 5 cinq, 6 six.","(kello on kolme)"],
+  ["J'ai deux ___.","chats",["chat","chate","chaten"],"Minulla on kaksi kissaa.","Monikkoon tulee yleensä -s, mutta sitä ei lausuta!"],
+  ["En ___, il fait froid.","hiver",["été","printemps","automne"],"Talvella on kylmä.","hiver = talvi, été = kesä, printemps = kevät, automne = syksy.","(talvella)"],
+  ["Tu peux m'___?","aider",["aides","aidé","aide"],"Voitko auttaa minua?","”Pouvoir” (voida) -verbin jälkeen tulee perusmuoto: aider."],
+  ["J'___ faim.","ai",["suis","habite","bois"],"Minulla on nälkä.","Ranskaksi kuten suomeksi: ”minulla on nälkä” = j'ai faim."],
+  ["Je ne ___ pas.","comprends",["habite","bois","mange"],"En ymmärrä.","Kielto on kaksiosainen: ne … pas.","(en ymmärrä)"],
+  ["À ___!","demain",["hier","nuit","café"],"Huomiseen!","demain = huomenna, hier = eilen.","(huomiseen)"]
+ ]},
+en:{name:"Englanti",flag:"🇬🇧",tts:"en-GB",
+ words:["hello","thank you","dog","cat","house","water","bread","milk","red","big","small","today","tomorrow","yesterday","book","apple","cold","warm","friend","train","sea","forest","fish","happy","tired","hungry","key","window","door","sun"],
+ tips:{"house":"Ruotsiksi hus, saksaksi Haus – sama sana.","friend":"Saksaksi Freund – sama juuri.","window":"Vanha merkitys: ”tuulen silmä” (wind + eye).","tomorrow":"to + morrow (aamu) → huomenna.","bread":"Saksaksi Brot, ruotsiksi bröd."},
+ fill:[
+  ["My name ___ Tommi.","is",["are","am","be"],"Minun nimeni on Tommi.","”Is” = on. My name is… = Minun nimeni on…"],
+  ["I ___ in Helsinki.","live",["lives","living","to live"],"Asun Helsingissä.","Minä-muodossa verbi on perusmuodossa: I live."],
+  ["She ___ a dog.","has",["have","is","are"],"Hänellä on koira.","He/she/it-muodossa: has. Muuten have."],
+  ["We ___ tired.","are",["is","am","be"],"Me olemme väsyneitä.","I am, you are, he is, we are, they are."],
+  ["I ___ coffee every morning.","drink",["eat","read","sleep"],"Juon kahvia joka aamu.","”Drink” = juoda."],
+  ["He ___ every day.","reads",["read","reading","to read"],"Hän lukee joka päivä.","He/she/it saa verbiin -s: he reads."],
+  ["I have ___ apple.","an",["a","much","these"],"Minulla on omena.","Vokaalin edessä a → an: an apple."],
+  ["I have ___ cat.","a",["an","much","these"],"Minulla on kissa.","Konsonantin edessä: a cat."],
+  ["___ is your name?","What",["Where","Who","When"],"Mikä sinun nimesi on?","”What” = mikä/mitä."],
+  ["___ do you live?","Where",["What","Who","Which"],"Missä asut?","”Where” = missä."],
+  ["___ are you?","How",["What","Who","Which"],"Mitä kuuluu? (Miten voit?)","”How” = miten. How are you? = Miten voit?","(mitä kuuluu?)"],
+  ["I come ___ Finland.","from",["to","at","with"],"Olen kotoisin Suomesta.","”From” = -sta, jostakin."],
+  ["Good ___!","morning",["night","evening","day"],"Hyvää huomenta!","morning = aamu, evening = ilta, night = yö.","(sanotaan aamulla)"],
+  ["Thank you very ___!","much",["many","big","more"],"Kiitos paljon!","”Much” = paljon (asiaa, jota ei lasketa)."],
+  ["I ___ a little Swedish.","speak",["am","live","have"],"Puhun vähän ruotsia.","”Speak” = puhua."],
+  ["It is three ___.","o'clock",["hours","times","clocks"],"Kello on kolme.","Tasatunnit: three o'clock."],
+  ["I have two ___.","cats",["cat","cates","caties"],"Minulla on kaksi kissaa.","Monikko saa yleensä -s: cat → cats."],
+  ["Two ___ are playing.","children",["childs","childrens","child"],"Kaksi lasta leikkii.","Poikkeus: child → children (ei ”childs”)."],
+  ["It is cold in ___.","winter",["summer","spring","autumn"],"Talvella on kylmä.","winter = talvi, summer = kesä, spring = kevät, autumn = syksy.","(talvella)"],
+  ["Can you ___ me?","help",["helps","helped","helping"],"Voitko auttaa minua?","”Can”-sanan jälkeen perusmuoto: can help."],
+  ["I ___ hungry.","am",["have","is","are"],"Minulla on nälkä.","Englanniksi ”olen nälkäinen”: I am hungry."],
+  ["Yesterday I ___ to the shop.","went",["go","goes","going"],"Eilen menin kauppaan.","Epäsäännöllinen verbi: go → went."],
+  ["See you ___!","tomorrow",["yesterday","ago","last week"],"Nähdään huomenna!","tomorrow = huomenna, yesterday = eilen."]
+ ]},
+es:{name:"Espanja",flag:"🇪🇸",tts:"es-ES",
+ words:["hola","gracias","el perro","el gato","la casa","el agua","el pan","la leche","rojo","grande","pequeño","hoy","mañana","ayer","el libro","la manzana","frío","cálido","el amigo","el tren","el mar","el bosque","el pez","contento","cansado","hambriento","la llave","la ventana","la puerta","el sol"],
+ tips:{"hola":"h on espanjassa äänetön: ”ola”.","mañana":"mañana = huomenna, mutta myös aamu.","el pez":"Elävä kala on el pez, lautasella oleva kala el pescado.","la llave":"ll äännetään melkein kuin j: ”jave”.","el sol":"Sama kuin ruotsin sol!","la leche":"ch äännetään kuin ”tš”: ”letše”."},
+ fill:[
+  ["Me ___ Tommi.","llamo",["vivo","soy","tengo"],"Minun nimeni on Tommi.","Me llamo = sanatarkasti ”kutsun itseäni”."],
+  ["___ en Helsinki.","Vivo",["Llamo","Tengo","Bebo"],"Asun Helsingissä.","”Vivir” = asua/elää: vivo. Persoonapronominin voi jättää pois!"],
+  ["Ella ___ un perro.","tiene",["es","está","llama"],"Hänellä on koira.","”Tener” = omistaa: tengo, tienes, tiene."],
+  ["Nosotros ___ cansados.","estamos",["tenemos","llamamos","vivimos"],"Me olemme väsyneitä.","Hetkellinen olotila → estar: estamos cansados."],
+  ["Yo ___ café.","bebo",["como","leo","duermo"],"Juon kahvia.","”Beber” = juoda."],
+  ["Él ___ un libro.","lee",["bebe","duerme","come"],"Hän lukee kirjaa.","”Leer” = lukea."],
+  ["___ casa es grande.","La",["El","Los","Un"],"Talo on iso.","Espanjassa on el-sanoja ja la-sanoja. Casa on la-sana."],
+  ["Tengo ___ gato.","un",["una","la","unos"],"Minulla on kissa.","Gato on maskuliini: un gato."],
+  ["¿Cómo te ___?","llamas",["vives","eres","tienes"],"Mikä sinun nimesi on?","¿Cómo te llamas? = miten kutsut itseäsi?"],
+  ["¿___ vives?","Dónde",["Qué","Quién","Cuándo"],"Missä asut?","”Dónde” = missä.","(missä asut?)"],
+  ["¿Qué ___?","tal",["es","son","tiene"],"Mitä kuuluu?","”¿Qué tal?” = mitä kuuluu? Lyhyt ja kätevä."],
+  ["Soy ___ Finlandia.","de",["a","en","con"],"Olen kotoisin Suomesta.","”De” = -sta, jostakin."],
+  ["¡Buenos ___!","días",["noches","tardes","años"],"Hyvää huomenta!","Buenos días (aamu), buenas tardes (iltapäivä), buenas noches (ilta/yö).","(sanotaan aamulla)"],
+  ["¡Muchas ___!","gracias",["grandes","bien","tanto"],"Kiitos paljon!","”Muchas gracias” = paljon kiitoksia."],
+  ["___ un poco de español.","Hablo",["Vivo","Soy","Bebo"],"Puhun vähän espanjaa.","”Hablar” = puhua."],
+  ["Son las ___.","tres",["dos","cuatro","seis"],"Kello on kolme.","1 uno, 2 dos, 3 tres, 4 cuatro, 5 cinco, 6 seis.","(kello on kolme)"],
+  ["Tengo dos ___.","gatos",["gato","gatoes","gatones"],"Minulla on kaksi kissaa.","Vokaaliin loppuva sana saa monikossa -s: gato → gatos."],
+  ["En ___ hace frío.","invierno",["verano","primavera","otoño"],"Talvella on kylmä.","invierno = talvi, verano = kesä, primavera = kevät, otoño = syksy.","(talvella)"],
+  ["¿Me puedes ___?","ayudar",["ayudas","ayudó","ayuda"],"Voitko auttaa minua?","”Poder” (voida) -verbin jälkeen tulee perusmuoto: ayudar."],
+  ["___ hambre.","Tengo",["Soy","Estoy","Vivo"],"Minulla on nälkä.","Espanjaksi kuten suomeksi: ”minulla on nälkä” = tengo hambre."],
+  ["No ___.","entiendo",["llamo","bebo","como"],"En ymmärrä.","”Entender” = ymmärtää.","(en ymmärrä)"],
+  ["¡Hasta ___!","mañana",["ayer","noche","café"],"Huomiseen!","mañana = huomenna, ayer = eilen.","(huomiseen)"]
+ ]},
+zh:{name:"Kiina",gen:"kiinaksi (mandariiniksi)",flag:"🇨🇳",tts:"zh-CN",say:t=>t.replace(/[^\u3000-\u9fff\uff00-\uffef]/g,""),
+ words:["你好 nǐ hǎo","谢谢 xièxie","狗 gǒu","猫 māo","房子 fángzi","水 shuǐ","面包 miànbāo","牛奶 niúnǎi","红 hóng","大 dà","小 xiǎo","今天 jīntiān","明天 míngtiān","昨天 zuótiān","书 shū","苹果 píngguǒ","冷 lěng","暖和 nuǎnhuo","朋友 péngyou","火车 huǒchē","海 hǎi","森林 sēnlín","鱼 yú","高兴 gāoxìng","累 lèi","饿 è","钥匙 yàoshi","窗户 chuānghu","门 mén","太阳 tàiyáng"],
+ tips:{"火车 huǒchē":"Sanatarkasti ”tulivaunu” – höyryjunan ajoilta.","森林 sēnlín":"Merkissä on viisi puuta 木 – metsä!","大 dà":"Merkki näyttää ihmiseltä, joka levittää kätensä: ”näin iso!”","小 xiǎo":"Kiinassa sävy muuttaa merkityksen: mā, má, mǎ, mà ovat eri sanoja.","明天 míngtiān":"今天 tänään, 明天 huomenna, 昨天 eilen – kaikissa 天 = päivä.","你好 nǐ hǎo":"Sanatarkasti ”sinä hyvä”."},
+ fill:[
+  ["Wǒ ___ Tāngmǐ.","jiào",["yǒu","zhù","hē"],"Minun nimeni on Tommi. (我叫汤米。)","叫 jiào = olla nimeltään.","","我叫汤米。"],
+  ["Wǒ ___ zài Hèlèixīnjī.","zhù",["jiào","hē","chī"],"Asun Helsingissä. (我住在赫尔辛基。)","住 zhù = asua.","","我住在赫尔辛基。"],
+  ["Tā ___ yì zhī gǒu.","yǒu",["shì","jiào","zhù"],"Hänellä on koira. (她有一只狗。)","有 yǒu = olla jollakin, omistaa.","","她有一只狗。"],
+  ["Wǒ ___ kāfēi.","hē",["chī","kàn","shuì"],"Juon kahvia. (我喝咖啡。)","喝 hē = juoda, 吃 chī = syödä.","","我喝咖啡。"],
+  ["Wǒ ___ miànbāo.","chī",["hē","kàn","zhù"],"Syön leipää. (我吃面包。)","吃 chī = syödä.","","我吃面包。"],
+  ["Nǐ jiào ___ míngzi?","shénme",["nǎr","shéi","jǐ"],"Mikä sinun nimesi on? (你叫什么名字？)","什么 shénme = mikä/mitä.","","你叫什么名字？"],
+  ["Nǐ zhù zài ___?","nǎr",["shénme","shéi","jǐ"],"Missä asut? (你住在哪儿？)","哪儿 nǎr = missä. Kysymyssana jää samalle paikalle kuin vastaus!","","你住在哪儿？"],
+  ["Nǐ hǎo ___?","ma",["de","le","hěn"],"Mitä kuuluu? (你好吗？)","吗 ma lauseen lopussa tekee siitä kysymyksen – kuin suomen -ko/-kö.","","你好吗？"],
+  ["Wǒ ___ Fēnlán rén.","shì",["yǒu","jiào","hē"],"Olen suomalainen. (我是芬兰人。)","是 shì = olla (joku tai jotakin).","","我是芬兰人。"],
+  ["Wǒ ___ gāoxìng.","hěn",["shì","yǒu","ma"],"Olen iloinen. (我很高兴。)","Adjektiivin kanssa ei käytetä 是 shì, vaan 很 hěn (”hyvin”).","","我很高兴。"],
+  ["Xiànzài ___ diǎn.","sān",["èr","sì","liù"],"Kello on nyt kolme. (现在三点。)","1 yī, 2 èr, 3 sān, 4 sì, 5 wǔ, 6 liù.","(kello on kolme)","现在三点。"],
+  ["Wǒ yǒu liǎng ___ māo.","zhī",["běn","bēi","zhāng"],"Minulla on kaksi kissaa. (我有两只猫。)","Kiinassa luvun ja sanan väliin tulee mittasana: eläimille 只 zhī.","","我有两只猫。"],
+  ["Yì ___ shū.","běn",["zhī","bēi","tiáo"],"Yksi kirja. (一本书。)","Kirjan mittasana on 本 běn.","","一本书。"],
+  ["Míngtiān ___!","jiàn",["chī","hē","dà"],"Nähdään huomenna! (明天见！)","见 jiàn = nähdä.","","明天见！"],
+  ["Wǒ bù ___.","dǒng",["jiào","chī","zhù"],"En ymmärrä. (我不懂。)","不 bù = ei. 懂 dǒng = ymmärtää.","(en ymmärrä)","我不懂。"],
+  ["Wǒ xǐhuan hē ___.","chá",["māo","shū","mén"],"Pidän teen juomisesta. (我喜欢喝茶。)","茶 chá = tee. Siitä tulee myös suomen ”tee” ja ruotsin ”te”!","","我喜欢喝茶。"],
+  ["___ jiàn!","Zài",["Nǐ","Hǎo","Wǒ"],"Näkemiin! (再见！)","再见 zàijiàn = sanatarkasti ”taas nähdään”.","","再见！"]
+ ]},
+zu:{name:"Zulu",gen:"zuluksi",flag:"🇿🇦",tts:"zu-ZA",
+ words:["sawubona","ngiyabonga","inja","ikati","indlu","amanzi","isinkwa","ubisi",null,null,null,"namuhla","kusasa","izolo","incwadi","i-apula",null,null,"umngane","isitimela","ulwandle","ihlathi","inhlanzi",null,null,null,"ukhiye","ifasitela","umnyango","ilanga"],
+ tips:{"sawubona":"Sanatarkasti ”me näemme sinut”. Vastataan: yebo, sawubona.","ngiyabonga":"ngi- = minä. Ngiyabonga = minä kiitän.","isitimela":"Tulee englannin sanasta steamer – höyryjuna.","ikati":"Melkein sama kuin ruotsin katt!","ifasitela":"Tulee afrikaansin sanasta venster – ikkuna."},
+ fill:[]},
+eo:{name:"Esperanto",gen:"esperantoksi",flag:"💚",tts:"eo",
+ words:["saluton","dankon","hundo","kato","domo","akvo","pano","lakto","ruĝa","granda","malgranda","hodiaŭ","morgaŭ","hieraŭ","libro","pomo","malvarma","varma","amiko","trajno","maro","arbaro","fiŝo","feliĉa","laca","malsata","ŝlosilo","fenestro","pordo","suno"],
+ tips:{"malgranda":"mal- tekee vastakohdan: granda (iso) → malgranda (pieni).","malvarma":"varma (lämmin) → malvarma (kylmä).","arbaro":"arbo = puu, -ar- = joukko → arbaro = puiden joukko = metsä.","malsata":"sata = kylläinen → malsata = nälkäinen.","hundo":"Kaikki substantiivit loppuvat -o, adjektiivit -a.","ŝlosilo":"ŝlosi = lukita, -il- = väline → lukitsemisen väline."},
+ fill:[
+  ["Mi ___ Tommi.","nomiĝas",["havas","loĝas","trinkas"],"Minun nimeni on Tommi.","Nomiĝi = olla nimeltään."],
+  ["Mi ___ en Helsinko.","loĝas",["nomiĝas","manĝas","trinkas"],"Asun Helsingissä.","Loĝi = asua."],
+  ["Ŝi ___ hundon.","havas",["estas","loĝas","nomiĝas"],"Hänellä on koira.","Havi = omistaa. Nykyhetki loppuu aina -as."],
+  ["Ni ___ feliĉaj.","estas",["havas","loĝas","nomiĝas"],"Me olemme onnellisia.","Esti = olla. Sama muoto kaikille: mi estas, ni estas."],
+  ["Mi trinkas ___.","kafon",["kafo","kafa","kafoj"],"Juon kahvia.","Objekti saa -n-päätteen: kafo → kafon."],
+  ["Mi havas du ___.","katojn",["katon","katoj","kato"],"Minulla on kaksi kissaa.","Monikko -j, objekti -n → katojn."],
+  ["La domo estas ___.","granda",["grando","grandan","grande"],"Talo on iso.","Adjektiivi loppuu -a."],
+  ["Kiel vi ___?","fartas",["estas","havas","trinkas"],"Mitä kuuluu?","Kiel vi fartas? = Miten voit?","(mitä kuuluu?)"],
+  ["___ vi loĝas?","Kie",["Kio","Kiu","Kiam"],"Missä asut?","Kie = missä, kio = mikä, kiu = kuka, kiam = milloin."],
+  ["___ estas via nomo?","Kio",["Kie","Kiam","Kiom"],"Mikä sinun nimesi on?","Kio = mikä."],
+  ["Bonan ___!","matenon",["nokton","vesperon","tagon"],"Hyvää huomenta!","Toivotus on objekti, siksi -n: bonan matenon.","(sanotaan aamulla)"],
+  ["Mi venas ___ Finnlando.","el",["al","en","kun"],"Tulen Suomesta.","el = -sta, al = johonkin, en = jossakin."],
+  ["Estas la ___ horo.","tria",["dua","kvara","sesa"],"Kello on kolme.","tri = kolme, tria = kolmas. Kello kerrotaan järjestysluvulla.","(kello on kolme)"],
+  ["Ĉu vi povas ___ min?","helpi",["helpas","helpis","helpo"],"Voitko auttaa minua?","Perusmuoto loppuu -i. Ĉu tekee kysymyksen."],
+  ["Mi ne ___.","komprenas",["loĝas","trinkas","nomiĝas"],"En ymmärrä.","Kompreni = ymmärtää.","(en ymmärrä)"],
+  ["Hieraŭ mi ___ al la vendejo.","iris",["iras","iros","iri"],"Eilen menin kauppaan.","Mennyt aika: -is. Nyt: -as. Tuleva: -os."],
+  ["Morgaŭ mi ___ al Kalmaro.","iros",["iris","iras","iru"],"Huomenna menen Kalmariin.","Tuleva aika loppuu -os."],
+  ["Mi estas ___.","malsata",["sata","malgranda","malvarma"],"Minulla on nälkä.","sata = kylläinen, malsata = nälkäinen.","(minulla on nälkä)"]
+ ]},
+la:{name:"Latina",gen:"latinaksi",flag:"🏛️",tts:"it-IT",
+ words:["salve","gratias","canis","felis","domus","aqua","panis","lac","ruber","magnus","parvus","hodie","cras","heri","liber","malum","frigidus","calidus","amicus",null,"mare","silva","piscis","laetus","fessus","esuriens","clavis","fenestra","ianua","sol"],
+ tips:{"liber":"liber = kirja, mutta myös ”vapaa”!","malum":"malum = omena, mutta myös ”paha”.","aqua":"Tästä tulee akvaario.","cras":"Tästä englannin procrastinate = lykätä huomiseen.","sol":"Tästä aurinko-sanat kuten solaari.","felis":"Tästä kissaeläinten tieteellinen nimi Felidae.","magnus":"Kuten Kaarle Suuri, Carolus Magnus.","ianua":"Tästä tammikuu, January – vuoden ovi."},
+ fill:[
+  ["Nomen mihi ___ Tommi.","est",["sum","es","sunt"],"Nimeni on Tommi.","Sanatarkasti ”minulle on nimi Tommi”. est = on."],
+  ["Ego Romae ___.","habito",["habitas","habitat","habitare"],"Asun Roomassa.","Minä-muoto loppuu -o: habito."],
+  ["Ego laetus ___.","sum",["est","es","sunt"],"Olen iloinen.","sum = olen, es = olet, est = on."],
+  ["Puella canem ___.","habet",["habeo","habent","habere"],"Tytöllä on koira.","Hän-muoto loppuu -t: habet."],
+  ["Nos fessi ___.","sumus",["sunt","est","estis"],"Me olemme väsyneitä.","sumus = olemme, estis = olette, sunt = ovat."],
+  ["Canis aquam ___.","bibit",["bibo","bibunt","bibere"],"Koira juo vettä.","Huomaa objekti: aqua → aquam."],
+  ["Ave, ___!","amice",["amicus","amicum","amico"],"Terve, ystävä!","Puhuteltaessa amicus → amice.","(terve, ystävä!)"],
+  ["Gratias ___!","tibi",["tu","te","tuus"],"Kiitos sinulle!","tibi = sinulle."],
+  ["___ est?","Quis",["Quid","Ubi","Cur"],"Kuka se on?","quis = kuka, quid = mikä, ubi = missä, cur = miksi.","(kuka se on?)"],
+  ["___ habitas?","Ubi",["Quis","Quid","Cur"],"Missä asut?","ubi = missä."],
+  ["Duo ___.","canes",["canis","canem","cani"],"Kaksi koiraa.","canis → canes (monikko)."],
+  ["Veni, vidi, ___.","vici",["vinco","vincit","victor"],"Tulin, näin, voitin.","Julius Caesarin kuuluisa lause. Kaikki ovat minä-muotoja menneessä ajassa."],
+  ["Carpe ___!","diem",["dies","die","dierum"],"Tartu päivään!","dies = päivä, objektina diem."],
+  ["Errare humanum ___.","est",["sum","sunt","esse"],"Erehtyminen on inhimillistä.","Tunnettu sanonta."],
+  ["Ars longa, vita ___.","brevis",["magna","parva","bona"],"Taide on pitkä, elämä lyhyt.","brevis = lyhyt. Tästä tulee esim. englannin brief."],
+  ["Hodie ___ frigidum.","est",["sum","sunt","es"],"Tänään on kylmä.","hodie = tänään, frigidus = kylmä."]
+ ]}
+};
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=(arr,n,not)=>shuffle(arr.filter(x=>x!==not)).slice(0,n);
+const LET=["A","B","C","D"],ROUND=10;
+let lang="sv";
+try{const s=localStorage.getItem("kielipeli-kieli");if(s&&L[s])lang=s;}catch(e){}
+
+function wordQ(){
+  const D=L[lang],idx=FI.map((_,j)=>j).filter(j=>D.words[j]),k=idx[Math.floor(Math.random()*idx.length)],w=D.words[k],f=FI[k],tip=D.tips[w]||"";
+  const fis=idx.map(j=>FI[j]),ws=idx.map(j=>D.words[j]);
+  if(Math.random()<0.6) return {kind:"Sana",q:`Mitä tarkoittaa <b>${w}</b>?`,hint:"",answer:f,opts:shuffle([f,...pick(fis,3,f)]),speak:w,expl:`<b>${w}</b> = ${f}. ${tip}`,key:w};
+  return {kind:"Sana",q:`Miten sanotaan ${D.gen||D.name.toLowerCase()+"ksi"} <b>${f}</b>?`,hint:"",answer:w,opts:shuffle([w,...pick(ws,3,w)]),speak:w,expl:`${f} = <b>${w}</b>. ${tip}`,key:w};
+}
+function fillQ(it){
+  const [s,a,wr,tr,ex,h,sp]=it;
+  return {kind:"Täydennä lause",q:s.replace("___",'<span class="blank">?</span>'),hint:h||"",answer:a,opts:shuffle([a,...wr]),speak:sp||s.replace("___",a),expl:`<i>${s.replace("___","<b>"+a+"</b>")}</i> = ${tr}<br>${ex}`,key:s};
+}
+function build(mode){
+  if(!L[lang].fill.length)mode="words";
+  const fills=shuffle(L[lang].fill),out=[],seen=new Set();let fi=0;
+  while(out.length<ROUND){
+    const f=mode==="fill"||(mode==="mix"&&out.length%2===1);
+    const q=f?fillQ(fills[fi++%fills.length]):wordQ();
+    if(seen.has(q.key))continue;seen.add(q.key);out.push(q);
+  }
+  return out;
+}
+
+/* Ääni */
+let voices=[];
+function lv(){try{voices=speechSynthesis.getVoices()||[];}catch(e){}}
+try{if("speechSynthesis" in window){lv();speechSynthesis.onvoiceschanged=lv;}}catch(e){}
+function speak(t){try{const code=L[lang].tts;if(L[lang].say)t=L[lang].say(t);const u=new SpeechSynthesisUtterance(t);u.lang=code;const v=voices.find(x=>x.lang&&x.lang.replace("_","-").toLowerCase().startsWith(code.slice(0,2)));if(v)u.voice=v;u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+
+/* Kielivalinta */
+function drawLangs(){
+  const box=$("langs");box.innerHTML="";
+  Object.keys(L).forEach(k=>{
+    const b=document.createElement("button");
+    b.textContent=L[k].flag+" "+L[k].name;b.setAttribute("aria-pressed",k===lang);
+    b.onclick=()=>{lang=k;try{localStorage.setItem("kielipeli-kieli",k);}catch(e){}drawLangs();showBest();};
+    box.appendChild(b);
+  });
+}
+function showModes(){const has=L[lang].fill.length>0;document.querySelectorAll('.mode[data-mode="fill"],.mode[data-mode="mix"]').forEach(b=>b.classList.toggle("hidden",!has));}
+function showBest(){showModes();let b=null;try{b=localStorage.getItem("kielipeli-paras-"+lang);}catch(e){}$("best").textContent=b?`Paras tuloksesi (${L[lang].name.toLowerCase()}): ${b}/${ROUND}`:"";}
+
+let mode,qs,i,score,missed;
+function start(m){mode=m;qs=build(m);i=0;score=0;missed=[];
+  $("start").classList.add("hidden");$("end").classList.add("hidden");$("game").classList.remove("hidden");show();}
+function show(){
+  const q=qs[i];
+  $("count").textContent=`${L[lang].flag} Kysymys ${i+1}/${ROUND}`;
+  $("pts").textContent=`Pisteet: ${score}`;
+  $("prog").style.width=(i/ROUND*100)+"%";
+  $("kind").textContent=q.kind;$("question").innerHTML=q.q;$("hint").textContent=q.hint;
+  $("say").classList.toggle("hidden",!("speechSynthesis" in window));
+  $("fb").className="fb hidden";$("next").classList.add("hidden");
+  const box=$("opts");box.innerHTML="";
+  q.opts.forEach((o,k)=>{const b=document.createElement("button");b.innerHTML=`<b>${LET[k]}</b><span></span>`;b.querySelector("span").textContent=o;b.onclick=()=>answer(b,o);box.appendChild(b);});
+}
+function answer(btn,o){
+  const q=qs[i],ok=o===q.answer;
+  [...$("opts").children].forEach(b=>{b.disabled=true;if(b.querySelector("span").textContent===q.answer)b.classList.add("right");});
+  if(ok)score++;else{btn.classList.add("wrong");missed.push(q);}
+  if(q.kind!=="Sana")$("question").innerHTML=q.q.replace('<span class="blank">?</span>',`<span class="blank">${q.answer}</span>`);
+  const fb=$("fb");fb.className="fb "+(ok?"ok":"no");
+  fb.innerHTML=(ok?"✅ <b>Oikein!</b> ":"❌ <b>Melkein!</b> Oikea vastaus: <b>"+q.answer+"</b><br>")+q.expl;
+  $("pts").textContent=`Pisteet: ${score}`;
+  $("next").textContent=i===ROUND-1?"Katso tulos →":"Seuraava →";$("next").classList.remove("hidden");
+}
+function next(){i++;if(i<ROUND)show();else end();}
+function end(){
+  $("game").classList.add("hidden");$("end").classList.remove("hidden");
+  $("stars").textContent=score>=9?"★★★":score>=6?"★★☆":score>=3?"★☆☆":"☆☆☆";
+  $("final").textContent=`${score} / ${ROUND} oikein`;
+  $("msg").textContent=score===10?"Täydet pisteet – mahtavaa!":score>=7?"Hienosti meni!":score>=4?"Ei hassumpaa – jatka harjoittelua.":"Ei hätää – harjoitus tekee mestarin.";
+  try{const b=+localStorage.getItem("kielipeli-paras-"+lang)||0;if(score>b)localStorage.setItem("kielipeli-paras-"+lang,score);}catch(e){}
+  $("review").innerHTML=missed.length?"<b>Kertaa nämä:</b><ul>"+missed.map(q=>`<li>${q.expl}</li>`).join("")+"</ul>":"";
+}
+document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>start(b.dataset.mode));
+$("next").onclick=next;$("say").onclick=()=>speak(qs[i].speak);
+$("again").onclick=()=>start(mode);
+$("home").onclick=()=>{$("end").classList.add("hidden");$("start").classList.remove("hidden");showBest();};
+drawLangs();showBest();
+</script>
+<script src="i18n.js"></script>
+<script data-goatcounter="https://tommitampio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body></html>
