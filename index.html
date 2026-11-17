@@ -1590,9 +1590,9 @@ header .meta { padding-right: 7.5rem; }
     { nimi: "Mikko, Marskin mies", id: "b7c367ce-4b2b-4f89-9079-fbfddd04c5de" }
   ];
   var TEKSTIT = {
-    fi: { virhe: "Ei lataudu – kuuntele ", tekija: "Tommi Tampio · tehty ", linkki: "Sunolla", seur: "Seuraava kappale", sulje: "Sulje" },
-    sv: { virhe: "Laddas inte – lyssna på ", tekija: "Tommi Tampio · gjord med ", linkki: "Suno", seur: "Nästa låt", sulje: "Stäng" },
-    en: { virhe: "Won’t load – listen on ", tekija: "Tommi Tampio · made with ", linkki: "Suno", seur: "Next song", sulje: "Close" }
+    fi: { virhe: "Ei lataudu – kuuntele ", virheLinkki: "Sunossa", tekija: "Tommi Tampio · tehty ", linkki: "Sunolla", seur: "Seuraava kappale", sulje: "Sulje" },
+    sv: { virhe: "Laddas inte – lyssna på ", virheLinkki: "Suno", tekija: "Tommi Tampio · gjord med ", linkki: "Suno", seur: "Nästa låt", sulje: "Stäng" },
+    en: { virhe: "Won’t load – listen on ", virheLinkki: "Suno", tekija: "Tommi Tampio · made with ", linkki: "Suno", seur: "Next song", sulje: "Close" }
   };
   var soitin = new Audio(), nro = 0, eiLataudu = false, virheita = 0;
   soitin.preload = "none";
@@ -1611,7 +1611,7 @@ header .meta { padding-right: 7.5rem; }
     nimiEl.textContent = k.nimi;
     tekijaEl.textContent = eiLataudu ? t.virhe : t.tekija;
     var a = document.createElement("a");
-    a.href = "https://suno.com/song/" + k.id; a.target = "_blank"; a.rel = "noopener"; a.textContent = eiLataudu ? "Suno" : t.linkki;
+    a.href = "https://suno.com/song/" + k.id; a.target = "_blank"; a.rel = "noopener"; a.textContent = eiLataudu ? t.virheLinkki : t.linkki;
     tekijaEl.appendChild(a);
     seurBtn.setAttribute("aria-label", t.seur); seurBtn.title = t.seur;
   }
