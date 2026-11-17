@@ -256,7 +256,14 @@ a.go:hover { border-color: var(--accent); }
 .quote .q-orig span { font-style: normal; }
 .quote figcaption { margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted); }
 
-header .meta { padding-right: 4.75rem; }
+header .meta { padding-right: 7.5rem; }
+.lang { display: flex; align-items: center; gap: 0.4rem; }
+.musa-btn { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0; font: inherit; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; cursor: pointer; }
+.musa-btn:hover { color: var(--fg); }
+.musa-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.musa-btn[aria-pressed="true"] svg { animation: musa-kei 1.6s ease-in-out infinite; }
+@keyframes musa-kei { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .musa-btn[aria-pressed="true"] svg { animation: none; } }
 .lang { position: absolute; top: 1rem; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 20; }
 .lang-btn { display: inline-flex; align-items: center; gap: 0.35rem; font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; }
 .lang-btn:hover, .lang-btn[aria-expanded="true"] { color: var(--fg); }
@@ -1547,6 +1554,105 @@ header .meta { padding-right: 4.75rem; }
     })
     .catch(function () {});
   new MutationObserver(nayta).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+})();
+</script>
+<script>
+/* Taustamusiikki: oletuksena hiljaa. Nappi kielivalitsimen vieressä.
+   Musiikki tehdään selaimessa (Web Audio), joten äänitiedostoja ei tarvita. */
+(function () {
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  var LABEL = {
+    fi: ["Soita taustamusiikkia", "Hiljennä musiikki"],
+    sv: ["Spela bakgrundsmusik", "Stäng av musiken"],
+    en: ["Play background music", "Stop the music"]
+  };
+  var ctx, master, delay, soi = false, ajastin, seuraava = 0, askel = 0;
+  // Rauhallinen sointukierto: Am – F – C – G (taajuudet hertseinä)
+  var SOINNUT = [
+    [220.00, 261.63, 329.63],
+    [174.61, 220.00, 261.63],
+    [196.00, 261.63, 329.63],
+    [196.00, 246.94, 293.66]
+  ];
+  var MELODIA = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.5]; // pentatoninen: C D E G A C
+  var TAHTI = 4.0; // sekuntia per sointu
+
+  function alusta() {
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0;
+    var suodin = ctx.createBiquadFilter(); suodin.type = "lowpass"; suodin.frequency.value = 2200;
+    delay = ctx.createDelay(); delay.delayTime.value = 0.42;
+    var palaute = ctx.createGain(); palaute.gain.value = 0.35;
+    delay.connect(palaute); palaute.connect(delay); delay.connect(suodin);
+    master.connect(suodin); suodin.connect(ctx.destination);
+  }
+  function savel(f, alku, kesto, voima, tyyppi, kaiku) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = tyyppi; o.frequency.value = f;
+    g.gain.setValueAtTime(0, alku);
+    g.gain.linearRampToValueAtTime(voima, alku + (tyyppi === "sine" && kesto > 2 ? 1.2 : 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, alku + kesto);
+    o.connect(g); g.connect(master); if (kaiku) g.connect(delay);
+    o.start(alku); o.stop(alku + kesto + 0.05);
+  }
+  function tahti(t) {
+    var s = SOINNUT[askel % SOINNUT.length];
+    s.forEach(function (f) { savel(f, t, TAHTI + 1.5, 0.05, "sine", false); });
+    savel(s[0] / 2, t, TAHTI + 1, 0.06, "sine", false);
+    // soittorasiamainen melodia: muutama sävel per tahti, välillä tauko
+    for (var i = 0; i < 8; i++) {
+      if (Math.random() < 0.45) continue;
+      var f = MELODIA[Math.floor(Math.random() * MELODIA.length)];
+      savel(f, t + i * (TAHTI / 8), 1.8, 0.035, "triangle", true);
+    }
+    askel++;
+  }
+  function kierros() {
+    while (seuraava < ctx.currentTime + 1.5) { tahti(seuraava); seuraava += TAHTI; }
+  }
+  function paalle() {
+    if (!ctx) alusta();
+    ctx.resume();
+    seuraava = ctx.currentTime + 0.1;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 2);
+    kierros(); ajastin = setInterval(kierros, 500);
+  }
+  function pois() {
+    clearInterval(ajastin);
+    var nyt = ctx.currentTime;
+    master.gain.cancelScheduledValues(nyt);
+    master.gain.setValueAtTime(master.gain.value, nyt);
+    master.gain.linearRampToValueAtTime(0, nyt + 1);
+    setTimeout(function () { if (!soi) ctx.suspend(); }, 1200);
+  }
+
+  var nappi = document.createElement("button");
+  nappi.type = "button"; nappi.className = "musa-btn";
+  nappi.setAttribute("data-noi18n", ""); nappi.setAttribute("aria-pressed", "false");
+  nappi.innerHTML = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="M9 18V5l12-2v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+  function otsikko() {
+    var l = LABEL[document.documentElement.lang] || LABEL.fi;
+    var t = l[soi ? 1 : 0];
+    nappi.setAttribute("aria-label", t); nappi.title = t;
+  }
+  nappi.addEventListener("click", function () {
+    soi = !soi;
+    nappi.setAttribute("aria-pressed", soi ? "true" : "false");
+    if (soi) paalle(); else pois();
+    otsikko();
+  });
+  new MutationObserver(otsikko).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  otsikko();
+
+  function kiinnita() {
+    var box = document.querySelector(".lang");
+    if (box) box.insertBefore(nappi, box.firstChild);
+    else { setTimeout(kiinnita, 50); }
+  }
+  kiinnita();
 })();
 </script>
 <script data-goatcounter="https://tommitampio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
