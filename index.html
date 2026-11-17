@@ -264,6 +264,14 @@ header .meta { padding-right: 7.5rem; }
 .musa-btn[aria-pressed="true"] svg { animation: musa-kei 1.6s ease-in-out infinite; }
 @keyframes musa-kei { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
 @media (prefers-reduced-motion: reduce) { .musa-btn[aria-pressed="true"] svg { animation: none; } }
+.musa-palkki { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 0.6rem; max-width: calc(100vw - 24px); padding: 0.45rem 0.5rem 0.45rem 0.9rem; font-size: 0.85rem; color: var(--fg); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.musa-palkki[hidden] { display: none; }
+.musa-tiedot { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.musa-nimi { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.musa-tekija { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+.musa-tekija a { color: inherit; }
+.musa-pieni { flex: none; width: 1.9rem; height: 1.9rem; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); background: none; border: 1px solid var(--rule); border-radius: 999px; cursor: pointer; font: inherit; }
+.musa-pieni:hover { color: var(--fg); }
 .lang { position: absolute; top: 1rem; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 20; }
 .lang-btn { display: inline-flex; align-items: center; gap: 0.35rem; font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; }
 .lang-btn:hover, .lang-btn[aria-expanded="true"] { color: var(--fg); }
@@ -1558,10 +1566,9 @@ header .meta { padding-right: 7.5rem; }
 </script>
 <script>
 /* Taustamusiikki: oletuksena hiljaa. Nappi kielivalitsimen vieressä.
-   Musiikki tehdään selaimessa (Web Audio), joten äänitiedostoja ei tarvita. */
+   Soittaa Tommin omia Suno-kappaleita. Jos ne eivät lataudu, varalla on selaimessa tehty soittorasiamusiikki. */
 (function () {
   var AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return;
   var LABEL = {
     fi: ["Soita taustamusiikkia", "Hiljennä musiikki"],
     sv: ["Spela bakgrundsmusik", "Stäng av musiken"],
@@ -1579,6 +1586,7 @@ header .meta { padding-right: 7.5rem; }
   var TAHTI = 4.0; // sekuntia per sointu
 
   function alusta() {
+    if (!AC) return;
     ctx = new AC();
     master = ctx.createGain(); master.gain.value = 0;
     var suodin = ctx.createBiquadFilter(); suodin.type = "lowpass"; suodin.frequency.value = 2200;
@@ -1613,6 +1621,7 @@ header .meta { padding-right: 7.5rem; }
   }
   function paalle() {
     if (!ctx) alusta();
+    if (!ctx) return;
     ctx.resume();
     seuraava = ctx.currentTime + 0.1;
     master.gain.cancelScheduledValues(ctx.currentTime);
@@ -1638,12 +1647,72 @@ header .meta { padding-right: 7.5rem; }
     var t = l[soi ? 1 : 0];
     nappi.setAttribute("aria-label", t); nappi.title = t;
   }
+  // Omat kappaleet (Suno). Uuden kappaleen saa lisäämällä rivin tähän listaan.
+  var KAPPALEET = [
+    { nimi: "Painakaa numeroa 1", id: "40e0b864-8802-4991-959a-fe2d4acefd7e" },
+    { nimi: "Mikko, Marskin mies", id: "b7c367ce-4b2b-4f89-9079-fbfddd04c5de" }
+  ];
+  var TEKSTIT = {
+    fi: { tekija: "Tommi Tampio · tehty ", linkki: "Sunolla", seur: "Seuraava kappale", sulje: "Sulje" },
+    sv: { tekija: "Tommi Tampio · gjord med ", linkki: "Suno", seur: "Nästa låt", sulje: "Stäng" },
+    en: { tekija: "Tommi Tampio · made with ", linkki: "Suno", seur: "Next song", sulje: "Close" }
+  };
+  var soitin = new Audio(), nro = 0, generoitu = false, virheita = 0;
+  soitin.preload = "none";
+  var palkki = document.createElement("div");
+  palkki.className = "musa-palkki"; palkki.hidden = true; palkki.setAttribute("data-noi18n", "");
+  palkki.setAttribute("role", "status");
+  palkki.innerHTML = '<div class="musa-tiedot"><span class="musa-nimi"></span><span class="musa-tekija"></span></div>' +
+    '<button type="button" class="musa-pieni musa-seur"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M5 5l10 7-10 7zM17 5h2.5v14H17z"/></svg></button>';
+  document.body.appendChild(palkki);
+  var nimiEl = palkki.querySelector(".musa-nimi"), tekijaEl = palkki.querySelector(".musa-tekija"), seurBtn = palkki.querySelector(".musa-seur");
+
+  function palkkiTeksti() {
+    var t = TEKSTIT[document.documentElement.lang] || TEKSTIT.fi;
+    var k = KAPPALEET[nro];
+    if (generoitu) { nimiEl.textContent = "♫"; tekijaEl.textContent = ""; seurBtn.hidden = true; return; }
+    seurBtn.hidden = KAPPALEET.length < 2;
+    nimiEl.textContent = k.nimi;
+    tekijaEl.textContent = t.tekija;
+    var a = document.createElement("a");
+    a.href = "https://suno.com/song/" + k.id; a.target = "_blank"; a.rel = "noopener"; a.textContent = t.linkki;
+    tekijaEl.appendChild(a);
+    seurBtn.setAttribute("aria-label", t.seur); seurBtn.title = t.seur;
+  }
+  function soitaKappale(i) {
+    nro = (i + KAPPALEET.length) % KAPPALEET.length;
+    soitin.src = "https://cdn1.suno.ai/" + KAPPALEET[nro].id + ".mp3";
+    palkkiTeksti();
+    var lupaus = soitin.play();
+    if (lupaus && lupaus.catch) lupaus.catch(function () {});
+  }
+  soitin.addEventListener("ended", function () { soitaKappale(nro + 1); });
+  soitin.addEventListener("playing", function () { virheita = 0; });
+  soitin.addEventListener("error", function () {
+    if (!soi) return;
+    virheita++;
+    if (virheita < KAPPALEET.length) { soitaKappale(nro + 1); return; }
+    // Kappaleet eivät lataudu: soitetaan varalla selaimen tekemää musiikkia
+    generoitu = true; palkkiTeksti(); paalle();
+  });
+  seurBtn.addEventListener("click", function () { virheita = 0; soitaKappale(nro + 1); });
+
   nappi.addEventListener("click", function () {
     soi = !soi;
     nappi.setAttribute("aria-pressed", soi ? "true" : "false");
-    if (soi) paalle(); else pois();
+    if (soi) {
+      palkki.hidden = false;
+      if (generoitu) { palkkiTeksti(); paalle(); }
+      else if (soitin.src && soitin.currentTime > 0 && !soitin.ended) { soitin.play().catch(function () {}); palkkiTeksti(); }
+      else soitaKappale(nro);
+    } else {
+      palkki.hidden = true;
+      soitin.pause();
+      if (generoitu && ctx) pois();
+    }
     otsikko();
   });
+  new MutationObserver(palkkiTeksti).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   new MutationObserver(otsikko).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   otsikko();
 
