@@ -56,6 +56,10 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 #introTxt h1 span{display:block;font-size:.55em;letter-spacing:.35em}
 #introTxt .ln{font-size:clamp(13px,2.3vw,19px);color:#fff;max-width:640px;margin:2px 0;opacity:0;text-shadow:0 2px 6px #000}
 #introGo{margin-top:10px;opacity:0;animation:fin 1s forwards,pulse 1.4s infinite;pointer-events:auto;background:#f5c400;color:#222;border:none;border-radius:999px;padding:12px 28px;font-size:clamp(16px,2.6vw,22px);font-weight:900;box-shadow:0 4px 0 #8a6a00}
+#intro.wait *{animation-play-state:paused!important}
+#pro{position:fixed;inset:0;z-index:30;background:#000;cursor:pointer;transition:opacity .6s}#pro canvas{position:absolute;inset:0;width:100%;height:100%}
+#proCap{position:absolute;left:0;right:0;bottom:7%;text-align:center;color:#fff;font-weight:800;font-size:clamp(16px,3.4vw,28px);text-shadow:0 2px 8px #000,0 0 18px #000;transition:opacity .4s;padding:0 16px}
+#proSkip{position:absolute;right:12px;top:12px;background:#0008;color:#fff;border:1px solid #fff6;border-radius:10px;padding:6px 12px;font-size:14px}
 @keyframes fin{to{opacity:1}}@keyframes pop{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
 @keyframes pulse{50%{transform:scale(1.07)}}
 .zb{background:#3d2323;color:#fff;border:1px solid #6b3b3b;border-radius:10px;width:34px;padding:6px 0;font-size:15px;font-weight:900;cursor:pointer}
@@ -1045,7 +1049,7 @@ function drawAntic(u,c,sx,sy,k,lw,T){
     const tw=Math.floor(T*4)%2;ctx.fillStyle="#fff3a0";ctx.beginPath();ctx.arc(sx+(tw?9:-9),sy-12,1.4,0,7);ctx.fill();}
 }
 
-function gv(u){return ((u.id||0)*7+3)%3;}
+function gv(u){return (Math.floor(u.id||0)*7+3)%3;}
 const WOOD=[["#e8bd78","#8a5a24","#5a3412"],["#e89a30","#3a1a08","#4a2a10"],["#9a5a2a","#2e1608","#2a1a10"]]; // vaalea, sunburst, tumma
 function drawTamb(x,y,rot,k,acc){ // tamburiini
   ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(k,k);
@@ -1081,7 +1085,7 @@ function drawGuitar(x,y,rot,k,v){ // akustinen kitara: x-akseli kaulaa pitkin, k
   ctx.restore();
 }
 // jättiläisbändin jäsenet: jokaisella oma tyyli
-function bandLook(u){const i=(u.id||0);return{hat:i%5,shades:(i*3)%4===1,beard:(i*5)%3===0};}
+function bandLook(u){const i=Math.floor(u.id||0);return{hat:i%5,shades:(i*3)%4===1,beard:(i*5)%3===0};}
 function drawGiantHead(u,hx,hy,acc){
   const L=bandLook(u),i=u.id||0;
   if(L.beard){ctx.fillStyle="#3a2412";ctx.beginPath();ctx.moveTo(hx-1,hy+2);ctx.quadraticCurveTo(hx+2,hy+9,hx+5.6,hy+3);ctx.quadraticCurveTo(hx+3,hy+4.2,hx-1,hy+2);ctx.fill();}
@@ -1620,6 +1624,95 @@ function loop(now){
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
 if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
 state="intro";
+/* ================= ALKUNÄYTÖS: autotalli → kiertuebussi → kitara murskaa patsaan ================= */
+const PROCAP={"en": ["It all started in a garage…", "…then the band hit the road…", "…and the guitars got LOUDER…", "Now the whole world is waiting.", "Skip ▶"], "fi": ["Kaikki alkoi autotallista…", "…sitten bändi lähti tien päälle…", "…ja kitarat soivat yhä KOVEMPAA…", "Nyt koko maailma odottaa.", "Ohita ▶"], "sv": ["Allt började i ett garage…", "…sedan gav sig bandet ut på vägarna…", "…och gitarrerna blev allt HÖGRE…", "Nu väntar hela världen.", "Hoppa över ▶"], "de": ["Alles begann in einer Garage…", "…dann ging die Band auf Tour…", "…und die Gitarren wurden immer LAUTER…", "Jetzt wartet die ganze Welt.", "Überspringen ▶"], "es": ["Todo empezó en un garaje…", "…luego la banda salió de gira…", "…y las guitarras sonaron cada vez MÁS FUERTE…", "Ahora el mundo entero espera.", "Saltar ▶"], "fr": ["Tout a commencé dans un garage…", "…puis le groupe a pris la route…", "…et les guitares ont joué de plus en plus FORT…", "Maintenant, le monde entier attend.", "Passer ▶"]};
+(function prologue(){
+  const intro=$("intro");if(!intro)return;intro.classList.add("wait");
+  const P=PROCAP[lang]||PROCAP.en,box=document.createElement("div");box.id="pro";
+  box.innerHTML='<canvas></canvas><div id="proCap"></div><button id="proSkip"></button>';document.body.appendChild(box);
+  const cv=box.querySelector("canvas"),cap=box.querySelector("#proCap");box.querySelector("#proSkip").textContent=P[4];
+  const D1=2.8,D2=2.8,D3=5.6,TOT=D1+D2+D3;let t0=0,an=0,done=false,lastCap=-1,parts=[],conf=[];
+  const savedG=G;G={fake:true,time:0,winner:-1,units:[],statues:[],theme:"dusk",banners:[],gibs:[],ghosts:[],sparks:[],notes:[],pops:[],says:[],leaves:[]};
+  function setCap(i){if(i===lastCap)return;lastCap=i;cap.style.opacity=0;setTimeout(()=>{cap.textContent=P[i]||"";cap.style.opacity=1;},180);}
+  function finish(){if(done)return;done=true;cancelAnimationFrame(an);ctx=mainCtx;G=savedG;box.style.opacity=0;intro.classList.remove("wait");setTimeout(()=>box.remove(),650);}
+  box.addEventListener("click",finish);
+  function unit(o){drawUnit(Object.assign({team:0,y:0,face:1,moving:false,phase:0,atk:0,hp:1,max:1},o));}
+  function frame(now){an=requestAnimationFrame(frame);if(!t0)t0=now;const T=(now-t0)/1000;if(T>=TOT){finish();return;}
+    const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;if(cv.width!==Math.round(r.width*d)){cv.width=r.width*d;cv.height=r.height*d;}
+    const c=cv.getContext("2d"),Wd=r.width,Hd=r.height,k=Math.min(Wd/480,Hd/300);ctx=c;G.time=T;
+    c.setTransform(d,0,0,d,0,0);c.fillStyle="#000";c.fillRect(0,0,Wd,Hd);
+    c.setTransform(d*k,0,0,d*k,d*(Wd-480*k)/2,d*(Hd-300*k)/2);
+    const X0=-(Wd/k-480)/2,XW=Wd/k,Y0=-(Hd/k-300)/2,YH=Hd/k;
+    let st,sl;if(T<D1){st=0;sl=T/D1;}else if(T<D1+D2){st=1;sl=(T-D1)/D2;}else{st=2;sl=(T-D1-D2)/D3;}
+    const lt=sl*(st===0?D1:st===1?D2:D3);
+    if(st===0){ // AUTOTALLI
+      setCap(0);c.fillStyle="#2a1e16";c.fillRect(X0,Y0,XW,YH);c.fillStyle="#3a2a1e";c.fillRect(X0,232,XW,YH);
+      c.strokeStyle="#3a2c22";c.lineWidth=3;for(let y=20;y<230;y+=26){c.beginPath();c.moveTo(X0,y);c.lineTo(X0+XW,y);c.stroke();}
+      const sw=Math.sin(T*2.2)*0.25,bx=240+Math.sin(sw)*60,by=20+Math.cos(sw)*60;c.strokeStyle="#111";c.lineWidth=1.5;c.beginPath();c.moveTo(240,20);c.lineTo(bx,by);c.stroke();
+      const gl=c.createRadialGradient(bx,by,2,bx,by+60,220);gl.addColorStop(0,"rgba(255,220,140,0.55)");gl.addColorStop(1,"rgba(255,220,140,0)");c.fillStyle=gl;c.fillRect(X0,Y0,XW,YH);
+      c.fillStyle="#ffe9a0";c.beginPath();c.arc(bx,by+4,5,0,7);c.fill();
+      for(const ax of[70,410]){c.fillStyle="#141414";c.fillRect(ax-24,170,48,62);c.fillStyle="#2a2a2a";c.beginPath();c.arc(ax,198,15,0,7);c.fill();c.fillStyle="#e8b000";c.fillRect(ax-20,174,40,4);}
+      const id=(15-(T%15))/2.3+0.05;
+      c.save();c.translate(0,0);
+      unit({id,type:"giant",x:165,y:232,sc:2.4});
+      unit({id:101,type:"sword",x:250,y:232,sc:1.7,atk:(T*1.6%1)<0.3?0.2:0});
+      unit({id:102,type:"archer",x:310,y:232,sc:1.7,cd:(T%1.6)});
+      unit({id:103,type:"spear",x:360,y:232,sc:1.7,face:-1});c.restore();
+      c.fillStyle="#fff";c.font="bold 16px system-ui";for(let i=0;i<3;i++){const q=(T*0.7+i*0.33)%1;c.globalAlpha=1-q;c.fillText(i%2?"♫":"♪",150+i*70+q*20,150-q*80);}c.globalAlpha=1;}
+    else if(st===1){ // KIERTUEBUSSI YÖLLÄ
+      setCap(1);const g=c.createLinearGradient(0,Y0,0,240);g.addColorStop(0,"#05051a");g.addColorStop(1,"#3a1a4a");c.fillStyle=g;c.fillRect(X0,Y0,XW,YH);
+      c.fillStyle="#fff";for(let i=0;i<50;i++){c.globalAlpha=0.4+0.6*Math.abs(Math.sin(T*2+i));c.fillRect(X0+((i*97)%XW),Y0+((i*53)%160),1.5,1.5);}c.globalAlpha=1;
+      c.fillStyle="#ffe9c0";c.beginPath();c.arc(400,60,18,0,7);c.fill();
+      const off=(lt*160)%120;c.fillStyle="#120a20";for(let x=X0-120+((-lt*60)%60+60)%60-60,i=0;x<X0+XW+60;x+=60,i++){const h=40+((Math.floor((x+lt*60)/60)*37)%7)*14;c.fillRect(x,215-h,50,h);
+        c.fillStyle="#ffd36a";for(let yy=215-h+6;yy<210;yy+=10)for(let xx=x+5;xx<x+45;xx+=9)if(((xx*7+yy*3+i)|0)%4<2)c.fillRect(xx,yy,3,4);c.fillStyle="#120a20";}
+      c.fillStyle="#1a1a22";c.fillRect(X0,215,XW,YH);c.fillStyle="#e8e070";for(let x=X0-off;x<X0+XW;x+=120)c.fillRect(x,252,60,4);
+      const bb=Math.sin(T*18)*1.2;c.save();c.translate(240,232+bb);c.scale(2.6,2.6);
+      c.fillStyle="#e33";c.strokeStyle="#120a20";c.lineWidth=1.2;c.beginPath();c.roundRect?c.roundRect(-40,-26,80,30,5):c.rect(-40,-26,80,30);c.fill();c.stroke();
+      c.fillStyle="#bfe6ff";for(const wx of[-35,-22,-9,4,17])c.fillRect(wx,-21,11,9);c.fillRect(30,-21,8,14);
+      c.fillStyle="#f5c400";c.font="900 6px system-ui";c.textAlign="center";c.fillText("STRINGS & STATUES",-2,-4);c.fillText("WORLD TOUR",-2,2);
+      c.fillStyle="#111";for(const wx of[-24,24]){c.beginPath();c.arc(wx,5,6,0,7);c.fill();}c.fillStyle="#aaa";for(const wx of[-24,24]){c.beginPath();c.arc(wx,5,2.4,0,7);c.fill();}
+      const hl=c.createLinearGradient(40,0,120,0);hl.addColorStop(0,"rgba(255,250,200,0.6)");hl.addColorStop(1,"rgba(255,250,200,0)");c.fillStyle=hl;c.beginPath();c.moveTo(39,-6);c.lineTo(120,-16);c.lineTo(120,10);c.closePath();c.fill();
+      c.restore();c.textAlign="left";}
+    else{ // STADION: JÄTTILÄINEN MURSKAA PATSAAN KITARALLA
+      const gy=250,sx=330,hit=2.25;
+      const g=c.createLinearGradient(0,Y0,0,gy);g.addColorStop(0,"#05030c");g.addColorStop(1,"#24102e");c.fillStyle=g;c.fillRect(X0,Y0,XW,YH);
+      for(let r=0;r<10;r++){const y=40+r*19;for(let x=X0+(r%2)*4;x<X0+XW;x+=8){const q=((x*13+r*29)|0)%17;if(q<3){c.globalAlpha=0.3+0.6*Math.abs(Math.sin(T*3+x+r));c.fillStyle=q<1?"#ffe9a0":["#ff4ad8","#2a9aff","#ffe21a"][r%3];c.fillRect(x,y,2,2);}}}c.globalAlpha=1;
+      c.globalCompositeOperation="lighter";for(let i=0;i<6;i++){const a=Math.PI/2+Math.sin(T*0.8)*0.4+(i-2.5)*0.04;c.globalAlpha=0.18;c.fillStyle=SPECTRUM[i];c.beginPath();c.moveTo(240,Y0);c.lineTo(240+Math.cos(a-0.02)*500,Y0+Math.sin(a-0.02)*500);c.lineTo(240+Math.cos(a+0.02)*500,Y0+Math.sin(a+0.02)*500);c.fill();}
+      const sp=c.createRadialGradient(sx-70,gy,4,sx-70,gy,120);sp.addColorStop(0,"rgba(255,250,220,0.35)");sp.addColorStop(1,"rgba(255,250,220,0)");c.globalAlpha=1;c.fillStyle=sp;c.fillRect(sx-200,gy-200,260,240);c.globalCompositeOperation="source-over";
+      c.fillStyle="#2a1e2e";c.fillRect(X0,gy,XW,YH);
+      // tärinä iskun jälkeen
+      const shk=lt>hit&&lt<hit+0.5?(1-(lt-hit)/0.5)*7:0;c.save();c.translate((Math.random()-0.5)*shk,(Math.random()-0.5)*shk);
+      // patsas
+      const S={team:1,x:0,hp:lt<hit?1:0.2,max:1,size:1,alive:lt<hit+0.12,shake:0};
+      c.save();c.translate(sx,gy+2);c.scale(0.82,0.82);c.translate(0,-GY);drawStatue(S);c.restore();
+      if(lt>=hit&&!parts.length){for(let i=0;i<34;i++)parts.push({x:sx+(Math.random()-0.5)*40,y:gy-60-Math.random()*110,vx:40+Math.random()*200,vy:-120-Math.random()*220,r:3+Math.random()*7,a:Math.random()*6,va:(Math.random()-0.5)*12});
+        for(let i=0;i<120;i++)conf.push({x:240+(Math.random()-0.5)*300,y:Y0-10-Math.random()*80,vy:40+Math.random()*60,vx:(Math.random()-0.5)*40,a:Math.random()*6,va:(Math.random()-0.5)*8,col:SPECTRUM[i%6]});}
+      // jättiläinen kävelee, kohottaa kitaran, lyö hidastetusti ja tuulettaa
+      let ux,atk=0,mv=false,fin;
+      if(lt<1.2){ux=60+lt/1.2*(sx-165);mv=true;}else ux=sx-105;
+      if(lt>=1.2&&lt<1.85)atk=0.35;else if(lt>=1.85&&lt<hit)atk=0.35*(1-(lt-1.85)/(hit-1.85));else if(lt>=hit&&lt<hit+0.6)atk=0.001;
+      if(lt>hit+1.1)fin="guitar";
+      unit({id:7,type:"giant",x:ux,y:gy,sc:3.1,moving:mv,phase:lt*7,atk,fin});
+      // kappaleet ja pöly
+      for(const p of parts){p.vy+=520/60;p.x+=p.vx/60;p.y+=p.vy/60;p.a+=p.va/60;if(p.y>gy){p.y=gy;p.vy*=-0.3;p.vx*=0.6;}
+        c.save();c.translate(p.x,p.y);c.rotate(p.a);c.fillStyle="#7a1a1a";c.fillRect(-p.r,-p.r*0.7,p.r*2,p.r*1.4);c.fillStyle="#9a9a9a";c.fillRect(-p.r*0.7,-p.r*0.5,p.r*1.2,p.r);c.restore();}
+      c.restore();
+      if(lt>=hit&&lt<hit+0.18){c.fillStyle="rgba(255,255,255,"+(1-(lt-hit)/0.18)+")";c.fillRect(X0,Y0,XW,YH);}
+      if(lt>=hit&&lt<hit+1.6){const q=(lt-hit)/1.6,sc=Math.min(1,(lt-hit)*6)*(1+q*0.15);c.save();c.translate(250,95);c.rotate(-0.12);c.scale(sc,sc);c.globalAlpha=Math.min(1,(1-q)*3);
+        c.fillStyle="#ffe21a";c.beginPath();for(let i=0;i<22;i++){const a=i/22*Math.PI*2,rr=i%2?70:44;c.lineTo(Math.cos(a)*rr*1.5,Math.sin(a)*rr*0.8);}c.closePath();c.fill();c.strokeStyle="#111";c.lineWidth=3;c.stroke();
+        c.fillStyle="#d22";c.strokeStyle="#111";c.lineWidth=4;c.font="900 34px system-ui";c.textAlign="center";c.strokeText("KERRANG!",0,12);c.fillText("KERRANG!",0,12);c.restore();c.globalAlpha=1;}
+      for(const q of conf){q.y+=q.vy/60;q.x+=q.vx/60;q.a+=q.va/60;c.save();c.translate(q.x,q.y);c.rotate(q.a);c.fillStyle=q.col;c.fillRect(-3,-1.5,6,3);c.restore();}
+      // eturivin yleisö
+      for(let x=X0-10;x<X0+XW+10;x+=11){const id=(x*7)|0,bob=Math.abs(Math.sin(T*(lt>hit?9:5)+id))*(lt>hit?6:3);c.fillStyle="#0a0610";c.beginPath();c.arc(x,gy+30-bob,6,0,7);c.fill();c.fillRect(x-7,gy+34-bob,14,60);
+        if(id%3===0){c.strokeStyle="#0a0610";c.lineWidth=3;c.beginPath();c.moveTo(x+4,gy+32-bob);c.lineTo(x+9,gy+12-bob);c.stroke();if(id%2===0){c.fillStyle="#ffd060";c.fillRect(x+8,gy+8-bob,2.5,3);}}}
+      setCap(lt<hit?2:(lt>hit+1.4?3:lastCap));
+      if(lt>D3-0.6){c.fillStyle="rgba(0,0,0,"+((lt-(D3-0.6))/0.6)+")";c.fillRect(X0,Y0,XW,YH);}}
+    // häivytykset kohtausten välillä
+    const fadeIn=Math.max(0,1-lt/0.35),fadeOut=st<2?Math.max(0,1-((st===0?D1:D2)-lt)/0.35):0,fa=Math.max(fadeIn,fadeOut);
+    if(fa>0){c.fillStyle="rgba(0,0,0,"+fa+")";c.fillRect(X0,Y0,XW,YH);}
+    ctx=mainCtx;}
+  an=requestAnimationFrame(frame);
+})();
 (function intro(){
   $("iWel").textContent=t("introWel");$("introGo").textContent=t("introGo");
   const L=t("introLines");L.forEach((x,i)=>{const d=document.createElement("div");d.className="ln";d.textContent=x;d.style.animation=`fin .9s ${1.6+i*0.9}s forwards`;$("iLines").appendChild(d);});
