@@ -211,9 +211,9 @@ const UT={
   giant :{icon:'<svg viewBox="0 0 28 28" width="26" height="26"><g transform="rotate(-40 14 14)"><rect x="-1" y="12.4" width="13" height="3.2" fill="#5a3412"/><rect x="-4" y="11.5" width="4" height="5" rx="1" fill="#3a1e08"/><ellipse cx="15" cy="14" rx="4.6" ry="4.2" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="22" cy="14" rx="6.4" ry="5.8" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="17.5" cy="14" rx="2.6" ry="2.4" fill="#e89a30"/><circle cx="17" cy="14" r="2" fill="#1a0a04"/><rect x="22.8" y="11.6" width="1.4" height="4.8" fill="#2a160a"/><line x1="-2" y1="14" x2="23.5" y2="14" stroke="#fff" stroke-width=".4"/></g></svg>',cost:1200,pop:4,hp:1500,spd:30,dmg:75,range:48, rate:2.2,train:10,size:2.1,splash:45,armor:0.15},
 };
 const ORDER=["miner","sword","archer","spear","giant"];
-const W=2400,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
+const W=1800,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
 const STATUE_HP=2500,MINE_TIME=2.4,BASE_CARRY=60;
-const MINES_X=[440,660,900,1200,1500,1740,1960];
+const MINES_X=[400,560,730,900,1070,1240,1400];
 const DIFF={
   easy  :{miners:4,units:["sword","sword","archer"],think:2.6,income:0.8,attackPow:600,tower:0,hpMul:0.9,reward:4},
   normal:{miners:6,units:["sword","archer","spear","sword","archer"],think:1.6,income:1.0,attackPow:900,tower:0,hpMul:1.1,reward:7},
@@ -325,6 +325,9 @@ function readSlot(key){try{return JSON.parse(localStorage.getItem(key))}catch(e)
 function loadGame(key){
   const d=readSlot(key||"tikkusota_peli");
   if(!d||!d.units)return false;
+  // vanha, pidempi kenttä: skaalaa sijainnit uuteen kokoon
+  const oldW=d.statues&&d.statues[1]?d.statues[1].x+170:W;if(oldW!==W){const f=(W-340)/(oldW-340),fx=x=>170+(x-170)*f;
+    for(const u of d.units){u.x=fx(u.x);if(u.tx!=null)u.tx=fx(u.tx);}d.statues[1].x=W-170;d.mines=MINES_X.map(x=>({x,y:GY+12,slots:[]}));for(const u of d.units)if(u.mine>=d.mines.length)u.mine=-1;d.camX=0;}
   for(const m of d.mines)m.slots=[null,null,null,null];
   for(const u of d.units){u.mine=u.mine>=0?d.mines[u.mine]:null;if(u.mine){const i=u.mine.slots.indexOf(null);if(i<0){u.mine=null;if(u.state==="mining")u.state="toMine";}else{u.mine.slots[i]=u.id;u.slot=i;}}}
   nextId=d.nextId||1;camX=d.camX||0;delete d.camX;delete d.nextId;
@@ -641,7 +644,7 @@ function aiThink(){
   else{if(!tm.wish)tm.wish=D.units[Math.floor(Math.random()*D.units.length)];
     if(buy(1,tm.wish))tm.wish=null;}
   const my=armyPow(1),pl=armyPow(0);
-  const threat=armyPow(0,W-900,W);
+  const threat=armyPow(0,W-700,W);
   if(threat>=600&&my<pl*0.35)tm.mode="retreat";
   else if(threat>0&&my<pl*1.3)tm.mode="defend";
   else if((my>=D.attackPow&&my>pl*1.15)||(my>=400&&my>pl*2))tm.mode="attack";
@@ -874,6 +877,18 @@ function drawBg(){
   ctx.fillStyle=g;ctx.fillRect(camX-5,-400,vw+10,720);
   // katsomo (parallaksi 0.3): kaartuvat rivit täynnä yleisöä
   const P=0.3,x0=camX*(1-P)-20,x1=x0+vw+40;ctx.save();ctx.translate(camX*P,0);
+  // ylätasanne: pystyruudulla taivaan tilalle lisää katsomoa
+  const yTop=-offY/scale-4;if(yTop<118){const deck=Math.max(yTop,-60);
+    // katto ristikkoineen ja riippuvine valoineen ylimpänä
+    if(yTop<deck){ctx.fillStyle="#06040a";ctx.fillRect(x0,yTop,x1-x0,deck-yTop+2);ctx.strokeStyle="#1c1a26";ctx.lineWidth=1.2;
+      for(let x=Math.floor(x0/40)*40;x<x1;x+=40){ln(x,deck-6,x+20,deck-26);ln(x+20,deck-26,x+40,deck-6);}ln(x0,deck-6,x1,deck-6);ln(x0,deck-26,x1,deck-26);
+      for(let x=Math.floor(x0/120)*120+60;x<x1;x+=120){const sw=Math.sin(T*1.5+x)*0.4;ctx.fillStyle="#2a2a34";ctx.fillRect(x-4,deck-6,8,6);const gl=ctx.createRadialGradient(x,deck+2,1,x,deck+2,14);gl.addColorStop(0,SPECTRUM[(x/120|0)%6]);gl.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=gl;ctx.fillRect(x-14,deck-12,28,28);}}
+    ctx.fillStyle=shade(V.stand,-0.3);ctx.fillRect(x0,deck,x1-x0,124-deck);
+    const urh=11;for(let y=118-urh,r=0;y>deck-urh;y-=urh,r++){ctx.fillStyle=r%2?shade(V.stand,-0.15):shade(V.seat,-0.15);ctx.fillRect(x0,y,x1-x0,urh+0.5);
+      const sp=6,hr=1.4;for(let x=Math.floor(x0/sp)*sp+(r%2)*3;x<x1;x+=sp){const id=(Math.floor(x/sp)*37+r*13)&1023,bob=((T*4+id)%6<1.2)?-1:0;
+        ctx.fillStyle=id%9===0?V.fans[id%3]:shade(V.seat,0.1+(id%5)*0.05);ctx.beginPath();ctx.arc(x,y+urh*0.5+bob,hr,0,7);ctx.fill();
+        if(id%29===0){ctx.globalAlpha=0.3+0.7*Math.abs(Math.sin(T*3+id));ctx.fillStyle=id%2?"#fff6b0":"#cfe8ff";ctx.fillRect(x-0.8,y+1+bob,1.6,1.6);ctx.globalAlpha=1;}}}
+    ctx.fillStyle="#0a0610";ctx.fillRect(x0,118,x1-x0,8);ctx.fillStyle=V.fans[0];for(let x=Math.floor(x0/90)*90;x<x1;x+=90){ctx.fillRect(x,119,40,5);}}
   const top=192,bot=326,rows=12,rh=(bot-top)/rows;
   ctx.fillStyle="#0a0610";ctx.fillRect(x0,top-14,x1-x0,14);ctx.fillStyle=shade(V.stand,0.25);ctx.fillRect(x0,top-4,x1-x0,4);
   for(let r=0;r<rows;r++){const y=top+r*rh;ctx.fillStyle=r%2?V.stand:V.seat;ctx.fillRect(x0,y,x1-x0,rh+0.5);
