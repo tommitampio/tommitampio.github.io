@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tähtipelaaja</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#1b1f24;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
+  #app{max-width:480px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;padding:10px 10px 12px;gap:10px;background:linear-gradient(#2a3038,#1b1f24)}
+  .board{display:flex;align-items:stretch;border-radius:10px;overflow:hidden;font-weight:800;box-shadow:0 3px 0 #0006}
+  .board .t{flex:1;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-size:15px;letter-spacing:.5px}
+  .board .home{background:linear-gradient(#2d5bdc,#1b3fae)}
+  .board .away{background:linear-gradient(#e2262b,#b0161a)}
+  .board .sc{font-size:22px}
+  .board .clock.cheat{background:#ffd23a;box-shadow:inset 0 0 8px #fff}
+  .board .clock{background:#eee;color:#222;padding:0 10px;display:flex;align-items:center;font-size:17px;min-width:52px;justify-content:center}
+  .energy{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+  .bar{flex:1;height:14px;background:#0008;border-radius:7px;overflow:hidden;border:1px solid #fff2}
+  .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#3ad13a,#8be04a);transition:width .3s}
+  #panel{flex:1;position:relative;background:#111;border-radius:12px;overflow:hidden;border:2px solid #333}
+  #feed{position:absolute;inset:0;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .ev{background:linear-gradient(#e83a3e,#bb1c20);border-radius:7px;padding:9px 10px;font-size:14px;display:flex;gap:8px;align-items:center;animation:pop .25s}
+  .ev.us{background:linear-gradient(#3b66e6,#2041b5)}
+  .ev.big{background:linear-gradient(#ffd23a,#e7a600);color:#222;font-weight:800}
+  .ev.mid{background:#333;color:#ccc;justify-content:center}
+  .ev b{background:#fff;color:#222;border-radius:50%;min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:12px}
+  @keyframes pop{from{transform:scale(.9);opacity:0}}
+  #pitch{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#2f7d2f}
+  #pitch.on{display:flex}
+  canvas{touch-action:none;display:block}
+  .btns{display:flex;gap:10px}
+  button{flex:1;border:none;border-radius:10px;padding:13px 8px;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(#58c73a,#2f9a1c);box-shadow:0 3px 0 #1d6b10;font-family:inherit}
+  button:active{transform:translateY(2px);box-shadow:0 1px 0 #1d6b10}
+  button:disabled{opacity:.4}
+  button.hard{background:linear-gradient(#ff9d2a,#d86a00);box-shadow:0 3px 0 #8a4400}
+  button.armed{background:linear-gradient(#ffd23a,#e7a600);color:#222}
+  .cover{position:absolute;inset:0;background:#000c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;z-index:5}
+  .cover h1{font-size:30px}
+  .cover p{color:#ccc;font-size:15px;line-height:1.45}
+  .cover input{font-size:18px;padding:10px;border-radius:8px;border:none;text-align:center;width:200px;font-family:inherit}
+  .cover button{flex:none;width:220px}
+  .cover a.back{color:#9cc3ff;font-size:14px;text-decoration:none}
+  .stats{font-size:17px;line-height:1.8}
+  .grade{font-size:56px;font-weight:900;color:#ffd23a}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="board">
+    <div class="t home"><span>SINISET</span><span class="sc" id="us">0</span></div>
+    <div class="clock" id="clock">0'</div>
+    <div class="t away"><span class="sc" id="them">0</span><span>PUNAISET</span></div>
+  </div>
+  <div class="energy">❤️ Voimat <div class="bar"><i id="en"></i></div></div>
+  <div id="panel">
+    <div id="feed"></div>
+    <div id="pitch"><canvas id="cv"></canvas></div>
+    <div class="cover" id="startCover">
+      <h1>⚽ Tähtipelaaja</h1>
+      <p>Olet Sinisten hyökkääjä. Ottelu etenee selostuksena. Kun saat tilaisuuden, <b>vedä sormella taaksepäin</b> kuin ritsalla ja päästä irti.<br>Pitkä veto = kova potku. Liian kova menee yli!</p>
+      <input id="nameIn" value="Tampio" maxlength="14">
+      <button id="startBtn">⚽ Ottelu</button>
+      <button id="pensBtn">🥅 Rangaistuspotkut</button>
+      <a class="back" href="pelit.html">‹ Takaisin peleihin</a>
+    </div>
+  </div>
+  <div class="btns">
+    <button id="workBtn">Työteho: tavallinen</button>
+    <button id="focusBtn">Keskity (3)</button>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const W = 300, H = 400;
+const GOAL_L = 114, GOAL_R = 186, GOAL_Y = 32;
+const MATES = ["Virtanen","Korhonen","Mäkinen","Nieminen","Laine","Heikkinen","Koskinen","Järvinen"];
+const IHMEET = [
+  "Lokki nappaa pallon ja pudottaa sen suoraan maaliin!",
+  "Tuulenpuuska kääntää pallon verkkoon!",
+  "Maalivahti liukastuu banaaninkuoreen — pallo vierii sisään!",
+  "Pallo kimpoaa tuomarin selästä maaliin!",
+  "Pallo pomppii kolme kertaa ristikkoon ja lopulta sisään!",
+  "Puolustaja yrittää potkaista pois, mutta potkaisee omaan maaliin!",
+  "Maalivahti on juuri sitomassa kengännauhojaan!",
+  "Pallo osuu kaistaleeseen, nousee kuin raketti ja tipahtaa yläkulmaan!",
+  "Katsomosta lentää toinen pallo, ja hämmentynyt maalivahti torjuu väärän!",
+  "Kenttäkoira juoksee pallon kanssa maaliin. Tuomari hyväksyy!",
+  "Pallo jää hetkeksi ilmaan leijumaan ja kaartaa sitten maaliin!",
+  "Tampio laukoo selkä edellä, eikä kukaan ymmärrä mitä tapahtui. Maali!"
+];
+const PUNAISET = ["Andersson","Lindqvist","Berg","Nyström","Holm","Sjöberg","Ek","Dahl"];
+const OHI_IHMEET = [
+  "kompastuu omaan kengännauhaansa ja pallo vierii hitaasti maalivahdin syliin!",
+  "potkaisee niin kovaa, että kenkä lentää maaliin — pallo jää pilkulle!",
+  "säikähtää katsomon lokkia ja potkaisee ohi!",
+  "liukastuu ja pallo lentää katsomoon!",
+  "potkaisee pallon kuuhun asti. Ei maalia!"
+];
+const BACK = '<a class="back" href="pelit.html">‹ Takaisin peleihin</a>';
+const rnd = (a,b) => a + Math.random()*(b-a);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+let S = null, name = "Tampio", ticker = null, scene = null;
+
+// ---------- Ottelu ----------
+function newMatch(){
+  S = {min:0, us:0, them:0, energy:100, goals:0, assists:0, missed:0, chances:0,
+       focus:3, focusArmed:false, hard:false, phase:"match", lastChance:0, cheat:false, mode:"match", added:99};
+  $("feed").innerHTML = "";
+  updateUI();
+  say("Alkupotku! Ottelu on käynnissä.", "mid", 0);
+  clearInterval(ticker);
+  ticker = setInterval(tick, 420);
+}
+
+function tick(){
+  if (S.phase !== "match") return;
+  S.min++;
+  S.energy = clamp(S.energy - (S.hard ? 0.55 : 0.3), 0, 100);
+  if (S.min === 45){ halftime(); return; }
+  if (S.min === 90){
+    S.added = 1 + Math.floor(Math.random() * 4);
+    say(`Lisäaikaa ${S.added} minuuttia.`, "mid");
+  }
+  if (S.min >= 90 + S.added){ endMatch(); return; }
+
+  const chanceP = S.hard ? 0.09 : 0.055;
+  const oppGoalP = S.hard ? 0.010 : 0.015;
+  const r = Math.random();
+  if (S.cheat && Math.random() < 0.05) {
+    S.us++; S.goals++; say("MAALI! " + pick(IHMEET).replace("Tampio", name), "big");
+  }
+  else if (r < chanceP || S.min - S.lastChance > 17) { startChance(); }
+  else if (r < chanceP + oppGoalP) {
+    S.them++; say(pick(["MAALI! Punaiset iskevät.","Punaiset tekevät maalin kulmapotkusta.","Punaisten laukaus löytää yläkulman. Maali."]), "big");
+  }
+  else if (r < chanceP + oppGoalP + 0.004) {
+    S.us++; say(`MAALI! ${pick(MATES)} viimeistelee Sinisille!`, "big");
+  }
+  else if (r < 0.32) {
+    if (Math.random() < 0.55) say(pick([
+      `${name} liikkuu paljon`, `${name} voittaa kaksinkamppailun`, `${name} hakee palloa keskikentältä`,
+      "Siniset pitävät palloa", `${name} juoksee laitaa pitkin`, `${name} painostaa puolustajia`]), "us");
+    else say(pick(["Punaiset painostavat","Punaisten laukaus menee ohi","Sinisten maalivahti torjuu",
+      "Punaiset saavat vapaapotkun","Punaiset pitävät palloa"]), "");
+  }
+  updateUI();
+}
+
+function say(txt, cls, min){
+  const d = document.createElement("div");
+  d.className = "ev " + (cls||"");
+  const m = min ?? S.min;
+  const badge = typeof m === "string" ? m : m + "'";
+  d.innerHTML = cls === "mid" ? txt : `<b>${badge}</b><span>${txt}</span>`;
+  $("feed").prepend(d);
+}
+
+function updateUI(){
+  $("us").textContent = S.us; $("them").textContent = S.them;
+  $("clock").textContent = (S.mode === "pens" ? "RP" : S.min > 90 ? "90+" + (S.min - 90) + "'" : S.min + "'") + (S.cheat ? "✨" : "");
+  document.querySelector(".btns").style.display = S.mode === "pens" ? "none" : "";
+  document.querySelector(".energy").style.display = S.mode === "pens" ? "none" : "";
+  $("clock").classList.toggle("cheat", !!S.cheat);
+  $("en").style.width = S.energy + "%";
+  $("en").style.background = S.energy > 50 ? "" : S.energy > 25 ? "linear-gradient(90deg,#e6c12a,#f0d54a)" : "linear-gradient(90deg,#e33,#f66)";
+  const fb = $("focusBtn");
+  fb.textContent = S.focusArmed ? "Keskittynyt ✓" : `Keskity (${S.focus})`;
+  fb.disabled = S.focus <= 0 && !S.focusArmed;
+  fb.classList.toggle("armed", S.focusArmed);
+  const wb = $("workBtn");
+  wb.textContent = S.hard ? "Työteho: kova" : "Työteho: tavallinen";
+  wb.classList.toggle("hard", S.hard);
+}
+
+function halftime(){
+  S.phase = "halftime";
+  updateUI();
+  say("Puoliaika!", "mid");
+  const c = document.createElement("div");
+  c.className = "cover";
+  c.innerHTML = `<h1>☕ Puoliaika</h1>
+    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset<br>
+    ${name}: ${S.goals} maalia, ${S.assists} syöttöpistettä</div>
+    <p>Pukukopissa juodaan mehua. Voimat palautuvat vähän.</p>
+    <button>Toinen puoliaika ▶</button>`;
+  c.querySelector("button").onclick = () => {
+    c.remove();
+    S.energy = clamp(S.energy + 25, 0, 100);
+    say("Toinen puoliaika alkaa!", "mid");
+    S.phase = "match"; updateUI();
+  };
+  $("panel").appendChild(c);
+}
+
+function grade(){
+  let g = 6 + S.goals*1.0 + S.assists*0.6 - S.missed*0.15;
+  if (S.us > S.them) g += 0.5; else if (S.us < S.them) g -= 0.3;
+  g = clamp(Math.round(g*2)/2, 4, 10);
+  return Number.isInteger(g) ? String(g) : Math.floor(g) + "½";
+}
+
+function endMatch(){
+  S.phase = "end"; clearInterval(ticker);
+  updateUI();
+  say("Loppuvihellys!", "mid");
+  let best = 0;
+  try { best = +localStorage.getItem("tp_best") || 0; if (S.goals > best) localStorage.setItem("tp_best", S.goals); } catch(e){}
+  const res = S.us > S.them ? "Voitto! 🎉" : S.us === S.them ? "Tasapeli" : "Tappio";
+  const c = document.createElement("div");
+  c.className = "cover";
+  c.innerHTML = `<h1>${res}</h1>
+    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset<br>
+    ${name}: ${S.goals} maalia, ${S.assists} syöttöpistettä<br>
+    ${S.goals > best ? "🏆 Uusi ennätys!" : "Ennätys: " + best + " maalia"}</div>
+    <p>Arvosana</p><div class="grade">${grade()}</div>
+    <button>Uusi ottelu</button><button>🥅 Rangaistuspotkut</button>${BACK}`;
+  const bs = c.querySelectorAll("button");
+  bs[0].onclick = () => { c.remove(); newMatch(); };
+  bs[1].onclick = () => { c.remove(); startPens(); };
+  $("panel").appendChild(c);
+}
+
+// ---------- Tilanne kentällä ----------
+const cv = $("cv"), ctx = cv.getContext("2d");
+let scale = 1;
+
+function fitCanvas(){
+  const p = $("panel").getBoundingClientRect();
+  const w = Math.min(p.width, p.height * W / H);
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.width = w + "px"; cv.style.height = (w * H / W) + "px";
+  cv.width = Math.round(w * dpr); cv.height = Math.round(w * H / W * dpr);
+  scale = cv.width / W;
+}
+window.addEventListener("resize", () => { if (scene) fitCanvas(); });
+
+function startChance(){
+  S.phase = "chance"; S.lastChance = S.min; S.chances++;
+  S.energy = clamp(S.energy - (S.hard ? 8 : 5), 0, 100);
+  say(pick([`${name} saa pallon rangaistusalueen reunalla!`, `Pallo pomppii, ja ${name} ehtii ensin!`,
+            `${name} pääsee karkuun!`, `${name} saa mahdollisuuden!`]), "us");
+  updateUI();
+  setTimeout(openScene, 700);
+}
+
+function openScene(){
+  const focused = S.focusArmed;
+  if (focused){ S.focusArmed = false; }
+  const ball = {x: rnd(50, 250), y: rnd(150, 290), vx:0, vy:0};
+  const defenders = [];
+  const nd = S.cheat ? (Math.random() < 0.5 ? 0 : 1) : (Math.random() < 0.5 ? 1 : 2);
+  for (let i = 0; i < nd; i++){
+    // puolustajat sivummalle, ei suoraan pallon ja maalin väliin
+    const side = (i % 2 ? 1 : -1) * rnd(55, 85);
+    const t = rnd(0.35, 0.6);
+    defenders.push({x: clamp(ball.x + (150 - ball.x)*t + side, 15, 285), y: ball.y + (GOAL_Y - ball.y)*t});
+  }
+  const mates = [];
+  const nm = 1 + (Math.random() < 0.6 ? 1 : 0);
+  const names = [...MATES].sort(() => Math.random() - .5);
+  for (let i = 0; i < nm; i++){
+    mates.push({x: rnd(40, 260), y: rnd(70, 200), name: names[i]});
+  }
+  scene = {ball, defenders, mates, keeper:{x:150, y:GOAL_Y+5},
+    focused, timeLeft: focused ? 10 : 7, aim:null, flying:false, frames:0,
+    noise: focused ? 0 : (1 - S.energy/100) * 0.12, result:null, resultT:0, prevY:ball.y};
+  $("pitch").classList.add("on");
+  fitCanvas();
+  requestAnimationFrame(loop);
+}
+
+function toLogical(e){
+  const r = cv.getBoundingClientRect();
+  return {x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H};
+}
+cv.addEventListener("pointerdown", e => {
+  if (!scene || scene.flying || scene.result) return;
+  if (scene.save){
+    if (!scene.choice){
+      const p = toLogical(e);
+      scene.choice = p.x < W/3 ? "vasemmalle" : p.x > W*2/3 ? "oikealle" : "keskelle";
+      scene.guessX = p.x < W/3 ? 128 : p.x > W*2/3 ? 172 : 150;
+    }
+    return;
+  }
+  cv.setPointerCapture(e.pointerId);
+  const p = toLogical(e); scene.aim = {sx:p.x, sy:p.y, cx:p.x, cy:p.y};
+});
+cv.addEventListener("pointermove", e => {
+  if (!scene || !scene.aim) return;
+  const p = toLogical(e); scene.aim.cx = p.x; scene.aim.cy = p.y;
+});
+cv.addEventListener("pointerup", () => {
+  if (!scene || !scene.aim) return;
+  const a = scene.aim; scene.aim = null;
+  const dx = a.sx - a.cx, dy = a.sy - a.cy;
+  const power = Math.min(Math.hypot(dx, dy) / 110, 1);
+  if (power < 0.08) return;
+  const ang = Math.atan2(dy, dx) + rnd(-1, 1) * scene.noise;
+  const sp = 2.2 + power * 7.5 * (0.75 + 0.25 * S.energy / 100);
+  scene.ball.vx = Math.cos(ang) * sp; scene.ball.vy = Math.sin(ang) * sp;
+  scene.power = power; scene.flying = true; scene.frames = 0;
+  if (scene.pen) scene.guessX = pick([128, 150, 172]);
+});
+
+function finish(kind, text){
+  if (scene.result) return;
+  if (S.cheat && kind === "lost" && Math.random() < 0.6){
+    kind = "goal"; text = pick(IHMEET).replace("Tampio", name);
+  }
+  scene.result = {kind, text}; scene.resultT = 1.6;
+  scene.flying = false; scene.ball.vx = scene.ball.vy = 0;
+  if (kind === "goal"){ S.us++; S.goals++; say(text ? "MAALI! " + text : `MAALI! ${name} laukoo verkkoon!`, "big"); }
+  else if (kind === "assist"){ S.us++; S.assists++; say(text, "big"); }
+  else { S.missed++; say(text, ""); }
+  updateUI();
+}
+
+function receive(m){
+  const p = clamp(0.78 - (m.y - 40) / 300, 0.15, 0.72);
+  if (Math.random() < p) finish("assist", `MAALI! ${name} syöttää, ${m.name} viimeistelee!`);
+  else finish("lost", `Hyvä syöttö! ${m.name} laukoo, mutta maalivahti torjuu.`);
+}
+
+function step(){
+  const sc = scene, b = sc.ball;
+  if (sc.result){ sc.resultT -= 1/60; if (sc.resultT <= 0) closeScene(); return; }
+  if (!sc.flying && sc.save){
+    sc.countdown -= 1/60;
+    if (sc.countdown <= 0) launchOpp();
+    return;
+  }
+  if (!sc.flying && sc.pen) return;
+  if (!sc.flying){
+    sc.timeLeft -= 1/60;
+    for (const d of sc.defenders){
+      const dx = b.x - d.x, dy = b.y - d.y, L = Math.hypot(dx, dy) || 1;
+      if (L > 30){ d.x += dx/L * 0.07; d.y += dy/L * 0.07; }
+    }
+    if (sc.timeLeft <= 0) finish("lost", "Aikailit liikaa — puolustaja vie pallon.");
+    return;
+  }
+  sc.frames++;
+  sc.prevY = b.y;
+  b.x += b.vx; b.y += b.vy; b.vx *= 0.987; b.vy *= 0.987;
+
+  // maalivahti
+  if (sc.pen || sc.save){
+    if (sc.frames > 1 && !(sc.pen && S.cheat)) sc.keeper.x += clamp(sc.guessX - sc.keeper.x, -3, 3);
+  }
+  else if (sc.frames > 12 && b.vy < 0){
+    const tx = clamp(b.x + b.vx * ((b.y - GOAL_Y) / -b.vy), GOAL_L - 4, GOAL_R + 4);
+    const ks = S.cheat ? 0.4 : sc.focused ? 0.7 : 1.0;
+    sc.keeper.x += clamp(tx - sc.keeper.x, -ks, ks);
+  }
+  for (const d of sc.defenders) if (Math.hypot(d.x - b.x, d.y - b.y) < 9) return finish("lost", "Puolustaja katkaisee.");
+  for (const m of sc.mates) if (Math.hypot(m.x - b.x, m.y - b.y) < 14) return receive(m);
+
+  if (b.y <= GOAL_Y && sc.prevY > GOAL_Y){
+    let o;
+    if (Math.abs(b.x - GOAL_L) < 3 || Math.abs(b.x - GOAL_R) < 3) o = "post";
+    else if (b.x > GOAL_L && b.x < GOAL_R){
+      if (sc.forceOver || (sc.power > 0.93 && Math.random() < (sc.power - 0.93) * 6)) o = "over";
+      else if (Math.abs(sc.keeper.x - b.x) < 11) o = "saved";
+      else o = "goal";
+    } else o = "wide";
+    return outcome(o);
+  }
+  if (b.x < 0 || b.x > W || b.y > H || b.y < 0) return (sc.pen || sc.save) ? outcome("wide") : finish("lost", "Pallo karkaa ulos.");
+  if ((sc.pen || sc.save) && Math.hypot(b.vx, b.vy) < 0.25) return finishPen(sc.pen, false, "Liian heikko potku — maalivahti poimii pallon.");
+  if (Math.hypot(b.vx, b.vy) < 0.25){
+    const near = sc.mates.find(m => Math.hypot(m.x - b.x, m.y - b.y) < 24);
+    if (near) return receive(near);
+    finish("lost", "Syöttö jää vajaaksi — punaiset saavat pallon.");
+  }
+}
+
+function closeScene(){
+  scene = null;
+  $("pitch").classList.remove("on");
+  if (S.phase === "chance") S.phase = "match";
+  if (S.mode === "pens") setTimeout(nextPen, 500);
+}
+
+function loop(){
+  if (!scene) return;
+  step();
+  if (scene) draw();
+  requestAnimationFrame(loop);
+}
+
+function player(x, y, col, ring){
+  ctx.fillStyle = "#0004"; ctx.beginPath(); ctx.ellipse(x+2, y+4, 8, 4, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+  ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(x, y-1, 3.5, 0, 7); ctx.fill();
+  if (ring){ ctx.strokeStyle = "#ffd23a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.stroke(); }
+}
+function label(t, x, y){
+  ctx.font = "bold 9px system-ui"; ctx.textAlign = "center";
+  ctx.fillStyle = "#000a"; ctx.fillText(t, x+1, y+1); ctx.fillStyle = "#fff"; ctx.fillText(t, x, y);
+}
+
+function wrapText(t, x, y, maxW, lh){
+  const words = t.split(" "); let line = "", lines = [];
+  for (const w of words){
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line){ lines.push(line); line = w; } else line = test;
+  }
+  lines.push(line);
+  lines.forEach((l, i) => ctx.fillText(l, x, y + i*lh));
+}
+
+function draw(){
+  const sc = scene, b = sc.ball;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  for (let i = 0; i < 10; i++){ ctx.fillStyle = i % 2 ? "#3a8f34" : "#348530"; ctx.fillRect(0, i*40, W, 40); }
+  ctx.strokeStyle = "#fffc"; ctx.lineWidth = 2;
+  ctx.strokeRect(-2, GOAL_Y, W+4, H);
+  ctx.strokeRect(60, GOAL_Y, 180, 95);
+  ctx.strokeRect(100, GOAL_Y, 100, 35);
+  ctx.beginPath(); ctx.arc(150, GOAL_Y+95, 32, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+  ctx.beginPath(); ctx.arc(150, H+40, 60, Math.PI*1.2, Math.PI*1.8); ctx.stroke();
+  // maali
+  ctx.fillStyle = "#fff3"; ctx.fillRect(GOAL_L, GOAL_Y-16, GOAL_R-GOAL_L, 16);
+  ctx.strokeStyle = "#fff8"; ctx.lineWidth = 0.6;
+  for (let x = GOAL_L; x <= GOAL_R; x += 6){ ctx.beginPath(); ctx.moveTo(x, GOAL_Y-16); ctx.lineTo(x, GOAL_Y); ctx.stroke(); }
+  for (let y = GOAL_Y-16; y <= GOAL_Y; y += 5){ ctx.beginPath(); ctx.moveTo(GOAL_L, y); ctx.lineTo(GOAL_R, y); ctx.stroke(); }
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(GOAL_L, GOAL_Y); ctx.lineTo(GOAL_L, GOAL_Y-16); ctx.lineTo(GOAL_R, GOAL_Y-16); ctx.lineTo(GOAL_R, GOAL_Y); ctx.stroke();
+
+  player(sc.keeper.x, sc.keeper.y, sc.save ? "#f0b400" : "#2a2", false);
+  if (sc.save) label(name, sc.keeper.x, sc.keeper.y + 20);
+  for (const d of sc.defenders) player(d.x, d.y, "#d22", false);
+  for (const m of sc.mates){ player(m.x, m.y, "#2753d6", false); label(m.name, m.x, m.y - 13); }
+  if (!sc.flying && !sc.result){
+    if (sc.save){ player(b.x, b.y + 12, "#d22", false); label(sc.shooter, b.x, b.y + 33); }
+    else { player(b.x, b.y + 12, "#2753d6", true); label(name, b.x, b.y + 33); }
+  }
+
+  // tähtäysnuoli
+  if (sc.aim){
+    const dx = sc.aim.sx - sc.aim.cx, dy = sc.aim.sy - sc.aim.cy;
+    const p = Math.min(Math.hypot(dx, dy) / 110, 1);
+    if (p > 0.05){
+      const a = Math.atan2(dy, dx), L = 18 + p * 75;
+      const ex = b.x + Math.cos(a)*L, ey = b.y + Math.sin(a)*L;
+      ctx.strokeStyle = p > 0.93 ? "#ff2a2a" : p > 0.6 ? "#ffb02a" : "#ffe94a";
+      ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle; ctx.beginPath();
+      ctx.moveTo(ex + Math.cos(a)*10, ey + Math.sin(a)*10);
+      ctx.lineTo(ex + Math.cos(a+2.3)*9, ey + Math.sin(a+2.3)*9);
+      ctx.lineTo(ex + Math.cos(a-2.3)*9, ey + Math.sin(a-2.3)*9); ctx.fill();
+      // voimapalkki
+      ctx.fillStyle = "#0007"; ctx.fillRect(10, H-22, 120, 12);
+      ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(10, H-22, 120*p, 12);
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.strokeRect(10, H-22, 120, 12);
+      ctx.beginPath(); ctx.moveTo(10+108, H-22); ctx.lineTo(10+108, H-10); ctx.stroke();
+    }
+  }
+  // pallo
+  ctx.fillStyle = "#0005"; ctx.beginPath(); ctx.arc(b.x+2, b.y+2, 4, 0, 7); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#222"; ctx.lineWidth = 1; ctx.stroke();
+
+  // ajastin
+  if (sc.pen && !sc.flying && !sc.result && !sc.aim) label("Vedä taaksepäin ja päästä irti", 150, H - 52);
+  if (sc.save && !sc.flying && !sc.result){
+    ctx.fillStyle = "#ffffff14";
+    if (!sc.choice){ ctx.fillRect(0, 0, W/3 - 2, H); ctx.fillRect(W*2/3 + 2, 0, W/3, H); }
+    ctx.font = "bold 13px system-ui"; ctx.textAlign = "center";
+    label(sc.choice ? "Heittäydyt " + sc.choice + "!" : "Napauta: vasen · keski · oikea", 150, H - 70);
+    ctx.fillStyle = "#fff"; ctx.font = "900 40px system-ui";
+    ctx.fillText(Math.ceil(sc.countdown), 150, H - 25);
+  }
+  if (!sc.flying && !sc.result && !sc.pen && !sc.save){
+    const f = clamp(sc.timeLeft / (sc.focused ? 10 : 7), 0, 1);
+    ctx.fillStyle = "#000a"; ctx.beginPath(); ctx.arc(W-24, H-24, 16, 0, 7); ctx.fill();
+    ctx.strokeStyle = f > 0.3 ? "#fff" : "#f44"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(W-24, H-24, 14, -Math.PI/2, -Math.PI/2 + f*Math.PI*2); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 12px system-ui"; ctx.textAlign = "center";
+    ctx.fillText(Math.ceil(sc.timeLeft), W-24, H-20);
+    if (!sc.aim){ label("Vedä taaksepäin ja päästä irti", 150, H - 52); }
+    if (sc.focused) label("🎯 Keskittynyt", 150, H - 64);
+  }
+  // tulos
+  if (sc.result){
+    const g = sc.result.good ?? (sc.result.kind === "goal" || sc.result.kind === "assist");
+    ctx.fillStyle = g ? "#ffd23aee" : "#000b";
+    ctx.fillRect(0, H/2 - 34, W, 84);
+    ctx.fillStyle = g ? "#222" : "#fff"; ctx.textAlign = "center";
+    ctx.font = "900 30px system-ui";
+    ctx.fillText(sc.result.title || (g ? "MAALI!" : "Ei mennyt…"), W/2, H/2 + 2);
+    ctx.font = "bold 12px system-ui";
+    const sub = sc.result.kind === "goal" && !sc.result.text ? name + " tekee maalin!" : sc.result.text.replace("MAALI! ","");
+    wrapText(sub, W/2, H/2 + 20, W - 20, 13);
+  }
+}
+
+// ---------- Rangaistuspotkut ----------
+function startPens(){
+  clearInterval(ticker);
+  S = {mode:"pens", us:0, them:0, kicksUs:0, kicksThem:0, min:0, energy:100, focus:0,
+       focusArmed:false, hard:false, phase:"pens", cheat:false};
+  $("feed").innerHTML = "";
+  say("Rangaistuspotkukilpailu! Viisi potkua kummallekin. Sinä laukot — ja torjut maalivahtina.", "mid");
+  updateUI();
+  setTimeout(nextPen, 1200);
+}
+
+function nextPen(){
+  if (!S || S.mode !== "pens" || S.phase === "end") return;
+  const a = S.kicksUs, b = S.kicksThem;
+  if (a <= 5 && b <= 5 && (S.us > S.them + (5 - b) || S.them > S.us + (5 - a))) return endPens();
+  if (a >= 5 && a === b && S.us !== S.them) return endPens();
+  const ours = a === b;
+  const n = (ours ? a : b) + 1;
+  S.nextShooter = pick(PUNAISET);
+  if (n === 6 && ours) say("Tasan! Nyt mennään äkkikuolemaan.", "mid");
+  say(ours ? `${name} asettelee pallon pilkulle…` : `${S.nextShooter} asettelee pallon pilkulle… Sinä olet maalissa!`,
+      ours ? "us" : "", n + ".");
+  setTimeout(() => openPenScene(ours), 700);
+}
+
+function openPenScene(ours){
+  const ball = {x:150, y:GOAL_Y + 62, vx:0, vy:0};
+  scene = {ball, defenders:[], mates:[], keeper:{x:150, y:GOAL_Y + 5}, pen:ours, save:!ours,
+    shooter:S.nextShooter, focused:false, timeLeft:99, aim:null, flying:false, frames:0, noise:0,
+    result:null, resultT:0, prevY:ball.y, countdown:2.2, choice:null, guessX:150};
+  $("pitch").classList.add("on");
+  fitCanvas();
+  requestAnimationFrame(loop);
+}
+
+function launchOpp(){
+  const sc = scene, b = sc.ball;
+  const zone = pick([0, 1, 2]);
+  let tx = zone === 0 ? rnd(117, 137) : zone === 1 ? rnd(141, 159) : rnd(163, 183);
+  if (Math.random() < 0.15){
+    if (Math.random() < 0.5) sc.forceOver = true;
+    else tx = Math.random() < 0.5 ? rnd(98, 112) : rnd(188, 202);
+  }
+  const dx = tx - b.x, dy = GOAL_Y - b.y, L = Math.hypot(dx, dy);
+  b.vx = dx / L * 6.5; b.vy = dy / L * 6.5;
+  sc.power = 0.7; sc.flying = true; sc.frames = 0;
+  if (!sc.choice) sc.guessX = 150;
+}
+
+function outcome(o){
+  const sc = scene;
+  if (!sc.pen && !sc.save){
+    if (o === "post") return finish("lost", `${name} laukoo tolppaan!`);
+    if (o === "over") return finish("lost", `${name} laukoo yli maalin!`);
+    if (o === "saved") return finish("lost", "Maalivahti torjuu!");
+    if (o === "goal") return finish("goal");
+    return finish("lost", `${name} laukoo ohi maalin.`);
+  }
+  const who = sc.pen ? name : sc.shooter;
+  if (o === "goal") return finishPen(sc.pen, true, sc.pen ? `${name} laukoo varmasti sisään!` : `${who} laukoo sisään.`);
+  if (sc.save && S.cheat && Math.random() < 0.7) return finishPen(false, false, `${who} ${pick(OHI_IHMEET)}`);
+  const t = {post:`${who} laukoo tolppaan!`, over:`${who} laukoo yli maalin!`,
+             saved: sc.pen ? "Maalivahti torjuu!" : `${name} torjuu!`, wide:`${who} laukoo ohi maalin.`}[o];
+  finishPen(sc.pen, false, t);
+}
+
+function finishPen(isUs, scored, text){
+  if (scene.result) return;
+  if (isUs && !scored && S.cheat && Math.random() < 0.6){ scored = true; text = pick(IHMEET).replace("Tampio", name); }
+  const n = (isUs ? S.kicksUs : S.kicksThem) + 1;
+  if (isUs){ S.kicksUs++; if (scored) S.us++; } else { S.kicksThem++; if (scored) S.them++; }
+  const good = isUs ? scored : !scored;
+  const title = isUs ? (scored ? "MAALI!" : "Ei mennyt…") : (scored ? "Maali…" : "TORJUNTA!");
+  scene.result = {good, title, text}; scene.resultT = 1.8;
+  scene.flying = false; scene.ball.vx = scene.ball.vy = 0;
+  say((good ? "✅ " : "❌ ") + text, good ? "big" : "", n + ".");
+  updateUI();
+}
+
+function endPens(){
+  S.phase = "end"; updateUI();
+  say("Rangaistuspotkukilpailu on ohi!", "mid");
+  const c = document.createElement("div");
+  c.className = "cover";
+  c.innerHTML = `<h1>${S.us > S.them ? "Voitto rankkareilla! 🏆" : "Punaiset voittivat"}</h1>
+    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset</div>
+    <button>Uudet rankkarit</button><button>⚽ Ottelu</button>${BACK}`;
+  const bs = c.querySelectorAll("button");
+  bs[0].onclick = () => { c.remove(); startPens(); };
+  bs[1].onclick = () => { c.remove(); newMatch(); };
+  $("panel").appendChild(c);
+}
+
+// ---------- Napit ----------
+let taps = 0, tapTimer = null;
+$("clock").addEventListener("click", () => {
+  if (!S || S.phase === "end") return;
+  taps++; clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => taps = 0, 1500);
+  if (taps >= 5){
+    taps = 0; S.cheat = !S.cheat;
+    say(S.cheat ? "✨ Jokin outo on muuttunut… Ihmeiden ilta alkaa!" : "Taika haihtuu. Takaisin tavalliseen jalkapalloon.", "mid");
+    updateUI();
+  }
+});
+$("startBtn").onclick = () => {
+  name = ($("nameIn").value.trim() || "Tampio");
+  $("startCover").remove(); newMatch();
+};
+$("pensBtn").onclick = () => {
+  name = ($("nameIn").value.trim() || "Tampio");
+  $("startCover").remove(); startPens();
+};
+$("workBtn").onclick = () => { if (!S) return; S.hard = !S.hard; updateUI(); };
+$("focusBtn").onclick = () => {
+  if (!S || S.focusArmed || S.focus <= 0) return;
+  S.focus--; S.focusArmed = true; updateUI();
+};
+S = {us:0, them:0, min:0, energy:100, focus:3, focusArmed:false, hard:false};
+updateUI(); S = null;
+})();
+</script>
+<script data-goatcounter="https://tommitampio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

@@ -72,6 +72,10 @@
     "Klassinen miinaharava puhelimelle sopivana. Kolme tasoa ja nopeimpien aikojen top-lista.": ["Klassiskt minröj anpassat för mobilen. Tre nivåer och en topplista över de snabbaste tiderna.", "Classic minesweeper made for the phone. Three levels and a top list of the fastest times."],
     "Pisteholvi": ["Poängvalvet", "Points Vault"],
     "Viiden kiekon holvipeli, jossa pelataan pisteillä eikä rahalla. Holvibonus, tuplaus ja suurimpien voittojen top-lista.": ["Ett valvspel med fem hjul där man spelar om poäng, inte pengar. Valvbonus, dubbling och en topplista över de största vinsterna.", "A five-reel vault game played for points, not money. Vault bonus, double-up and a top list of the biggest wins."],
+    "Tähtipelaaja": ["Stjärnspelaren", "Star Player"],
+    "Jalkapallo-ottelu selostuksena. Kun saat tilaisuuden, laukaise vetämällä sormella kuin ritsalla. Mukana myös rangaistuspotkukilpailu.": ["En fotbollsmatch i form av referat. När du får chansen skjuter du genom att dra med fingret som med en slangbella. Straffläggning ingår också.", "A football match told as live commentary. When you get a chance, shoot by pulling back with your finger like a slingshot. Includes a penalty shootout too."],
+    "Kiekkotähti": ["Puckstjärnan", "Puck Star"],
+    "Jääkiekko-ottelu NHL-joukkueilla: valitse oma joukkue, vastustaja arvotaan. Kolme erää, jäähyjä, vaihtoja ja voittolaukauskilpailu.": ["En ishockeymatch med NHL-lag: välj ditt lag, motståndaren lottas. Tre perioder, utvisningar, byten och straffläggning.", "An ice hockey game with NHL teams: pick your team, the opponent is drawn at random. Three periods, penalties, line changes and a shootout."],
     "Shakki": ["Schack", "Chess"],
     "Pelaa shakkia konetta vastaan valkoisilla tai mustilla. Kolme vaikeustasoa ja siirron peruutus.": ["Spela schack mot datorn med vita eller svarta pjäser. Tre svårighetsnivåer och ångra drag.", "Play chess against the computer as white or black. Three difficulty levels and undo."],
 
