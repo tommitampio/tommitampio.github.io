@@ -7,7 +7,7 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;background:#1b1f24;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
-  #app{max-width:480px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;padding:10px 10px 12px;gap:10px;background:linear-gradient(#2a3038,#1b1f24)}
+  #app{--us:#2d5bdc;--usT:#fff;--them:#c11;--themT:#fff;max-width:480px;height:100dvh;margin:0 auto;display:flex;flex-direction:column;padding:10px 10px 12px;gap:10px;background:linear-gradient(#2a3038,#1b1f24)}
   .board{display:flex;align-items:stretch;border-radius:10px;overflow:hidden;font-weight:800;box-shadow:0 3px 0 #0006}
   .board .t{flex:1;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-size:15px;letter-spacing:.5px}
   .board .home{background:linear-gradient(#2d5bdc,#1b3fae)}
@@ -20,8 +20,11 @@
   .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#3ad13a,#8be04a);transition:width .3s}
   #panel{flex:1;position:relative;background:#111;border-radius:12px;overflow:hidden;border:2px solid #333}
   #feed{position:absolute;inset:0;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-  .ev{background:linear-gradient(#e83a3e,#bb1c20);border-radius:7px;padding:9px 10px;font-size:14px;display:flex;gap:8px;align-items:center;animation:pop .25s}
-  .ev.us{background:linear-gradient(#3b66e6,#2041b5)}
+  .ev{background:var(--them);color:var(--themT);border-radius:7px;padding:9px 10px;font-size:14px;display:flex;gap:8px;align-items:center;animation:pop .25s}
+  .ev.us{background:var(--us);color:var(--usT)}
+  .ev b{box-shadow:0 0 0 1px #0003}
+  .cover select{font-size:16px;padding:10px;border-radius:8px;border:none;width:260px;font-family:inherit}
+  .cover .small{font-size:13px;color:#aaa}
   .ev.big{background:linear-gradient(#ffd23a,#e7a600);color:#222;font-weight:800}
   .ev.mid{background:#333;color:#ccc;justify-content:center}
   .ev b{background:#fff;color:#222;border-radius:50%;min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:12px}
@@ -48,9 +51,9 @@
 <body>
 <div id="app">
   <div class="board">
-    <div class="t home"><span>SINISET</span><span class="sc" id="us">0</span></div>
+    <div class="t home"><span id="usName">KOTI</span><span class="sc" id="us">0</span></div>
     <div class="clock" id="clock">0'</div>
-    <div class="t away"><span class="sc" id="them">0</span><span>PUNAISET</span></div>
+    <div class="t away"><span class="sc" id="them">0</span><span id="themName">VIERAS</span></div>
   </div>
   <div class="energy">❤️ Voimat <div class="bar"><i id="en"></i></div></div>
   <div id="panel">
@@ -58,7 +61,9 @@
     <div id="pitch"><canvas id="cv"></canvas></div>
     <div class="cover" id="startCover">
       <h1>⚽ Tähtipelaaja</h1>
-      <p>Olet Sinisten hyökkääjä. Ottelu etenee selostuksena. Kun saat tilaisuuden, <b>vedä sormella taaksepäin</b> kuin ritsalla ja päästä irti.<br>Pitkä veto = kova potku. Liian kova menee yli!</p>
+      <p>Olet maajoukkueesi hyökkääjä. Ottelu etenee selostuksena. Kun saat tilaisuuden, <b>vedä sormella taaksepäin</b> kuin ritsalla ja päästä irti.<br>Pitkä veto = kova potku. Liian kova menee yli!</p>
+      <select id="teamSel"></select>
+      <div class="small">Vastustaja arvotaan joka ottelussa.</div>
       <input id="nameIn" value="Tampio" maxlength="14">
       <button id="startBtn">⚽ Ottelu</button>
       <button id="pensBtn">🥅 Rangaistuspotkut</button>
@@ -91,7 +96,48 @@ const IHMEET = [
   "Pallo jää hetkeksi ilmaan leijumaan ja kaartaa sitten maaliin!",
   "Tampio laukoo selkä edellä, eikä kukaan ymmärrä mitä tapahtui. Maali!"
 ];
-const PUNAISET = ["Andersson","Lindqvist","Berg","Nyström","Holm","Sjöberg","Ek","Dahl"];
+const PUNAISET = ["Silva","Müller","Andersson","Rossi","García","Kowalski","Dubois","Smith","Jensen","Novák"];
+// [nimi, lyhenne, lippu, paidan väri, toinen väri]
+const MAAT = {
+ "Eurooppa": [
+  ["Suomi","FIN","🇫🇮","#ffffff","#002F6C"],["Ruotsi","SWE","🇸🇪","#FECC02","#006AA7"],["Norja","NOR","🇳🇴","#BA0C2F","#00205B"],
+  ["Tanska","DEN","🇩🇰","#C8102E","#ffffff"],["Islanti","ISL","🇮🇸","#02529C","#DC1E35"],["Viro","EST","🇪🇪","#0072CE","#111111"],
+  ["Saksa","GER","🇩🇪","#ffffff","#111111"],["Ranska","FRA","🇫🇷","#002395","#ED2939"],["Englanti","ENG","🏴󠁧󠁢󠁥󠁮󠁧󠁿","#ffffff","#CE1124"],
+  ["Skotlanti","SCO","🏴󠁧󠁢󠁳󠁣󠁴󠁿","#1D2A5A","#ffffff"],["Espanja","ESP","🇪🇸","#C60B1E","#FFC400"],["Italia","ITA","🇮🇹","#0066CC","#ffffff"],
+  ["Portugali","POR","🇵🇹","#C8102E","#006600"],["Alankomaat","NED","🇳🇱","#F36C21","#111111"],["Belgia","BEL","🇧🇪","#C8102E","#111111"],
+  ["Kroatia","CRO","🇭🇷","#ffffff","#E30613"],["Sveitsi","SUI","🇨🇭","#D52B1E","#ffffff"],["Itävalta","AUT","🇦🇹","#ED2939","#ffffff"],
+  ["Puola","POL","🇵🇱","#ffffff","#DC143C"],["Ukraina","UKR","🇺🇦","#FFD500","#005BBB"]],
+ "Etelä-Amerikka": [
+  ["Brasilia","BRA","🇧🇷","#FFDF00","#009C3B"],["Argentiina","ARG","🇦🇷","#75AADB","#ffffff"],
+  ["Uruguay","URU","🇺🇾","#5CBFEB","#111111"],["Kolumbia","COL","🇨🇴","#FCD116","#003893"]],
+ "Pohjois- ja Keski-Amerikka": [
+  ["Yhdysvallat","USA","🇺🇸","#ffffff","#0A3161"],["Meksiko","MEX","🇲🇽","#006847","#CE1126"],["Kanada","CAN","🇨🇦","#D80621","#ffffff"]],
+ "Afrikka": [
+  ["Marokko","MAR","🇲🇦","#C1272D","#006233"],["Senegal","SEN","🇸🇳","#ffffff","#00853F"],["Nigeria","NGA","🇳🇬","#008751","#ffffff"],
+  ["Ghana","GHA","🇬🇭","#ffffff","#111111"],["Egypti","EGY","🇪🇬","#CE1126","#ffffff"]],
+ "Aasia ja Oseania": [
+  ["Japani","JPN","🇯🇵","#000080","#ffffff"],["Etelä-Korea","KOR","🇰🇷","#CD2E3A","#111111"],
+  ["Saudi-Arabia","KSA","🇸🇦","#ffffff","#006C35"],["Australia","AUS","🇦🇺","#FFCD00","#00843D"]]
+};
+const ALL = Object.values(MAAT).flat().map(t => ({s:t[0], ab:t[1], f:t[2], c:t[3], c2:t[4]}));
+const rgb = h => { const n = parseInt(h.slice(1),16); return [n>>16, n>>8&255, n&255]; };
+const txtCol = h => { const [r,g,b] = rgb(h); return (r*299+g*587+b*114)/1000 > 150 ? "#111" : "#fff"; };
+const dist = (a,b) => { const x = rgb(a), y = rgb(b); return Math.hypot(x[0]-y[0], x[1]-y[1], x[2]-y[2]); };
+let US = ALL[0], THEM = ALL[1];
+function setTeams(){
+  const t = pick(ALL.filter(x => x !== US));
+  // vastustaja vaihtaa vieraspaitaan, jos värit ovat liian samanlaiset
+  const away = dist(t.c, US.c) < 140 && dist(t.c2, US.c) > dist(t.c, US.c);
+  THEM = away ? {...t, c:t.c2, c2:t.c} : t;
+  const a = $("app").style;
+  a.setProperty("--us", US.c); a.setProperty("--usT", txtCol(US.c));
+  a.setProperty("--them", THEM.c); a.setProperty("--themT", txtCol(THEM.c));
+  for (const [el, x] of [[".board .home", US], [".board .away", THEM]]){
+    const e = document.querySelector(el); e.style.background = x.c; e.style.color = txtCol(x.c);
+    e.style.boxShadow = `inset 0 -4px 0 ${x.c2}`;
+  }
+  $("usName").textContent = US.f + " " + US.ab; $("themName").textContent = THEM.ab + " " + THEM.f;
+}
 const OHI_IHMEET = [
   "kompastuu omaan kengännauhaansa ja pallo vierii hitaasti maalivahdin syliin!",
   "potkaisee niin kovaa, että kenkä lentää maaliin — pallo jää pilkulle!",
@@ -108,11 +154,12 @@ let S = null, name = "Tampio", ticker = null, scene = null;
 
 // ---------- Ottelu ----------
 function newMatch(){
+  setTeams();
   S = {min:0, us:0, them:0, energy:100, goals:0, assists:0, missed:0, chances:0,
        focus:3, focusArmed:false, hard:false, phase:"match", lastChance:0, cheat:false, mode:"match", added:99};
   $("feed").innerHTML = "";
   updateUI();
-  say("Alkupotku! Ottelu on käynnissä.", "mid", 0);
+  say(`${US.f} ${US.s} – ${THEM.s} ${THEM.f}<br>Alkupotku! Ottelu on käynnissä.`, "mid", 0);
   clearInterval(ticker);
   ticker = setInterval(tick, 420);
 }
@@ -136,17 +183,17 @@ function tick(){
   }
   else if (r < chanceP || S.min - S.lastChance > 17) { startChance(); }
   else if (r < chanceP + oppGoalP) {
-    S.them++; say(pick(["MAALI! Punaiset iskevät.","Punaiset tekevät maalin kulmapotkusta.","Punaisten laukaus löytää yläkulman. Maali."]), "big");
+    S.them++; say(pick([`MAALI! ${THEM.s} iskee.`,`${THEM.s} tekee maalin kulmapotkusta.`,`${THEM.s}: ${pick(PUNAISET)} laukoo yläkulmaan. Maali.`]), "big");
   }
   else if (r < chanceP + oppGoalP + 0.004) {
-    S.us++; say(`MAALI! ${pick(MATES)} viimeistelee Sinisille!`, "big");
+    S.us++; say(`MAALI! ${pick(MATES)} viimeistelee! ${US.f} ${US.s} ${S.us}–${S.them}`, "big");
   }
   else if (r < 0.32) {
     if (Math.random() < 0.55) say(pick([
       `${name} liikkuu paljon`, `${name} voittaa kaksinkamppailun`, `${name} hakee palloa keskikentältä`,
-      "Siniset pitävät palloa", `${name} juoksee laitaa pitkin`, `${name} painostaa puolustajia`]), "us");
-    else say(pick(["Punaiset painostavat","Punaisten laukaus menee ohi","Sinisten maalivahti torjuu",
-      "Punaiset saavat vapaapotkun","Punaiset pitävät palloa"]), "");
+      `${US.s} pitää palloa`, `${name} juoksee laitaa pitkin`, `${name} painostaa puolustajia`]), "us");
+    else say(pick([`${THEM.s} painostaa`,`${THEM.s}: laukaus menee ohi`,`${US.s}: maalivahti torjuu`,
+      `${THEM.s} saa vapaapotkun`,`${THEM.s} pitää palloa`]), "");
   }
   updateUI();
 }
@@ -184,7 +231,7 @@ function halftime(){
   const c = document.createElement("div");
   c.className = "cover";
   c.innerHTML = `<h1>☕ Puoliaika</h1>
-    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset<br>
+    <div class="stats">${US.f} ${US.s} ${S.us} – ${S.them} ${THEM.s} ${THEM.f}<br>
     ${name}: ${S.goals} maalia, ${S.assists} syöttöpistettä</div>
     <p>Pukukopissa juodaan mehua. Voimat palautuvat vähän.</p>
     <button>Toinen puoliaika ▶</button>`;
@@ -214,7 +261,7 @@ function endMatch(){
   const c = document.createElement("div");
   c.className = "cover";
   c.innerHTML = `<h1>${res}</h1>
-    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset<br>
+    <div class="stats">${US.f} ${US.s} ${S.us} – ${S.them} ${THEM.s} ${THEM.f}<br>
     ${name}: ${S.goals} maalia, ${S.assists} syöttöpistettä<br>
     ${S.goals > best ? "🏆 Uusi ennätys!" : "Ennätys: " + best + " maalia"}</div>
     <p>Arvosana</p><div class="grade">${grade()}</div>
@@ -376,7 +423,7 @@ function step(){
   if (Math.hypot(b.vx, b.vy) < 0.25){
     const near = sc.mates.find(m => Math.hypot(m.x - b.x, m.y - b.y) < 24);
     if (near) return receive(near);
-    finish("lost", "Syöttö jää vajaaksi — punaiset saavat pallon.");
+    finish("lost", `Syöttö jää vajaaksi — ${THEM.s} saa pallon.`);
   }
 }
 
@@ -394,10 +441,10 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-function player(x, y, col, ring){
+function player(x, y, col, ring, trim = "#fff"){
   ctx.fillStyle = "#0004"; ctx.beginPath(); ctx.ellipse(x+2, y+4, 8, 4, 0, 0, 7); ctx.fill();
   ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+  ctx.lineWidth = 2.5; ctx.strokeStyle = trim; ctx.stroke();
   ctx.fillStyle = "#f2c9a0"; ctx.beginPath(); ctx.arc(x, y-1, 3.5, 0, 7); ctx.fill();
   if (ring){ ctx.strokeStyle = "#ffd23a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.stroke(); }
 }
@@ -436,11 +483,11 @@ function draw(){
 
   player(sc.keeper.x, sc.keeper.y, sc.save ? "#f0b400" : "#2a2", false);
   if (sc.save) label(name, sc.keeper.x, sc.keeper.y + 20);
-  for (const d of sc.defenders) player(d.x, d.y, "#d22", false);
-  for (const m of sc.mates){ player(m.x, m.y, "#2753d6", false); label(m.name, m.x, m.y - 13); }
+  for (const d of sc.defenders) player(d.x, d.y, THEM.c, false, THEM.c2);
+  for (const m of sc.mates){ player(m.x, m.y, US.c, false, US.c2); label(m.name, m.x, m.y - 13); }
   if (!sc.flying && !sc.result){
-    if (sc.save){ player(b.x, b.y + 12, "#d22", false); label(sc.shooter, b.x, b.y + 33); }
-    else { player(b.x, b.y + 12, "#2753d6", true); label(name, b.x, b.y + 33); }
+    if (sc.save){ player(b.x, b.y + 12, THEM.c, false, THEM.c2); label(sc.shooter, b.x, b.y + 33); }
+    else { player(b.x, b.y + 12, US.c, true, US.c2); label(name, b.x, b.y + 33); }
   }
 
   // tähtäysnuoli
@@ -509,6 +556,7 @@ function startPens(){
   S = {mode:"pens", us:0, them:0, kicksUs:0, kicksThem:0, min:0, energy:100, focus:0,
        focusArmed:false, hard:false, phase:"pens", cheat:false};
   $("feed").innerHTML = "";
+  setTeams(); say(`${US.f} ${US.s} – ${THEM.s} ${THEM.f}`, "mid");
   say("Rangaistuspotkukilpailu! Viisi potkua kummallekin. Sinä laukot — ja torjut maalivahtina.", "mid");
   updateUI();
   setTimeout(nextPen, 1200);
@@ -587,8 +635,8 @@ function endPens(){
   say("Rangaistuspotkukilpailu on ohi!", "mid");
   const c = document.createElement("div");
   c.className = "cover";
-  c.innerHTML = `<h1>${S.us > S.them ? "Voitto rankkareilla! 🏆" : "Punaiset voittivat"}</h1>
-    <div class="stats">Siniset ${S.us} – ${S.them} Punaiset</div>
+  c.innerHTML = `<h1>${S.us > S.them ? "Voitto rankkareilla! 🏆" : `${THEM.s} voitti`}</h1>
+    <div class="stats">${US.f} ${US.s} ${S.us} – ${S.them} ${THEM.s} ${THEM.f}</div>
     <button>Uudet rankkarit</button><button>⚽ Ottelu</button>${BACK}`;
   const bs = c.querySelectorAll("button");
   bs[0].onclick = () => { c.remove(); startPens(); };
@@ -608,12 +656,16 @@ $("clock").addEventListener("click", () => {
     updateUI();
   }
 });
+function pickTeam(){
+  US = ALL[+$("teamSel").value] || ALL[0];
+  try { localStorage.setItem("tp_team", US.ab); } catch(e){}
+}
 $("startBtn").onclick = () => {
-  name = ($("nameIn").value.trim() || "Tampio");
+  pickTeam(); name = ($("nameIn").value.trim() || "Tampio");
   $("startCover").remove(); newMatch();
 };
 $("pensBtn").onclick = () => {
-  name = ($("nameIn").value.trim() || "Tampio");
+  pickTeam(); name = ($("nameIn").value.trim() || "Tampio");
   $("startCover").remove(); startPens();
 };
 $("workBtn").onclick = () => { if (!S) return; S.hard = !S.hard; updateUI(); };
@@ -621,6 +673,15 @@ $("focusBtn").onclick = () => {
   if (!S || S.focusArmed || S.focus <= 0) return;
   S.focus--; S.focusArmed = true; updateUI();
 };
+{
+  let saved = "FIN"; try { saved = localStorage.getItem("tp_team") || "FIN"; } catch(e){}
+  const sel = $("teamSel"); let i = 0;
+  for (const [grp, teams] of Object.entries(MAAT)){
+    const og = document.createElement("optgroup"); og.label = grp;
+    for (const t of teams){ const o = document.createElement("option"); o.value = i; o.textContent = t[2] + " " + t[0]; if (t[1] === saved) o.selected = true; og.appendChild(o); i++; }
+    sel.appendChild(og);
+  }
+}
 S = {us:0, them:0, min:0, energy:100, focus:3, focusArmed:false, hard:false};
 updateUI(); S = null;
 })();
