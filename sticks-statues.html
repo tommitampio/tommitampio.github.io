@@ -66,6 +66,11 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hide{display:none!important}
 @media (max-width:600px){#mini{order:9;flex-basis:100%;height:26px}#bottom .sb{flex:1}.ub{width:46px;height:52px}.ub .ic{font-size:19px}#stats{font-size:13px}.sb{padding:7px 8px;font-size:13px}}
 </style>
+<link rel="manifest" href="/strings-statues.webmanifest">
+<meta name="theme-color" content="#1a0a2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Strings & Statues">
 </head>
 <body>
 <div id="intro"><canvas id="introc"></canvas><div id="introTxt">
@@ -1601,6 +1606,7 @@ function loop(now){
   draw();drawMini();updUI();requestAnimationFrame(loop);
 }
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
+if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
 state="intro";
 (function intro(){
   $("iWel").textContent=t("introWel");$("introGo").textContent=t("introGo");

@@ -1,0 +1,16 @@
+{
+  "name": "Strings & Statues",
+  "short_name": "Strings & Statues",
+  "description": "Rock strategy game: form a band and topple rival statues on a world tour.",
+  "id": "/sticks-statues.html",
+  "start_url": "/sticks-statues.html",
+  "scope": "/sticks-statues.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1a0a2e",
+  "theme_color": "#1a0a2e",
+  "icons": [
+    { "src": "/strings-statues-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/strings-statues-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
