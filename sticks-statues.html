@@ -86,7 +86,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
   <div id="wrap">
     <canvas id="c"></canvas>
-    <div id="langs"><button data-l="fi">FI</button><button data-l="sv">SV</button><button data-l="en">EN</button><button data-l="de">DE</button><button data-l="es">ES</button><button data-l="fr">FR</button></div>
+    <div id="langs"><button data-l="en">EN</button><button data-l="es">ES</button><button data-l="fr">FR</button><button data-l="de">DE</button><button data-l="sv">SV</button><button data-l="fi">FI</button></div>
     <div id="menu" class="ov hide"><div class="panel">
       <h1 style="font-size:26px;line-height:1.1">Strings &amp; Statues</h1>
       <p id="mSub"></p>
@@ -246,6 +246,7 @@ let save={coins:0,up:{statue:0,tower:0,gold:0,carry:0},camp:0,campDone:0,lang:"e
 try{const s=JSON.parse(localStorage.getItem("tikkusota"));if(s)save=Object.assign(save,s,{up:Object.assign(save.up,s.up||{})});}catch(e){}
 function persist(){try{localStorage.setItem("tikkusota",JSON.stringify(save))}catch(e){}}
 if(!save.langV2){save.lang="en";save.langV2=1;persist();}
+if(!save.langChosen){const nl=((navigator.languages&&navigator.languages[0])||navigator.language||"en").slice(0,2).toLowerCase();save.lang=TXT[nl]?nl:"en";}
 lang=save.lang||"en";
 
 /* ================= ÄÄNET JA MUSIIKKI ================= */
@@ -1276,7 +1277,7 @@ $("bShop").onclick=()=>{$("menu").classList.add("hide");$("shop").classList.remo
 $("bShopBack").onclick=()=>{$("shop").classList.add("hide");showMenu();};
 $("bAgain").onclick=()=>{const lv=G?G.level:null;$("over").classList.add("hide");if(lv!=null&&G.winner===0)openMap();else newGame(lv);};
 $("bMenu").onclick=()=>{$("over").classList.add("hide");showMenu();};
-document.querySelectorAll("#langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;save.lang=lang;persist();applyLang();});
+document.querySelectorAll("#langs button").forEach(b=>b.onclick=()=>{lang=b.dataset.l;save.lang=lang;save.langChosen=1;persist();applyLang();});
 function showMenu(){state="menu";$("menu").classList.remove("hide");applyLang();}
 function endGame(){
   state="over";const won=G.winner===0,D=cfg();clearSaved();const n=won?D.reward:1;save.coins+=n;if(won)save.wins++;
