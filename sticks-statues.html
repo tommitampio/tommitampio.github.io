@@ -359,6 +359,7 @@ function popOf(team){let p=0;for(const u of G.units)if(u.team===team&&!u.dead)p+
 function countOf(team,type){let n=G.teams[team].q[type].length;for(const u of G.units)if(u.team===team&&!u.dead&&u.type===type)n++;return n;}
 function buy(team,type){
   const tm=G.teams[team],d=UT[type];
+  if(team===0&&G.god){if(popOf(0)+d.pop>POPMAX)return false;tm.q[type].push(0.02);return true;}
   if(tm.gold<d.cost||popOf(team)+d.pop>POPMAX)return false;
   tm.gold-=d.cost;tm.q[type].push(d.train);return true;
 }
@@ -480,7 +481,8 @@ function hurt(tg,dmg,from,kind){
 function fx(){if(!G.gibs){G.gibs=[];G.ghosts=[];G.sparks=[];G.notes=[];G.banners=[];}}
 function banner(txt,col){fx();if(G.banners.length>2)return;G.banners.push({txt,col,t:0});}
 function killUnit(u,dmg){
-  fx();u.dead=true;freeMine(u);const dir=u.team===0?-1:1,big=dmg>=50;
+  fx();u.dead=true;freeMine(u);
+  if(u.type==="miner"){G.teams[u.team].gold+=125;if(u.team===0){const S=G.statues[0];G.floats.push({x:S.x+70,y:GY-130,txt:"+125 💰",col:"#ffe14d",t:0});}}const dir=u.team===0?-1:1,big=dmg>=50;
   if(!G.firstBlood){G.firstBlood=1;banner(t("bFirst"),"#ff5a5a");}
   const kt=1-u.team;G.kills=G.kills||[[],[]];const L=G.kills[kt];L.push(G.time);while(L.length&&G.time-L[0]>1.2)L.shift();
   if(L.length>=3&&(!G.lastMulti||G.time-G.lastMulti>4)){G.lastMulti=G.time;banner(kt===0?t("bMulti"):t("bMultiE"),kt===0?"#f5c400":"#ff5a5a");G.shk=Math.max(G.shk||0,0.4);}
@@ -490,7 +492,7 @@ function killUnit(u,dmg){
 }
 function gibs(u){
   const s=UT[u.type].size,c=TCOL[u.type][u.team],dir=u.team===0?-1:1;
-  const W2={miner:["#8a6a3a",14],sword:["#dfe4e8",17],archer:["#7a4a1a",18],spear:["#8a6a3a",32],giant:["#aab0b4",30]}[u.type];
+  const W2={miner:["#8a6a3a",14],sword:["#dfe4e8",17],archer:["#7a4a1a",18],spear:["#8a6a3a",32],giant:["#e02424",30]}[u.type];
   const parts=[["h",5.6],["l",14],["l",9],["l",9],["l",9],["l",9],["w",W2[1],W2[0]]];
   for(const pp of parts){G.gibs.push({k:pp[0],len:pp[1]*s,col:pp[2]||c,x:u.x,y:u.y-20*s,vx:dir*(40+Math.random()*160)+(Math.random()-0.5)*80,vy:-(150+Math.random()*220),a:Math.random()*6,va:(Math.random()-0.5)*20,gy:u.y+(Math.random()-0.5)*6,t:0,w:2.8*s});}
   poof(u.x,u.y-20*s,u.team);
@@ -535,14 +537,14 @@ function drawBanner(){
 }
 
 /* ================= SARJAKUVAEFEKTIT, PUHEKUPLAT JA TUULI ================= */
-const POPS={sword:["POW!","BAM!","WHACK!","SLASH!","THWACK!"],spear:["STAB!","POKE!","THUNK!"],giant:["CRUNCH!","BONK!","KA-BOOM!","SMASH!"],
+const POPS={sword:["POW!","BAM!","WHACK!","SLASH!","THWACK!"],spear:["STAB!","POKE!","THUNK!"],giant:["TWANG!","KERRANG!","BONK!","WHAM!"],
   archer:["ZING!","THWIP!","FWIP!"],arrow:["ZING!","THWIP!","FWIP!"],miner:["TONK!","CLINK!"],statue:["BOOM!","CRACK!","KRAK!"],kill:["KO!","OOF!","YIKES!","BYE!"]};
 const QUIP={
  miner:{idle:["Payday!","Gold, gold, gold!","Dig it!","My back hurts…","Is it lunch yet?"],carry:["Shiny!","Ka-ching!","Heavy pockets!","Don't tell the taxman."],fight:["Not the pickaxe!","I'm just a miner!"],spawn:["Hi-ho, hi-ho!"]},
  sword:{idle:["Nice cape, huh?","Come at me!","*flips hair*","I do my own stunts.","Bored. So bored."],fight:["Hi-YAH!","Take that!","For the statue!","Hasta la vista!"],spawn:["Reporting for duty!","Let's dance!"]},
  archer:{idle:["Bullseye… eventually.","Where's my arrow?","*sips drink*"],fight:["Pew pew!","Eat feathers!","Nailed it!","Oops, wrong guy."],spawn:["Arrows ready!"]},
  spear:{idle:["Shields up, chins up.","This is SPARTA… ish.","Formation!"],fight:["You shall not pass!","Poke! Poke!","CLANG-tastic!"],spawn:["Phalanx ready!"]},
- giant:{idle:["Me hungry.","Me like saw.","Who step on me toe?"],fight:["SMASH!","Big hug!","Ooga booga!"],spawn:["GIANT HERE!","Me ready!"]}};
+ giant:{idle:["Me hungry.","Me rock star.","One more song!","Who step on me toe?"],fight:["SMASH!","ROCK ON!","Encore!","Ooga booga!"],spawn:["GIANT HERE!","Me ready!"]}};
 const STQ={idle:["Defend me, I'm fragile!","I'm the GOAT. Goalie Of All Time.","Nobody scores on me!","Is it over yet?","Gonna need a bigger pedestal.","Who's a pretty statue? Me."],
   worry:["Uh-oh…","Not the face!","Mommy!","I'm too pretty to crumble!","Help! HELP!"],phone:["brb, checking scores","lol","New message from Mom…"],drink:["Ahh, electrolytes!","*gulp gulp*"],
   wave:["Hi Mom!","Yoo-hoo!"],clap:["Let's GO team!","Clap clap!"],win:["Who's the king now?!","Undefeated!"]};
@@ -608,6 +610,19 @@ function drawComic(){
     ctx.font="22px Bangers,'Impact',system-ui";const w=ctx.measureText(p.txt).width;const R=w*0.62+8;
     ctx.fillStyle="#ffe14d";ctx.strokeStyle="#111";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<28;i++){const a=i/28*Math.PI*2,r=i%2?R*0.72:R;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r*0.62);}ctx.closePath();ctx.fill();ctx.stroke();
     ctx.textAlign="center";ctx.lineJoin="round";ctx.lineWidth=3.5;ctx.strokeStyle="#111";ctx.strokeText(p.txt,0,8);ctx.fillStyle="#e2231a";ctx.fillText(p.txt,0,8);ctx.restore();}
+}
+
+/* ================= GOD MODE (salainen) =================
+   Koodi: paina kilpimiestä (🛡️) 10 kertaa ja heti perään jousimiestä (🏹) 10 kertaa.
+   Sama koodi kytkee tilan pois. Päällä: 99 000 000 kultaa, kaikki valmistuu heti. */
+let gseq=[];
+function godSeq(k){gseq.push(k);if(gseq.length>20)gseq.shift();
+  if(gseq.length===20&&gseq.slice(0,10).every(x=>x==="spear")&&gseq.slice(10).every(x=>x==="archer")){gseq=[];setTimeout(toggleGod,0);}}
+function toggleGod(){
+  if(!G||state!=="play")return;const tm=G.teams[0];
+  for(const k of["spear","archer"]){tm.gold+=tm.q[k].length*UT[k].cost;tm.q[k]=[];}
+  G.god=!G.god;if(G.god){G.godGold=tm.gold;tm.gold=99000000;}else{tm.gold=Math.min(tm.gold,G.godGold||1000);}
+  banner(G.god?"⚡ GOD MODE ON ⚡":"GOD MODE OFF",G.god?"#7df9ff":"#cccccc");sfx(G.god?"win":"click");
 }
 
 /* ================= TEKOÄLY ================= */
@@ -926,7 +941,7 @@ function drawUnit(u){
   ctx.strokeStyle=c;ctx.lineWidth=lw;
   let ak=null;
   if(!u.dead&&!mv&&u.atk<=0&&!(u.spin>0)&&!u.engaged&&!u.guard&&!u.hidden&&!(G&&G.winner>=0)&&(u.type!=="miner"||(u.state==="toMine"&&!u.mine))){
-    const cyc=(T+u.id*2.3)%15;if(cyc<3.2)ak={miner:"phone",sword:"phone",archer:"drink",spear:"flex",giant:"flex"}[u.type];}
+    const cyc=(T+u.id*2.3)%15;if(cyc<3.2)ak={miner:"phone",sword:"phone",archer:"drink",spear:"flex",giant:"strum"}[u.type];}
   if(ak)drawAntic(u,c,neckX,neckY+2,ak,lw,T);else drawArms(u,c,acc,neckX,neckY+2,a,mv,lw);
   ctx.restore();
   if(!u.dead&&u.hp<u.max){const y=u.y-48*s+jy*s;ctx.fillStyle="#000a";ctx.fillRect(u.x-13,y,26,4);ctx.fillStyle=u.team?"#e33":"#3d3";ctx.fillRect(u.x-13,y,26*Math.max(0,u.hp/u.max),4);}
@@ -938,8 +953,26 @@ function drawAntic(u,c,sx,sy,k,lw,T){
     ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(sx+10,sy-20,6,4,0,0,7);ctx.fill();ctx.fillStyle="#333";for(let i=0;i<3;i++){ctx.globalAlpha=Math.floor(T*3)%3>=i?1:0.3;ctx.beginPath();ctx.arc(sx+7.5+i*2.5,sy-20,0.8,0,7);ctx.fill();}ctx.globalAlpha=1;}
   else if(k==="drink"){const h=limb(sx,sy,0.6,7,2.95,6);limb(sx,sy,-0.2,7,0.1,7);
     ctx.save();ctx.translate(h[0],h[1]);ctx.rotate(-2.2);ctx.fillStyle="#2a8cff";ctx.fillRect(-1.8,-7,3.6,7);ctx.fillStyle="#ff8a1a";ctx.fillRect(-1,-9,2,2);ctx.restore();}
+  else if(k==="strum"){const st=Math.sin(T*16)*0.35;drawGuitar(sx-4,sy+11,-0.45,0.95);
+    limb(sx,sy,1.2,7,2.0,7);limb(sx,sy,0.6,6,1.1+st,6);
+    ctx.font="bold 9px system-ui";ctx.textAlign="center";for(let i=0;i<2;i++){const q=(T*0.8+i*0.5)%1;ctx.globalAlpha=1-q;ctx.fillStyle="#fff";ctx.fillText(i?"♫":"♪",sx+16+q*8,sy-8-q*18);}ctx.globalAlpha=1;}
   else if(k==="flex"){limb(sx,sy,1.5,7,3.0,6);limb(sx,sy,-1.5,7,-3.0,6);
     const tw=Math.floor(T*4)%2;ctx.fillStyle="#fff3a0";ctx.beginPath();ctx.arc(sx+(tw?9:-9),sy-12,1.4,0,7);ctx.fill();}
+}
+
+function drawGuitar(x,y,rot,k){ // kitara: x-akseli kaulaa pitkin, k=koko
+  ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(k,k);
+  ctx.fillStyle="#2a1a10";ctx.beginPath();ctx.moveTo(-9,-2.2);ctx.lineTo(-4,-1.6);ctx.lineTo(-4,1.6);ctx.lineTo(-9,2.6);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#ddd";for(const px of[-8,-6.3]){ctx.beginPath();ctx.arc(px,-2.6,0.7,0,7);ctx.arc(px,2.9,0.7,0,7);ctx.fill();}
+  ctx.fillStyle="#7a4a1a";ctx.fillRect(-4,-1.3,19,2.6);ctx.strokeStyle="#d8c070";ctx.lineWidth=0.4;for(let f=-1;f<14;f+=2.6)ln(f,-1.3,f,1.3);
+  ctx.fillStyle="#7a0a0a";ctx.beginPath();ctx.ellipse(18.5,0,6.6,5.8,0,0,7);ctx.ellipse(26,0,8.6,7.6,0,0,7);ctx.fill();
+  ctx.fillStyle="#e02424";ctx.beginPath();ctx.ellipse(18.5,0,5.6,4.9,0,0,7);ctx.ellipse(26,0,7.6,6.6,0,0,7);ctx.fill();
+  ctx.fillStyle="#ff6a5a";ctx.beginPath();ctx.ellipse(24,-2.5,3.5,1.6,-0.3,0,7);ctx.fill();
+  ctx.fillStyle="#f4f0e6";ctx.beginPath();ctx.ellipse(24.5,2.4,5,2.6,0.2,0,7);ctx.fill();
+  ctx.fillStyle="#111";ctx.fillRect(20,-1.6,2,3.2);ctx.fillRect(24,-1.6,2,3.2);ctx.fillStyle="#bbb";ctx.fillRect(29,-1.8,1.4,3.6);
+  ctx.fillStyle="#d4a017";ctx.beginPath();ctx.arc(31,3.5,0.9,0,7);ctx.arc(29,4.6,0.9,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,0.75)";ctx.lineWidth=0.25;for(const sy of[-0.8,-0.27,0.27,0.8])ln(-4,sy,30,sy);
+  ctx.restore();
 }
 
 function drawArms(u,c,acc,sx,sy,a,mv,lw){
@@ -959,14 +992,7 @@ function drawArms(u,c,acc,sx,sy,a,mv,lw){
       ctx.strokeStyle="#dfe4e8";ctx.lineWidth=2.4;ln(h[0]+dx*2.5,h[1]+dy*2.5,h[0]+dx*18,h[1]+dy*18);
       ctx.strokeStyle="#ffffff";ctx.lineWidth=0.8;ln(h[0]+dx*4,h[1]+dy*4,h[0]+dx*15,h[1]+dy*15);
       if(u.atk>0&&a>0.2){ctx.strokeStyle="rgba(255,255,255,"+(0.5*a)+")";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(sx,sy,24,-Math.PI/2-0.8,-Math.PI/2+(1-a)*2.6);ctx.stroke();}}
-    else{ // jättiläisen saha
-      ctx.strokeStyle="#5a3a1a";ctx.lineWidth=4;ln(h[0]-dx*3,h[1]-dy*3,h[0]+dx*5,h[1]+dy*5);
-      const bx=h[0]+dx*5,by=h[1]+dy*5,ex=h[0]+dx*30,ey=h[1]+dy*30,nx=dy,ny=-dx;
-      ctx.fillStyle="#c3c9cd";ctx.strokeStyle="#4a5055";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+nx*2,by+ny*2);ctx.lineTo(ex+nx*3,ey+ny*3);ctx.lineTo(ex-nx*5,ey-ny*5);ctx.lineTo(bx-nx*6,by-ny*6);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle="#e8ecef";for(let k=0;k<9;k++){const q=k/9,qx=bx+(ex-bx)*q-nx*6+nx*q,qy=by+(ey-by)*q-ny*6+ny*q;ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(qx+dx*2.8-nx*3,qy+dy*2.8-ny*3);ctx.lineTo(qx+dx*2.8,qy+dy*2.8);ctx.fill();}
-      ctx.strokeStyle="#fff";ctx.lineWidth=0.7;ln(bx+nx*0.5,by+ny*0.5,ex+nx*1.5,ey+ny*1.5);
-      ctx.fillStyle="#4a5055";ctx.beginPath();ctx.arc(bx+(ex-bx)*0.2-nx,by+(ey-by)*0.2-ny,1.4,0,7);ctx.fill();}}
-
+    else{drawGuitar(h[0]-dx*5,h[1]-dy*5,Math.atan2(dy,dx),1.05);}}
   else if(u.type==="archer"){
     const pull=u.atk>0?0:Math.max(0,Math.min(1,1-(u.cd||0)/(UT.archer.rate)*0.6));
     const bh=limb(sx,sy,1.45,7,1.6,7);
@@ -1006,6 +1032,7 @@ function draw(){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   if(G.flash>0){ctx.fillStyle="rgba(255,255,255,"+(G.flash*0.7)+")";ctx.fillRect(0,0,cw,ch);}
   drawBanner();
+  if(G.god){ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillStyle="#7df9ff";ctx.fillText("⚡ GOD MODE ⚡",cw/2,16);}
   G.statues.forEach((S,i)=>{const bw=Math.min(180,cw*0.3),x=i?cw-bw-10:10,y=10;
     ctx.fillStyle="#000a";ctx.fillRect(x-2,y-2,bw+4,14);ctx.fillStyle=i?"#e33":"#3d3";ctx.fillRect(x,y,bw*S.hp/S.max,10);
     ctx.fillStyle="#fff";ctx.font="bold 11px system-ui";ctx.textAlign=i?"right":"left";ctx.fillText("🗿 "+Math.ceil(S.hp),i?x+bw:x,y+26);});
@@ -1029,7 +1056,7 @@ const SWORDS_SVG='<svg viewBox="0 0 26 26" width="26" height="26" style="vertica
 const ubtns={};
 for(const k of ORDER){const b=document.createElement("button");b.className="ub";
   b.innerHTML=`<span class="ic">${UT[k].icon}</span><span class="pr">${UT[k].cost}</span><span class="cnt"></span><span class="bar"></span><span class="cx">✖</span>`;
-  b.onclick=()=>{if(state==="play"&&G.winner<0&&!buy(0,k)&&popOf(0)+UT[k].pop>POPMAX)popFull();};b.querySelector(".cx").addEventListener("click",e=>{e.stopPropagation();if(state==="play")cancelBuy(0,k);});
+  b.onclick=()=>{godSeq(k);if(state==="play"&&G&&G.winner<0&&!buy(0,k)&&popOf(0)+UT[k].pop>POPMAX)popFull();};b.querySelector(".cx").addEventListener("click",e=>{e.stopPropagation();if(state==="play")cancelBuy(0,k);});
   $("ubtns").appendChild(b);ubtns[k]=b;}
 $("bDef").onclick=()=>{if(G)G.teams[0].mode="defend";};
 $("bRet").onclick=()=>{if(G)G.teams[0].mode="retreat";};
