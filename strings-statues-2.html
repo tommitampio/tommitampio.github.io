@@ -256,10 +256,13 @@ function audioInit(){
   const len=c.sampleRate;AU.noise=c.createBuffer(1,len,c.sampleRate);const dd=AU.noise.getChannelData(0);for(let i=0;i<len;i++)dd[i]=Math.random()*2-1;
   AU.next=c.currentTime+0.1;AU.timer=setInterval(schedMusic,50);
 }
+const BGM=new Audio("musiikki/hopeful-road-trip.mp3");BGM.loop=true;BGM.volume=0.55;BGM.preload="auto";
+function bgmSync(){try{if(save.music&&!document.hidden){const p=BGM.play();if(p&&p.catch)p.catch(()=>{});}else BGM.pause();}catch(e){}}
+document.addEventListener("pointerdown",bgmSync,{capture:true});
 document.addEventListener("pointerdown",audioInit,{capture:true});
 document.addEventListener("keydown",audioInit,{capture:true});
-document.addEventListener("visibilitychange",()=>{if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend();else AU.ctx.resume();});
-function setAudio(){if(!AU.ctx)return;const t0=AU.ctx.currentTime;AU.mus.gain.setTargetAtTime(save.music?0.5:0,t0,0.1);AU.fx.gain.setTargetAtTime(save.sfx?0.9:0,t0,0.05);}
+document.addEventListener("visibilitychange",()=>{bgmSync();if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend();else AU.ctx.resume();});
+function setAudio(){bgmSync();if(!AU.ctx)return;const t0=AU.ctx.currentTime;AU.mus.gain.setTargetAtTime(save.music?0.5:0,t0,0.1);AU.fx.gain.setTargetAtTime(save.sfx?0.9:0,t0,0.05);}
 function tone(type,f1,f2,dur,vol,when,dest,filt){
   const c=AU.ctx,t0=when||c.currentTime,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f1,t0);
   if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
@@ -294,7 +297,7 @@ const ROOT=[48,45,41,43,48,45,41,43],CHORD=[[0,4,7],[0,3,7],[0,4,7],[0,4,7],[0,4
 function n2f(m){return 440*Math.pow(2,(m-69)/12);}
 function mallet(f,t0,vol){tone("sine",f,0,0.45,vol,t0,AU.mus);tone("triangle",f*2,0,0.12,vol*0.25,t0,AU.mus);}
 function schedMusic(){
-  const c=AU.ctx;if(!c||!save.music)return;const sd=60/92/4;
+  const c=AU.ctx;if(!c||!save.music||BGM)return;const sd=60/92/4;
   if(AU.next<c.currentTime)AU.next=c.currentTime+0.05;
   while(AU.next<c.currentTime+0.3){
     const st=AU.step%128,bar=Math.floor(st/16),b=st%16,t0=AU.next,D=AU.mus,r=ROOT[bar];
