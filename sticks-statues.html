@@ -217,7 +217,7 @@ const LEVELS=[
  {name:"Rio de Janeiro",x:380,y:367,theme:"marsh",   cfg:{miners:6,units:["sword","archer","spear","archer"],think:1.4,income:1.05,attackPow:1000,tower:1,hpMul:1.2,reward:7}},
  {name:"Seattle",x:160,y:171,theme:"forest", cfg:{miners:7,units:["sword","archer","spear","giant","archer"],think:1.2,income:1.1,attackPow:1100,tower:1,hpMul:1.3,reward:8}},
  {name:"New York",x:294,y:190,theme:"ash",   cfg:{miners:8,units:["sword","archer","spear","giant","archer","spear"],think:1.0,income:1.2,attackPow:1300,tower:1,hpMul:1.4,reward:10,fix:1}},
- {name:"London",x:500,y:160,theme:"dusk",lx:-58,ly:8,  cfg:{miners:9,units:["archer","spear","giant","spear","giant","archer"],think:0.9,income:1.3,attackPow:1500,tower:2,hpMul:1.7,reward:15,fix:1}}];
+ {name:"London",x:500,y:160,theme:"dusk",lx:-58,ly:8,  cfg:{miners:8,units:["archer","spear","giant","spear","giant","archer"],think:1.0,income:1.2,attackPow:1400,tower:1,hpMul:1.6,reward:15,fix:1}}];
 const THEMES={
  dusk:  {sky:["#5e0606","#b31313"],cloud:"#d88a8a99",hill:"#1c8a3a",ground:"#22a84a",edge:"#1f9a43",blade:"#178a38",moon:"#9fd6e6"},
  meadow:{sky:["#2f62a8","#a9d4f0"],cloud:"#ffffffaa",hill:"#2a9a48",ground:"#33b552",edge:"#2ea84c",blade:"#259a42",moon:"#fff3a0"},
@@ -1265,7 +1265,7 @@ function renderSlots(msg){
 $("bCont").onclick=()=>{if(loadGame())$("menu").classList.add("hide");else applyLang();};
 $("bReset").onclick=()=>{$("menu").classList.add("hide");$("confirm").classList.remove("hide");};
 $("bNo").onclick=()=>{$("confirm").classList.add("hide");showMenu();};
-$("bYes").onclick=()=>{save.coins=0;save.wins=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();G=null;$("confirm").classList.add("hide");showMenu();};
+$("bYes").onclick=()=>{save.coins=0;save.wins=0;save.camp=0;save.campDone=0;mapSel=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();G=null;$("confirm").classList.add("hide");showMenu();};
 let quitArm=false;
 $("bQuit").onclick=()=>{if(!quitArm){quitArm=true;$("bQuit").textContent=t("quitSure");$("bQuit").style.background="#c33";return;}quitArm=false;$("bQuit").style.background="";saveGame();$("pause").classList.add("hide");showMenu();};
 $("bPlay").onclick=()=>{$("menu").classList.add("hide");newGame();};
