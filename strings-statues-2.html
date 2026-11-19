@@ -217,7 +217,7 @@ const DIFF={
 const SHOP={statue:{max:5,cost:[3,6,10,15,22]},tower:{max:3,cost:[5,10,18]},gold:{max:4,cost:[2,4,7,11]},carry:{max:4,cost:[3,6,10,14]}};
 const STAT_COST=[300,600,900];
 const LEVELS=[
- {name:"Helsinki",x:569,y:136,theme:"ice",ly:-58,cfg:{miners:3,units:["sword","sword"],think:3.0,income:0.7,attackPow:500,tower:0,hpMul:0.8,reward:3}},
+ {name:"Helsinki",x:569,y:136,theme:"ice",ly:-58,cfg:{miners:3,units:["sword"],think:4.0,income:0.4,attackPow:99999,tower:0,hpMul:0.5,reward:3}},
  {name:"Johannesburg",x:578,y:376,theme:"desert",cfg:{miners:4,units:["sword","sword","archer"],think:2.6,income:0.8,attackPow:600,tower:0,hpMul:0.9,reward:4}},
  {name:"Tokyo",x:888,y:204,theme:"dusk",cfg:{miners:5,units:["sword","archer","sword","archer"],think:2.0,income:0.9,attackPow:700,tower:0,hpMul:1.0,reward:5}},
  {name:"Sydney",x:920,y:398,theme:"meadow",cfg:{miners:6,units:["sword","archer","spear","sword","archer"],think:1.6,income:1.0,attackPow:900,tower:0,hpMul:1.1,reward:6}},
@@ -641,7 +641,7 @@ function toggleGod(){
 
 /* ================= TEKOÄLY ================= */
 // Kuinka monta sekuntia tekoäly pysyy alussa kotona (helppo pisin, vaikea lyhin)
-function aiCalm(D){if(G.level!=null)return Math.max(20,50-G.level*4);return {easy:50,normal:35,hard:22}[G.diff]||35;}
+function aiCalm(D){if(G.level===0)return 1e9;if(G.level!=null)return Math.max(40,70-G.level*4);return {easy:50,normal:35,hard:22}[G.diff]||35;}
 function aiThink(){
   const D=cfg(),tm=G.teams[1];
   // Rauhallinen alku: tekoäly ei hyökkää eikä tee jättiläistä ennen kuin pelaaja on ehtinyt koota bändin
@@ -1678,7 +1678,7 @@ function stepAbil(dt){
       hurt(u,170,0,"giant");if(!u.dead){u.x=Math.min(W-30,u.x+(u.type==="giant"?60:140));u.spin=SPIN;}}
     if(A.wave.x>W)A.wave=null;}
 }
-function drawTip(){if(!G||!(G.tip>0)||G.fake)return;G.tip-=1/60;
+function drawTip(){if(!G||!(G.tip>0)||G.fake||G.level===0)return;G.tip-=1/60;
   const L={fi:"🎯 Kaada vastustajan patsas! →",sv:"🎯 Fäll motståndarens staty! →",en:"🎯 Topple the rival statue! →",de:"🎯 Stürze die gegnerische Statue! →",es:"🎯 ¡Derriba la estatua rival! →",fr:"🎯 Renverse la statue rivale ! →"};
   const P={fi:"↖ Paina nappia – bändisi kasvaa!",sv:"↖ Tryck på en knapp – bandet växer!",en:"↖ Tap a button – your band grows!",de:"↖ Tippe auf einen Knopf – deine Band wächst!",es:"↖ ¡Toca un botón y tu banda crece!",fr:"↖ Touche un bouton – ton groupe grandit !"};
   const a=Math.min(1,G.tip),vw=viewW();ctx.save();ctx.globalAlpha=a;ctx.textAlign="center";ctx.font="900 30px system-ui";ctx.lineWidth=6;ctx.strokeStyle="#120a20";ctx.fillStyle="#f5c400";
@@ -1740,6 +1740,28 @@ function updAbUI(){if(!G||G.fake)return;const A=abState(),tm=G.teams[0];
     const active=(k==="mgr"&&A.mgr>0)||(k==="smoke"&&A.smoke>0)||(k==="king"&&A.king>0)||(k==="roadie"&&A.wall);
     b.classList.toggle("off",!open||used||cd>0||tm.gold<AB[k].cost);b.classList.toggle("act",!!active);}}
 
+
+/* ===== Opastus ensimmäisellä keikalla: nuoli osoittaa, mitä painaa ===== */
+const TUTX={fi:["Paina tästä – saat huilistin! 🎺","Vielä pari soittajaa…","Nyt: 🤘 HYÖKKÄÄ!","Kaada vastustajan patsas! 🗿💥"],
+ sv:["Tryck här – du får en flöjtist! 🎺","Ett par musiker till…","Nu: 🤘 ANFALL!","Fäll motståndarens staty! 🗿💥"],
+ en:["Tap here – you get a flutist! 🎺","A couple more players…","Now: 🤘 ATTACK!","Topple the rival statue! 🗿💥"],
+ de:["Tippe hier – du bekommst einen Flötisten! 🎺","Noch ein paar Musiker…","Jetzt: 🤘 ANGRIFF!","Stürze die gegnerische Statue! 🗿💥"],
+ es:["¡Toca aquí y tendrás un flautista! 🎺","Un par de músicos más…","Ahora: 🤘 ¡ATACA!","¡Derriba la estatua rival! 🗿💥"],
+ fr:["Touche ici – tu reçois un flûtiste ! 🎺","Encore quelques musiciens…","Maintenant : 🤘 ATTAQUE !","Renverse la statue rivale ! 🗿💥"]};
+const tutEl=document.createElement("div");tutEl.id="tut";document.body.appendChild(tutEl);
+const tutCss=document.createElement("style");tutCss.textContent="#tut{position:fixed;z-index:50;pointer-events:none;display:none;background:#f5c400;color:#120a20;font:900 18px system-ui;padding:8px 14px;border-radius:12px;box-shadow:0 4px 0 #7a5a00,0 0 20px #f5c400aa;white-space:nowrap}#tut b{position:absolute;font-size:30px;line-height:1}";document.head.appendChild(tutCss);
+function updTut(){
+  if(!G||G.fake||G.level!==0||state!=="play"||G.winner>=0){tutEl.style.display="none";return;}
+  const L=TUTX[lang]||TUTX.en,tm=G.teams[0];let n=0;for(const u of G.units)if(u.team===0&&!u.dead)n++;for(const k of ORDER)n+=tm.q[k].length;
+  let step,el;
+  if(tm.mode==="attack"){step=3;el=null;}else if(n<3){step=0;el=ubtns.sword;}else if(n<5){step=1;el=ubtns.sword;}else{step=2;el=$("bAtk");}
+  tutEl.style.display="block";const bounce=Math.sin(performance.now()/180)*6;
+  if(!el){tutEl.innerHTML=L[step];tutEl.style.left=(innerWidth/2-tutEl.offsetWidth/2)+"px";tutEl.style.top=(innerHeight*0.3+bounce)+"px";return;}
+  const r=el.getBoundingClientRect(),up=r.top>innerHeight/2;
+  tutEl.innerHTML=L[step]+(up?'<b style="left:12px;bottom:-30px">⬇</b>':'<b style="left:12px;top:-30px">⬆</b>');
+  tutEl.style.left=Math.max(6,Math.min(innerWidth-tutEl.offsetWidth-6,r.left))+"px";
+  tutEl.style.top=(up?r.top-tutEl.offsetHeight-34+bounce:r.bottom+34+bounce)+"px";
+}
 /* ===== ruudun vetäminen ja pienoiskartta ===== */
 let drag=null;
 function setZoom(z,cx){const old=viewW(),c=camX+(cx!=null?cx/scale:old/2);save.zoom=Math.max(1,Math.min(2.2,z));calcView();camX=c-(cx!=null?cx/scale:viewW()/2);clampCam();try{persist()}catch(e){}}
@@ -1772,7 +1794,7 @@ function loop(now){
   if(G){if(G.slow>0)G.slow-=dt;if(G.shk>0)G.shk=Math.max(0,G.shk-dt*1.5);if(G.flash>0)G.flash=Math.max(0,G.flash-dt*1.5);}
   if(state==="play"||(state==="over"&&G)){acc+=dt*speed*(G&&G.slow>0?0.3:1);while(acc>=1/60){step(1/60);acc-=1/60;}}
   if(state==="play"){saveT+=dt;if(saveT>5){saveT=0;saveGame();}}
-  draw();drawMini();updUI();updAbUI();requestAnimationFrame(loop);
+  draw();drawMini();updUI();updAbUI();updTut();requestAnimationFrame(loop);
 }
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
 if(false){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
