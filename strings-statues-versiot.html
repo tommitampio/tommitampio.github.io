@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Strings &amp; Statues – versiot – Tommi Tampio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Music&text=%F0%9D%84%9E&display=swap">
+<style>
+/* Layout: one narrow left-aligned column, photo and name on top, sections as ruled rows that can be added to later. */
+:root {
+  --bg: #F2F5F7;
+  --fg: #14202A;
+  --muted: #566672;
+  --rule: #CBD5DC;
+  --accent: #1F5C8B;
+  --nv-wood: #4b3027; --nv-fret: #c9c2b0; --nv-string: #e9e4d6; --nv-inlay: #7a5a4c;
+  --nv-root: #c68512; --nv-on-root: #1d1404;
+  --nv-good: #1c7a3c; --nv-bad: #b3261e; --nv-good-bg: #dff3e6; --nv-bad-bg: #fbe3e1;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B;
+    --fg: #E6ECF0;
+    --muted: #93A3AE;
+    --rule: #26343E;
+    --accent: #78B6E4;
+    --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+    --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+    --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B;
+  --fg: #E6ECF0;
+  --muted: #93A3AE;
+  --rule: #26343E;
+  --accent: #78B6E4;
+  --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+  --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+  --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 3.5rem; }
+.meta {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+.kuva {
+  display: block;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 1.75rem 0 0;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--rule);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 1.25rem;
+  text-wrap: balance;
+}
+h1 span { color: var(--accent); }
+.lead { font-size: 1.15rem; max-width: 34rem; margin: 0; }
+section {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 0.5rem 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+}
+section p { margin: 0; max-width: 34rem; }
+section p + p { margin-top: 0.75rem; }
+.soft { color: var(--muted); }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.shelf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+.count { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+input[type="search"] {
+  font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.5rem 0.75rem; width: 100%; max-width: 15rem; min-width: 0;
+}
+input[type="search"]:focus-visible, button.more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.books { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.books li { padding: 0.65rem 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; min-width: 0; }
+.books li.grp { font-family: var(--font-display); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--rule); }
+.books li.grp:first-child { padding-top: 0.75rem; }
+.books .t { font-weight: 500; overflow-wrap: anywhere; }
+.books .a { color: var(--muted); font-size: 0.9rem; }
+button.more {
+  font: inherit; color: var(--accent); background: none; border: 0;
+  padding: 0.75rem 0 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em;
+}
+footer { font-size: 0.85rem; color: var(--muted); }
+@media (max-width: 34rem) {
+  body { padding-block: 2.5rem 2rem; }
+  section { grid-template-columns: minmax(0, 1fr); }
+  .kuva { width: 7rem; height: 7rem; }
+}
+
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1.pg { font-size: clamp(2.2rem, 8vw, 3.4rem); margin: 0.75rem 0 0.5rem; }
+
+
+.games { display: grid; gap: 0.9rem; }
+.game { display: block; text-decoration: none; color: var(--fg); border: 1px solid var(--rule); border-radius: 10px; padding: 1.1rem 1.2rem; }
+.game:hover { border-color: var(--accent); }
+.game b { display: block; font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; color: var(--accent); }
+.game span { display: block; color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+.game i { font-style: normal; display: inline-block; margin-top: 0.6rem; font-size: 0.85rem; color: var(--fg); }
+
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <nav class="top-nav"><a href="pelit.html">‹ Pelit</a></nav>
+    <h1 class="pg">Strings &amp; Statues – versiot</h1>
+    <p class="lead">Pelin vaiheet tallessa. Jokaisella versiolla on omat tallennuksensa, joten ne eivät sekoitu toisiinsa.</p>
+  </header>
+  <div class="games">
+    <a class="game" href="strings-statues-v1.html"><b>Versio 1 · 18.11.2026</b><span>Ensimmäinen kiertueversio: kaivajat, lyhyt stadion. Tietokone tekee jättiläisen heti alussa.</span><i>Pelaa →</i></a>
+    <a class="game" href="strings-statues-v2.html"><b>Versio 2 · 19.11.2026</b><span>Reilumpi alku, puolitoista kertaa pidempi stadion ja viisi tähtinappia (Manageri, Kitarasoolo, Roudari, Savukone, Kuningas).</span><i>Pelaa →</i></a>
+    <a class="game" href="sticks-statues.html"><b>Versio 3 · nykyinen</b><span>Vain kaksi tähtinappia (Manageri ja Kuningas) sekä 1–3 tähteä jokaisesta keikasta.</span><i>Pelaa →</i></a>
+    <a class="game" href="strings-statues-2.html"><b>Strings &amp; Statues 2 · kokeilu</b><span>Viiden säännön versio: idea selviää heti, taistelu alkaa heti, jokainen painallus näkyy, keikka kestää pari minuuttia.</span><i>Pelaa →</i></a>
+  </div>
+  <footer>© <span id="vuosi">2026</span> Tommi Tampio</footer>
+</main>
+<script>try{document.getElementById("vuosi").textContent=new Date().getFullYear()}catch(e){}</script>
+
+<script src="i18n.js"></script>
+<script data-goatcounter="https://tommitampio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
