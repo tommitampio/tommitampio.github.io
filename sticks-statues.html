@@ -70,8 +70,14 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 #langs{position:absolute;top:10px;right:10px;z-index:6;display:flex;gap:4px}
 #langs button{background:#0007;border:1px solid #f5c40066;color:#fff;border-radius:8px;padding:4px 7px;font-size:12px;cursor:pointer}
 #langs button.on{background:#f5c400;color:#222}
+.ub.ab{width:42px;background:linear-gradient(#b48cff,#7a4adf);border-color:#3a1a7a;color:#fff}
+.ub.ab .ic{font-size:19px}
+.ub.ab .pr{color:#fff}
+.ub.ab.act{box-shadow:0 0 0 3px #f5c400,0 0 14px #f5c400;animation:pulse 1s infinite}
+.ub .cdn{position:absolute;inset:0;border-radius:10px;background:#000a;color:#fff;font-size:18px;font-weight:900;align-items:center;justify-content:center;display:none}
 .hide{display:none!important}
-@media (max-width:600px){#mini{order:9;flex-basis:100%;height:26px}#bottom .sb{flex:1}.ub{width:46px;height:52px}.ub .ic{font-size:19px}#stats{font-size:13px}.sb{padding:7px 8px;font-size:13px}}
+@media (max-width:920px){.ub{width:46px;height:52px}.ub .ic{font-size:19px}.ub.ab{width:37px}.ub.ab .ic{font-size:17px}#stats{gap:6px}}
+@media (max-width:600px){#abtns{margin-left:2px!important;padding-left:4px!important}.ub.ab{width:38px}#mini{order:9;flex-basis:100%;height:26px}#bottom .sb{flex:1}.ub{width:46px;height:52px}.ub .ic{font-size:19px}#stats{font-size:13px}.sb{padding:7px 8px;font-size:13px}}
 </style>
 <meta name="theme-color" content="#1a0a2e">
 <meta name="mobile-web-app-capable" content="yes">
@@ -88,6 +94,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 <div id="app">
   <div id="top">
     <div id="ubtns" style="display:flex;gap:5px"></div>
+    <div id="abtns" style="display:flex;gap:4px;margin-left:4px;padding-left:6px;border-left:2px dashed #6b3b3b"></div>
     <div id="stats"><button id="bZout" class="zb">－</button><button id="bZin" class="zb">＋</button><button id="bPause" title="Pause"><span id="pLbl" style="display:none"></span>❚❚</button><span id="sGold">💰 0</span><span id="sPop">👥 0/50</span></div>
   </div>
   <div id="wrap">
@@ -360,6 +367,7 @@ function countOf(team,type){let n=G.teams[team].q[type].length;for(const u of G.
 function buy(team,type){
   const tm=G.teams[team],d=UT[type];
   if(team===0&&G.god){if(popOf(0)+d.pop>POPMAX)return false;tm.q[type].push(0.02);return true;}
+  if(team===0&&G.ab&&G.ab.mgr>0){if(tm.gold<d.cost||popOf(0)+d.pop>POPMAX)return false;tm.gold-=d.cost;tm.q[type].push(0.02);return true;}
   if(tm.gold<d.cost||popOf(team)+d.pop>POPMAX)return false;
   tm.gold-=d.cost;tm.q[type].push(d.train);return true;
 }
@@ -373,6 +381,7 @@ function step(dt){
   G.teams.forEach((tm,i)=>{for(const k of ORDER){const q=tm.q[k];if(q.length){q[0]-=dt;if(q[0]<=0){q.shift();spawn(i,k);}}}});
   // tekoäly
   G.aiT-=dt;if(G.aiT<=0&&G.winner<0){G.aiT=cfg().think;aiThink();}
+  stepAbil(dt);
   for(const u of G.units){if(u.dead){u.deadT+=dt;if(u.fvx!=null&&!u.landed){u.fx+=u.fvx*dt;u.fy+=u.fvy*dt;u.fvy+=900*dt;u.rot+=u.frot*dt;if(u.fy>=0&&u.fvy>0){u.landed=1;gibs(Object.assign({},u,{x:u.x+u.fx}));u.deadT=3.3;}}continue;}
     if(u.type==="miner"&&u.carrying&&u.team===0&&Math.random()<dt*0.9){fx();G.notes.push({x:u.x,y:u.y-48,t:0,c:Math.random()<0.5?"♪":"♫"});}
     if(u.type==="giant"&&u.moving){const st=Math.floor(u.phase/Math.PI);if(st!==u.lastStep){u.lastStep=st;G.dust.push({x:u.x+u.face*6,y:u.y,vx:-u.face*20,vy:-10,t:0,life:0.6,r:4});}}u.atk=Math.max(0,u.atk-dt);if(u.spin>0)u.spin=Math.max(0,u.spin-dt);
@@ -408,9 +417,10 @@ function step(dt){
   G.floats=G.floats.filter(f=>f.t<1.2);
   if(G.overT>=0){G.overT+=dt;if(G.overT>3.2&&state==="play")endGame();}
 }
-function nearestEnemy(team,x,maxD){let best=null,bd=maxD;
-  for(const u of G.units){if(u.team===team||u.dead||u.hidden)continue;const d=Math.abs(u.x-x);if(d<bd){bd=d;best=u;}}return best;}
-function moveTo(u,tx,dt){const d=tx-u.x;if(Math.abs(d)<3)return true;const s=UT[u.type].spd*dt;u.x+=Math.sign(d)*Math.min(Math.abs(d),s);u.face=Math.sign(d);u.moving=true;return false;}
+function nearestEnemy(team,x,maxD){let best=null,bd=maxD;const fog=team===1&&G.ab&&G.ab.smoke>0;
+  for(const u of G.units){if(u.team===team||u.dead||u.hidden||(fog&&u.team===0))continue;const d=Math.abs(u.x-x);if(d<bd){bd=d;best=u;}}return best;}
+function moveTo(u,tx,dt){const A=G.ab;if(A&&A.wall&&u.team===1&&u.x>=A.wall.x+14)tx=Math.max(tx,A.wall.x+16);
+  const d=tx-u.x;if(Math.abs(d)<3)return true;const s=UT[u.type].spd*dt*(A&&A.king>0&&u.team===0&&u.type!=="miner"?1.4:1);u.x+=Math.sign(d)*Math.min(Math.abs(d),s);u.face=Math.sign(d);u.moving=true;return false;}
 const MSLOT=[{dx:-28,dy:-7},{dx:28,dy:-7},{dx:-22,dy:9},{dx:22,dy:9}];
 function freeMine(u){if(u.mine){const i=u.mine.slots.indexOf(u.id);if(i>=0)u.mine.slots[i]=null;u.mine=null;}}
 function guards(S){
@@ -455,7 +465,7 @@ function updFighter(u,dt){
   else{const post=S.x+dir*((d.ranged?120:190)+(u.id%4)*14+(u.type==="giant"?30:0));if(moveTo(u,post,dt))u.face=dir;}
 }
 function attack(u,tg,dt){
-  const d=UT[u.type];u.cd-=dt;if(u.cd>0)return;u.cd=d.rate;u.atk=0.35;if(!d.ranged)sfx("hit",u.x);
+  const d=UT[u.type];u.cd-=dt;if(u.cd>0)return;u.cd=d.rate*(u.team===0&&G.ab&&G.ab.king>0?0.65:1);u.atk=0.35;if(!d.ranged)sfx("hit",u.x);
   if(d.ranged){shoot(u.team,u.x+u.face*10,u.y-27,tg,d.dmg);return;}
   if(u.type==="sword"){u.hits=(u.hits||0)+1;if(u.hits%4===0){u.spin=SPIN;hurt(tg,d.dmg*0.5,u.team);pop(u.x,u.y-40,"WHOOSH!");}}
   if(d.splash&&tg.type){for(let i=0;i<6;i++)G.dust.push({x:tg.x+(Math.random()-0.5)*40,y:tg.y-Math.random()*6,vx:(Math.random()-0.5)*60,vy:-20-Math.random()*20,t:0,life:0.6,r:3+Math.random()*3});for(const e of G.units)if(e.team!==u.team&&!e.dead&&!e.hidden&&Math.abs(e.x-tg.x)<d.splash)hurt(e,d.dmg,u.team,"giant");}
@@ -1187,7 +1197,7 @@ function draw(){
   ctx.strokeStyle="#3a2a1a";ctx.lineWidth=1.5;
   for(const a of G.arrows){const l=Math.hypot(a.vx,a.vy);ln(a.x,a.y,a.x-a.vx/l*12,a.y-a.vy/l*12);}
   ctx.lineCap="round";for(const p of G.pieces){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.strokeStyle=p.col;ctx.lineWidth=p.w;ln(-p.len/2,0,p.len/2+0.01,0);ctx.restore();}
-  drawFx();drawLeaves();drawConfetti();
+  drawAbil();drawFx();drawLeaves();drawConfetti();
   for(const d of G.dust){ctx.fillStyle=`rgba(150,140,130,${0.6*(1-d.t/d.life)})`;ctx.beginPath();ctx.arc(d.x,d.y,d.r*(1+d.t),0,7);ctx.fill();}
   drawComic();
   ctx.font="bold 15px system-ui";ctx.textAlign="center";
@@ -1572,7 +1582,7 @@ document.querySelectorAll(".aud").forEach(b=>b.addEventListener("click",()=>{con
 function applyLang(){
   document.documentElement.lang=lang;
   document.querySelectorAll("#langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang));
-  renderAudio();$("mSub").textContent=t("sub");$("bPlay").textContent=t("quick");$("bCamp").textContent=t("campaign")+(save.camp>0&&save.camp<LEVELS.length?"  ("+save.camp+"/"+LEVELS.length+")":save.camp>=LEVELS.length?"  👑":"");$("bShop").textContent="🗿 "+t("shop");$("mHelp").textContent=t("help");
+  renderAudio();$("mSub").textContent=t("sub");$("bPlay").textContent=t("quick");$("bCamp").textContent=t("campaign")+(save.camp>0&&save.camp<LEVELS.length?"  ("+save.camp+"/"+LEVELS.length+")":save.camp>=LEVELS.length?"  👑":"");$("bShop").textContent="🗿 "+t("shop");$("mHelp").textContent=t("help")+"\n"+(typeof ABT!=="undefined"?(ABT[lang]||ABT.en).help:"");
   $("mCoins").textContent="🪙 "+t("coins")+": "+save.coins;
   const dr=$("diffRow");dr.innerHTML="";for(const k of ["easy","normal","hard"]){const b=document.createElement("button");b.className="sb"+(save.diff===k?" on":"");b.textContent=t(k);
     b.onclick=()=>{save.diff=k;persist();applyLang();};dr.appendChild(b);}
@@ -1597,6 +1607,109 @@ function updUI(){
   $("bDef").classList.toggle("on",tm.mode==="defend");$("bAtk").classList.toggle("on",tm.mode==="attack");$("bRet").classList.toggle("on",tm.mode==="retreat");
   const n=tm.statUps;$("bStat").textContent=n>=3?"🗿 ✓":"🗿+ "+STAT_COST[n];$("bStat").classList.toggle("on",n<3&&tm.gold>=STAT_COST[n]);
 }
+
+
+/* ================= TÄHTINAPIT (erikoiskyvyt) ================= */
+// cost = kultaa, cd = latautumisaika sekunteina, dur = kesto, lvl = kiertueen keikka, jolla kyky aukeaa (0 = Helsinki)
+const AB={
+  mgr   :{ic:"💼",cost:200,cd:100,dur:30,lvl:1},
+  solo  :{ic:"🎸",cost:300,cd:60, dur:0, lvl:2},
+  roadie:{ic:"🔧",cost:250,cd:80, dur:15,lvl:4},
+  smoke :{ic:"🌫",cost:200,cd:60, dur:10,lvl:5},
+  king  :{ic:"👑",cost:600,cd:0,  dur:25,lvl:7,once:true}};
+const AB_ORDER=["mgr","solo","roadie","smoke","king"];
+const ABT={
+ fi:{mgr:["Manageri","Levytyssopimus! Kultaa tulee tuplasti ja kaikki valmistuvat heti 30 sekunnin ajan."],solo:["Kitarasoolo","Ääniaalto kulkee kentän läpi, vahingoittaa vihollisia ja työntää ne taaksepäin."],roadie:["Roudari","Paikkaa patsasta ja pystyttää kaiutinmuurin, joka pysäyttää viholliset 15 sekunniksi."],smoke:["Savukone","Sumu kätkee bändisi ja kaivajasi: vihollinen ei näe niitä 10 sekuntiin."],king:["Kuningas","Legenda nousee lavalle: koko bändi liikkuu ja lyö nopeammin 25 sekuntia. Kerran pelissä."],opens:"🔒 Aukeaa kiertueella: {c}",help:"⭐ Tähtinapit: Manageri, Kitarasoolo, Roudari, Savukone ja Kuningas. Ne maksavat kultaa ja latautuvat käytön jälkeen. Kiertueella ne aukeavat keikka kerrallaan."},
+ sv:{mgr:["Manager","Skivkontrakt! Dubbelt guld och allt blir klart direkt i 30 sekunder."],solo:["Gitarrsolo","En ljudvåg sveper över arenan, skadar fienderna och knuffar dem bakåt."],roadie:["Roddare","Lagar statyn och bygger en högtalarmur som stoppar fienderna i 15 sekunder."],smoke:["Rökmaskin","Röken döljer ditt band och dina gruvarbetare i 10 sekunder."],king:["Kungen","Legenden kliver upp på scenen: hela bandet rör sig och slår snabbare i 25 sekunder. En gång per spel."],opens:"🔒 Öppnas på turnén: {c}",help:"⭐ Stjärnknappar: Manager, Gitarrsolo, Roddare, Rökmaskin och Kungen. De kostar guld och laddas upp efter användning. På turnén öppnas de en spelning i taget."},
+ en:{mgr:["Manager","Record deal! Double gold and everything trains instantly for 30 seconds."],solo:["Guitar solo","A sound wave sweeps the stadium, hurting enemies and pushing them back."],roadie:["Roadie","Patches the statue and builds a speaker wall that stops enemies for 15 seconds."],smoke:["Smoke machine","Fog hides your band and miners from the enemy for 10 seconds."],king:["The King","The legend takes the stage: your whole band moves and strikes faster for 25 seconds. Once per game."],opens:"🔒 Opens on the tour: {c}",help:"⭐ Star buttons: Manager, Guitar solo, Roadie, Smoke machine and The King. They cost gold and recharge after use. On the tour they unlock one show at a time."},
+ de:{mgr:["Manager","Plattenvertrag! 30 Sekunden lang doppeltes Gold und alles ist sofort fertig."],solo:["Gitarrensolo","Eine Schallwelle fegt durchs Stadion, verletzt Feinde und drängt sie zurück."],roadie:["Roadie","Flickt die Statue und baut eine Lautsprecherwand, die Feinde 15 Sekunden aufhält."],smoke:["Nebelmaschine","Nebel verbirgt deine Band und Bergleute 10 Sekunden lang vor dem Feind."],king:["Der King","Die Legende betritt die Bühne: Die ganze Band bewegt sich und schlägt 25 Sekunden schneller zu. Einmal pro Spiel."],opens:"🔒 Wird auf der Tournee frei: {c}",help:"⭐ Sternknöpfe: Manager, Gitarrensolo, Roadie, Nebelmaschine und der King. Sie kosten Gold und laden sich nach dem Einsatz wieder auf. Auf der Tournee werden sie Konzert für Konzert frei."},
+ es:{mgr:["Mánager","¡Contrato discográfico! Oro doble y todo listo al instante durante 30 segundos."],solo:["Solo de guitarra","Una onda sonora barre el estadio, daña a los enemigos y los empuja hacia atrás."],roadie:["Pipa","Repara la estatua y levanta un muro de altavoces que frena a los enemigos 15 segundos."],smoke:["Máquina de humo","El humo oculta a tu banda y a tus mineros durante 10 segundos."],king:["El Rey","La leyenda sube al escenario: toda la banda se mueve y golpea más rápido durante 25 segundos. Una vez por partida."],opens:"🔒 Se abre en la gira: {c}",help:"⭐ Botones estrella: Mánager, Solo de guitarra, Pipa, Máquina de humo y El Rey. Cuestan oro y se recargan tras usarlos. En la gira se desbloquean concierto a concierto."},
+ fr:{mgr:["Manager","Contrat de disque ! Or doublé et tout est prêt aussitôt pendant 30 secondes."],solo:["Solo de guitare","Une onde sonore balaie le stade, blesse les ennemis et les repousse."],roadie:["Roadie","Répare la statue et dresse un mur d'enceintes qui bloque les ennemis 15 secondes."],smoke:["Machine à fumée","La fumée cache ton groupe et tes mineurs pendant 10 secondes."],king:["Le King","La légende monte sur scène : tout le groupe bouge et frappe plus vite pendant 25 secondes. Une fois par partie."],opens:"🔒 S'ouvre pendant la tournée : {c}",help:"⭐ Boutons étoile : Manager, Solo de guitare, Roadie, Machine à fumée et le King. Ils coûtent de l'or et se rechargent après usage. Pendant la tournée, ils se débloquent concert après concert."}};
+const at=k=>(ABT[lang]||ABT.en)[k];
+function abOpen(k){if(!G||G.level==null)return true;return G.level>=AB[k].lvl;}
+function abState(){if(!G.ab)G.ab={cd:{},used:{},mgr:0,smoke:0,king:0,wall:null,wave:null,kingX:0};return G.ab;}
+function abReady(k){const A=abState();return abOpen(k)&&!(A.cd[k]>0)&&!(AB[k].once&&A.used[k])&&G.teams[0].gold>=AB[k].cost&&G.winner<0;}
+function useAbility(k){
+  if(!G||state!=="play"||!abReady(k))return;
+  const A=abState(),tm=G.teams[0],S=G.statues[0],D=AB[k];
+  tm.gold-=D.cost;A.cd[k]=D.cd;A.used[k]=1;
+  const name=at(k)[0].toUpperCase();
+  if(k==="mgr"){A.mgr=D.dur;tm.income=2;for(const q of ORDER)tm.q[q]=tm.q[q].map(()=>0.02);banner("💼 "+name+"!","#7df9ff");sfx("coin");}
+  else if(k==="solo"){A.wave={x:S.x+40,hit:{}};banner("🎸 "+name+"!","#ff7ab0");G.shk=Math.max(G.shk||0,0.5);sfxSolo();}
+  else if(k==="roadie"){const add=S.max*0.15;S.hp=Math.min(S.max,S.hp+add);A.wall={x:S.x+640,t:D.dur};
+    G.floats.push({x:S.x,y:GY-230*S.size,txt:"🔧 +"+Math.round(add),col:"#fff",t:0});banner("🔧 "+name+"!","#ffd84a");sfx("thud");}
+  else if(k==="smoke"){A.smoke=D.dur;banner("🌫 "+name+"!","#cfd8e8");if(AU.ctx&&save.sfx)noise(1.2,0.25,"lowpass",900);}
+  else if(k==="king"){A.king=D.dur;A.kingX=frontX();banner("👑 "+name+"!","#f5c400");sfxKing();}
+}
+function frontX(){let x=G.statues[0].x+220;for(const u of G.units)if(u.team===0&&!u.dead&&u.type!=="miner")x=Math.max(x,u.x);return Math.min(x-70,W-400);}
+function sfxSolo(){if(!AU.ctx||!save.sfx)return;const n=AU.ctx.currentTime;[330,392,440,523,587,659,784,880,1047].forEach((f,i)=>tone("sawtooth",f,f*1.02,0.12,0.09,n+i*0.06,AU.fx,2400));tone("sawtooth",1047,1568,0.6,0.08,n+0.56,AU.fx,2400);}
+function sfxKing(){if(!AU.ctx||!save.sfx)return;const n=AU.ctx.currentTime;[196,247,294,247,196,294,392].forEach((f,i)=>tone("triangle",f,0,0.22,0.14,n+i*0.15));}
+function stepAbil(dt){
+  const A=abState(),tm=G.teams[0];
+  for(const k in A.cd)if(A.cd[k]>0)A.cd[k]=Math.max(0,A.cd[k]-dt);
+  if(A.mgr>0){A.mgr-=dt;if(A.mgr<=0){A.mgr=0;tm.income=1;}}
+  if(A.smoke>0)A.smoke=Math.max(0,A.smoke-dt);
+  if(A.king>0){A.king-=dt;A.kingX+=(frontX()-A.kingX)*Math.min(1,dt*0.8);if(A.king<=0){A.king=0;banner("THE KING HAS LEFT THE BUILDING!","#f5c400");}}
+  if(A.wall){A.wall.t-=dt;if(A.wall.t<=0)A.wall=null;}
+  if(A.wave){A.wave.x+=1100*dt;
+    for(const u of G.units){if(u.team!==1||u.dead||A.wave.hit[u.id]||u.x>A.wave.x)continue;A.wave.hit[u.id]=1;
+      hurt(u,90,0,"giant");if(!u.dead){u.x=Math.min(W-30,u.x+(u.type==="giant"?40:90));}}
+    if(A.wave.x>W)A.wave=null;}
+}
+function drawAbil(){
+  const A=G.ab;if(!A)return;const T=G.time;
+  if(A.wall){const x=A.wall.x,al=Math.min(1,A.wall.t/0.5);ctx.globalAlpha=al;
+    for(let i=0;i<4;i++){const y=LANE0-6+i*20;ctx.fillStyle="#1a1a1a";ctx.fillRect(x-14,y-46,28,46);ctx.strokeStyle="#555";ctx.lineWidth=2;ctx.strokeRect(x-14,y-46,28,46);
+      const p=1+Math.sin(T*18+i)*0.12;ctx.fillStyle="#444";ctx.beginPath();ctx.arc(x,y-32,8*p,0,7);ctx.fill();ctx.beginPath();ctx.arc(x,y-13,5*p,0,7);ctx.fill();ctx.fillStyle="#888";ctx.beginPath();ctx.arc(x,y-32,3,0,7);ctx.fill();}
+    ctx.globalAlpha=1;}
+  if(A.wave){const x=A.wave.x;ctx.save();ctx.globalCompositeOperation="lighter";
+    for(let i=0;i<4;i++){ctx.strokeStyle=SPECTRUM[(i+Math.floor(T*8))%6];ctx.globalAlpha=0.7-i*0.15;ctx.lineWidth=6-i;ctx.beginPath();ctx.ellipse(x-i*26,GY+6,26,70,0,-Math.PI/2,Math.PI/2);ctx.stroke();}
+    ctx.restore();ctx.globalAlpha=1;ctx.fillStyle="#fff";ctx.font="bold 22px system-ui";ctx.textAlign="center";for(let i=0;i<3;i++)ctx.fillText(i%2?"♫":"♪",x-10-i*30,GY-60+Math.sin(T*10+i)*12-i*14);}
+  if(A.smoke>0){const al=Math.min(1,A.smoke/1.5,(AB.smoke.dur-A.smoke)/0.5+0.3)*0.55;
+    for(const u of G.units){if(u.team!==0||u.dead)continue;for(let j=0;j<2;j++){const r=26+((u.id*7+j*13)%14);
+      ctx.fillStyle=`rgba(225,230,240,${al})`;ctx.beginPath();ctx.arc(u.x+Math.sin(T*1.5+u.id+j)*10,u.y-22-j*14,r,0,7);ctx.fill();}}}
+  if(A.king>0){drawKing(A.kingX,LANE0+34,T,Math.min(1,A.king/1,(AB.king.dur-A.king)/0.6));}
+}
+function drawKing(x,y,T,al){
+  ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);const s=1.5,sw=Math.sin(T*6)*4;ctx.scale(s,s);
+  // pieni lava ja valokeila
+  ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createLinearGradient(0,-140,0,0);g.addColorStop(0,"rgba(255,240,180,0)");g.addColorStop(1,"rgba(255,240,180,0.35)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-6,-150);ctx.lineTo(6,-150);ctx.lineTo(30,0);ctx.lineTo(-30,0);ctx.fill();ctx.restore();
+  ctx.fillStyle="#3a1a4a";ctx.fillRect(-28,-4,56,6);ctx.fillStyle="#f5c400";ctx.fillRect(-28,-4,56,2);
+  ctx.lineCap="round";ctx.strokeStyle="#fff";ctx.lineWidth=4;
+  // jalat (heiluvat lantiot)
+  ctx.beginPath();ctx.moveTo(sw*0.5,-26);ctx.lineTo(-7+sw,-4);ctx.moveTo(sw*0.5,-26);ctx.lineTo(7-sw*0.3,-4);ctx.stroke();
+  // valkoinen haalari, kultavyö
+  ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sw*0.5,-26);ctx.lineTo(0,-46);ctx.stroke();ctx.fillStyle="#f5c400";ctx.fillRect(-5+sw*0.4,-29,10,3);
+  // korkea kaulus
+  ctx.strokeStyle="#f5c400";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,-50);ctx.lineTo(-3,-44);ctx.moveTo(5,-50);ctx.lineTo(3,-44);ctx.stroke();
+  // pää, aurinkolasit ja kuuluisa föönikampaus
+  ctx.fillStyle="#f2d0b0";ctx.beginPath();ctx.arc(0,-54,6,0,7);ctx.fill();
+  ctx.fillStyle="#111";ctx.beginPath();ctx.moveTo(-8,-62);ctx.quadraticCurveTo(-2,-74,9,-66);ctx.quadraticCurveTo(4,-64,6,-60);ctx.quadraticCurveTo(0,-63,-6,-58);ctx.closePath();ctx.fill();
+  ctx.fillRect(-6,-60,2.5,6);ctx.fillStyle="#e2b21c";ctx.fillRect(-4,-56,8,2.6);ctx.fillStyle="#111";ctx.fillRect(-4.5,-56.5,3.6,3);ctx.fillRect(1,-56.5,3.6,3);
+  // kultainen kitara
+  ctx.save();ctx.translate(2,-34);ctx.rotate(-0.35);ctx.fillStyle="#e2b21c";ctx.strokeStyle="#7a5a00";ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(-6,0,8,6,0,0,7);ctx.fill();ctx.stroke();ctx.fillStyle="#5a3a1a";ctx.fillRect(1,-1.2,18,2.4);ctx.fillStyle="#222";ctx.beginPath();ctx.arc(-6,0,2,0,7);ctx.fill();ctx.restore();
+  // kädet: toinen soittaa, toinen osoittaa ylös
+  ctx.strokeStyle="#fff";ctx.lineWidth=3;const st=Math.sin(T*16)*3;
+  ctx.beginPath();ctx.moveTo(0,-44);ctx.lineTo(-6,-36);ctx.lineTo(-4,-30+st);ctx.moveTo(0,-44);ctx.lineTo(8,-52);ctx.lineTo(12,-64+Math.sin(T*3)*3);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="bold 12px system-ui";ctx.textAlign="center";for(let i=0;i<3;i++){const q=(T*0.8+i/3)%1;ctx.globalAlpha=Math.max(0,al)*(1-q);ctx.fillText(i%2?"♫":"♪",14+i*6,-60-q*40);}
+  ctx.restore();ctx.globalAlpha=1;
+}
+const abtns={};
+function buildAbBtns(){const box=$("abtns");
+  for(const k of AB_ORDER){const b=document.createElement("button");b.className="ub ab";
+    b.innerHTML=`<span class="ic">${AB[k].ic}</span><span class="pr">${AB[k].cost}</span><span class="cdn"></span>`;
+    b.onclick=()=>{if(!G)return;if(!abOpen(k)){G.floats.push({x:camX+viewW()/2,y:GY-150,txt:at("opens").replace("{c}",LEVELS[AB[k].lvl].name),col:"#ffd84a",t:0});return;}useAbility(k);};
+    box.appendChild(b);abtns[k]=b;}}
+buildAbBtns();
+function updAbUI(){if(!G||G.fake)return;const A=abState(),tm=G.teams[0];
+  for(const k of AB_ORDER){const b=abtns[k],open=abOpen(k),used=AB[k].once&&A.used[k],cd=A.cd[k]||0;
+    b.title=open?at(k)[0]+" – "+AB[k].cost+" 💰\n"+at(k)[1]:at("opens").replace("{c}",LEVELS[AB[k].lvl].name);
+    b.querySelector(".ic").textContent=open?AB[k].ic:"🔒";b.querySelector(".pr").textContent=used?"✓":AB[k].cost;
+    const cdn=b.querySelector(".cdn");cdn.style.display=cd>0?"flex":"none";cdn.textContent=cd>0?Math.ceil(cd):"";
+    const active=(k==="mgr"&&A.mgr>0)||(k==="smoke"&&A.smoke>0)||(k==="king"&&A.king>0)||(k==="roadie"&&A.wall);
+    b.classList.toggle("off",!open||used||cd>0||tm.gold<AB[k].cost);b.classList.toggle("act",!!active);}}
 
 /* ===== ruudun vetäminen ja pienoiskartta ===== */
 let drag=null;
@@ -1630,7 +1743,7 @@ function loop(now){
   if(G){if(G.slow>0)G.slow-=dt;if(G.shk>0)G.shk=Math.max(0,G.shk-dt*1.5);if(G.flash>0)G.flash=Math.max(0,G.flash-dt*1.5);}
   if(state==="play"||(state==="over"&&G)){acc+=dt*speed*(G&&G.slow>0?0.3:1);while(acc>=1/60){step(1/60);acc-=1/60;}}
   if(state==="play"){saveT+=dt;if(saveT>5){saveT=0;saveGame();}}
-  draw();drawMini();updUI();requestAnimationFrame(loop);
+  draw();drawMini();updUI();updAbUI();requestAnimationFrame(loop);
 }
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
 if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
