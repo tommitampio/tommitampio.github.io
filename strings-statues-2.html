@@ -99,7 +99,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div id="top">
     <div id="ubtns" style="display:flex;gap:5px"></div>
     <div id="abtns" style="display:flex;gap:4px;margin-left:4px;padding-left:6px;border-left:2px dashed #6b3b3b"></div>
-    <div id="stats"><button id="bZout" class="zb">－</button><button id="bZin" class="zb">＋</button><button id="bPause" title="Pause"><span id="pLbl" style="display:none"></span>❚❚</button><span id="sGold">💰 0</span><span id="sPop">👥 0/50</span></div>
+    <div id="stats"><button id="bBack" class="zb" style="width:auto;padding:0 10px;background:linear-gradient(#ff7ab0,#c2185b);color:#fff;font-weight:900;font-size:14px">🎤 Backstage</button><button id="bZout" class="zb">－</button><button id="bZin" class="zb">＋</button><button id="bPause" title="Pause"><span id="pLbl" style="display:none"></span>❚❚</button><span id="sGold">💰 0</span><span id="sPop">👥 0/50</span></div>
   </div>
   <div id="wrap">
     <canvas id="c"></canvas>
@@ -118,6 +118,21 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
       <p id="mHelp" style="font-size:13px;color:#ddd;white-space:pre-line;text-align:left;line-height:1.55;max-width:480px;margin:10px auto"></p>
       <button class="sb" id="bReset" style="margin-top:4px"></button>
       <a id="backHome" href="pelit.html" style="display:none;margin-top:12px;color:#f5c400;font-size:14px">‹ tommitampio.github.io</a>
+    </div></div>
+    <div id="bstage" class="ov hide" style="z-index:30"><div class="panel">
+      <h2 id="bsT" style="color:#f5c400;margin:0 0 6px">🎤 Backstage</h2>
+      <p id="bsP" style="margin:0 0 10px;font-size:14px"></p>
+      <canvas id="bsC" width="640" height="480" style="width:100%;border-radius:12px;background:#120a20"></canvas>
+      <div style="display:flex;gap:8px;justify-content:center;margin:10px 0;flex-wrap:wrap">
+        <label class="sb on" style="cursor:pointer">📸 <span id="bsCam"></span><input id="bsFile" type="file" accept="image/*" capture="user" style="display:none"></label>
+        <label class="sb" style="cursor:pointer">🖼 <span id="bsGal"></span><input id="bsFile2" type="file" accept="image/*" style="display:none"></label>
+      </div>
+      <p id="bsW" style="margin:4px 0;font-size:14px;font-weight:800"></p>
+      <div id="bsSlots" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+        <button class="sb" id="bsSave">💾</button><button class="sb" id="bsDel">🗑</button><button class="sb on" id="bsClose">✔</button>
+      </div>
+      <p id="bsPriv" style="font-size:11px;opacity:.7;margin:8px 0 0"></p>
     </div></div>
     <div id="shop" class="ov hide"><div class="panel">
       <h1 id="shTitle"></h1>
@@ -1012,7 +1027,7 @@ function drawSprite(u,s,T){
   else if(!u.dead){sy=1+Math.sin(T*2.2+u.id)*0.018;}
   if(a>0){rot+=Math.sin(a*Math.PI)*0.28;ctx.translate(Math.sin(a*Math.PI)*5,0);}
   ctx.translate(0,bob);ctx.rotate(rot);ctx.scale(1,sy);
-  ctx.drawImage(im,-w/2,-Hh,w,Hh);return true;}
+  ctx.drawImage(im,-w/2,-Hh,w,Hh);drawFace(u,Hh,w);return true;}
 function drawUnit(u){
   const d=UT[u.type]||UT.sword,s=u.sc||d.size,c=u.col||(TCOL[u.type]||TCOL.sword)[u.team],acc=u.team?"#d42424":"#e8b000",T=G?G.time:0;
   // pyörähdys / hyppy
@@ -1767,6 +1782,51 @@ function updAbUI(){if(!G||G.fake)return;const A=abState(),tm=G.teams[0];
     const active=(k==="mgr"&&A.mgr>0)||(k==="smoke"&&A.smoke>0)||(k==="king"&&A.king>0)||(k==="roadie"&&A.wall);
     b.classList.toggle("off",!open||used||cd>0||tm.gold<AB[k].cost);b.classList.toggle("act",!!active);}}
 
+
+
+
+/* ===== BACKSTAGE: oma kuva peliin ja selfie kuninkaan kanssa (kuva pysyy vain tässä laitteessa) ===== */
+const BST={fi:["Ota selfie tai valitse kuva – pääset itse lavalle!","Kamera","Kuvagalleria","Kenen paikalle menet?","Tallenna kuva","Poista","Valmis","Kuva jää vain tähän laitteeseen eikä lähde minnekään.","Rumpali","Kitaristi","Laulaja","Basisti"],
+ sv:["Ta en selfie eller välj en bild – du kliver själv upp på scenen!","Kamera","Bildgalleri","Vems plats tar du?","Spara bild","Ta bort","Klar","Bilden stannar i den här enheten och skickas ingenstans.","Trummis","Gitarrist","Sångare","Basist"],
+ en:["Take a selfie or pick a photo – you join the band!","Camera","Gallery","Whose place do you take?","Save picture","Remove","Done","The photo stays on this device and is never sent anywhere.","Drummer","Guitarist","Singer","Bassist"],
+ de:["Mach ein Selfie oder wähle ein Foto – du stehst selbst auf der Bühne!","Kamera","Galerie","Wessen Platz nimmst du ein?","Bild speichern","Entfernen","Fertig","Das Foto bleibt auf diesem Gerät und wird nirgendwohin gesendet.","Schlagzeuger","Gitarristin","Sänger","Bassist"],
+ es:["¡Hazte un selfie o elige una foto y sube al escenario!","Cámara","Galería","¿A quién sustituyes?","Guardar imagen","Quitar","Listo","La foto se queda en este dispositivo y no se envía a ningún sitio.","Batería","Guitarrista","Cantante","Bajista"],
+ fr:["Prends un selfie ou choisis une photo – tu montes sur scène !","Appareil photo","Galerie","Qui remplaces-tu ?","Enregistrer l'image","Supprimer","Terminé","La photo reste sur cet appareil et n'est envoyée nulle part.","Batteur","Guitariste","Chanteur","Bassiste"]};
+const bsT=i=>(BST[lang]||BST.en)[i];
+// kasvojen paikka kunkin hahmokuvan sisällä (osuus leveydestä/korkeudesta)
+const FACEPOS={sword:[0.56,0.27],archer:[0.36,0.12],spear:[0.46,0.15],giant:[0.62,0.13]};
+let FACE=null,FACE_SLOT="spear";
+try{const d=localStorage.getItem("sstour2_face");if(d){FACE=new Image();FACE.src=d;}FACE_SLOT=localStorage.getItem("sstour2_faceSlot")||"spear";}catch(e){}
+function drawFace(u,Hh,w){if(!FACE||!FACE.complete||!FACE.naturalWidth||u.team!==0||u.type!==FACE_SLOT)return;
+  const fp=FACEPOS[u.type],cx=-w/2+fp[0]*w,cy=-Hh+fp[1]*Hh,r=Hh*0.13;
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+1.6,0,7);ctx.fillStyle="#f5c400";ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.clip();ctx.drawImage(FACE,cx-r,cy-r,r*2,r*2);ctx.restore();}
+let bsPrev=null;
+function bsRender(){const c=$("bsC"),x=c.getContext("2d");x.clearRect(0,0,640,480);
+  const g=x.createLinearGradient(0,0,640,480);g.addColorStop(0,"#3a0f5a");g.addColorStop(1,"#c2185b");x.fillStyle=g;x.fillRect(0,0,640,480);
+  for(let i=0;i<40;i++){x.fillStyle=SPECTRUM[i%6]+"55";x.beginPath();x.arc((i*97)%640,(i*53)%480,6+(i%5)*3,0,7);x.fill();}
+  x.save();x.translate(450,470);if(KIMG.naturalWidth){const H=420,w=H*KIMG.naturalWidth/KIMG.naturalHeight;x.drawImage(KIMG,-w/2,-H,w,H);}x.restore();
+  if(FACE&&FACE.naturalWidth){x.save();x.beginPath();x.arc(200,230,150,0,7);x.fillStyle="#f5c400";x.fill();x.beginPath();x.arc(200,230,142,0,7);x.clip();x.drawImage(FACE,58,88,284,284);x.restore();}
+  else{x.fillStyle="#fff8";x.beginPath();x.arc(200,230,142,0,7);x.fill();x.fillStyle="#2b1515";x.font="900 120px system-ui";x.textAlign="center";x.fillText("?",200,272);}
+  x.fillStyle="#000a";x.fillRect(0,416,640,64);x.fillStyle="#f5c400";x.font="900 30px system-ui";x.textAlign="center";x.fillText("BACKSTAGE · STRINGS & STATUES",320,452);
+  x.fillStyle="#fff";x.font="700 16px system-ui";x.fillText("WORLD TOUR 2026",320,472);}
+function bsLoad(file){if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const c=document.createElement("canvas");c.width=c.height=256;const x=c.getContext("2d"),m=Math.min(im.width,im.height);
+  const sx=(im.width-m)/2,sy=Math.max(0,(im.height-m)*0.35);x.drawImage(im,sx,sy,m,m,0,0,256,256);
+  const d=c.toDataURL("image/jpeg",0.85);try{localStorage.setItem("sstour2_face",d);}catch(e){}
+  FACE=new Image();FACE.onload=bsRender;FACE.src=d;};im.src=r.result;};r.readAsDataURL(file);}
+function bsSlots(){const box=$("bsSlots");box.innerHTML="";["sword","archer","spear","giant"].forEach((k,i)=>{const b=document.createElement("button");
+  b.className="sb"+(FACE_SLOT===k?" on":"");b.innerHTML=`<img src="kuvat/bandi/${k}-ikoni.png" style="width:26px;height:26px;vertical-align:middle"> ${bsT(8+i)}`;
+  b.onclick=()=>{FACE_SLOT=k;try{localStorage.setItem("sstour2_faceSlot",k)}catch(e){}bsSlots();};box.appendChild(b);});}
+let bsWas=null;
+function openBackstage(){bsWas=state;if(state==="play")state="paused";$("bstage").classList.remove("hide");
+  $("bsP").textContent=bsT(0);$("bsCam").textContent=bsT(1);$("bsGal").textContent=bsT(2);$("bsW").textContent=bsT(3);
+  $("bsSave").textContent="💾 "+bsT(4);$("bsDel").textContent="🗑 "+bsT(5);$("bsClose").textContent="✔ "+bsT(6);$("bsPriv").textContent="🔒 "+bsT(7);bsSlots();bsRender();}
+$("bBack").onclick=openBackstage;
+$("bsFile").onchange=e=>bsLoad(e.target.files[0]);$("bsFile2").onchange=e=>bsLoad(e.target.files[0]);
+$("bsClose").onclick=()=>{$("bstage").classList.add("hide");if(bsWas==="play"&&state==="paused")state="play";};
+$("bsDel").onclick=()=>{FACE=null;try{localStorage.removeItem("sstour2_face")}catch(e){}bsRender();};
+$("bsSave").onclick=()=>{bsRender();const a=document.createElement("a");a.download="backstage-selfie.png";a.href=$("bsC").toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();};
 
 /* ===== Opastus ensimmäisellä keikalla: nuoli osoittaa, mitä painaa ===== */
 const TUTX={fi:["Paina tästä – saat huilistin! 🎺","Vielä pari soittajaa…","Nyt: 🤘 HYÖKKÄÄ!","Kaada vastustajan patsas! 🗿💥"],
