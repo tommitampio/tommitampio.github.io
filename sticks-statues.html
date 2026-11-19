@@ -199,9 +199,9 @@ const UT={
   giant :{icon:'<svg viewBox="0 0 28 28" width="26" height="26"><g transform="rotate(-40 14 14)"><rect x="-1" y="12.4" width="13" height="3.2" fill="#5a3412"/><rect x="-4" y="11.5" width="4" height="5" rx="1" fill="#3a1e08"/><ellipse cx="15" cy="14" rx="4.6" ry="4.2" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="22" cy="14" rx="6.4" ry="5.8" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="17.5" cy="14" rx="2.6" ry="2.4" fill="#e89a30"/><circle cx="17" cy="14" r="2" fill="#1a0a04"/><rect x="22.8" y="11.6" width="1.4" height="4.8" fill="#2a160a"/><line x1="-2" y1="14" x2="23.5" y2="14" stroke="#fff" stroke-width=".4"/></g></svg>',cost:1200,pop:4,hp:1500,spd:30,dmg:75,range:48, rate:2.2,train:10,size:2.1,splash:45,armor:0.15},
 };
 const ORDER=["miner","sword","archer","spear","giant"];
-const W=1800,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
+const W=2700,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
 const STATUE_HP=2500,MINE_TIME=2.4,BASE_CARRY=60;
-const MINES_X=[400,560,730,900,1070,1240,1400];
+const MINES_X=[400,570,740,1350,1960,2130,2300]; // 3 omalla puolella, 1 keskellä, 3 vastustajan puolella
 const DIFF={
   easy  :{miners:4,units:["sword","sword","archer"],think:2.6,income:0.8,attackPow:600,tower:0,hpMul:0.9,reward:4},
   normal:{miners:6,units:["sword","archer","spear","sword","archer"],think:1.6,income:1.0,attackPow:900,tower:0,hpMul:1.1,reward:7},
@@ -800,7 +800,7 @@ function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio
 function viewW(){return cw/scale;}
 function clampCam(){camX=Math.max(0,Math.min(W-viewW(),camX));if(viewW()>=W)camX=(W-viewW())/2;}
 const clouds=Array.from({length:9},(_,i)=>({x:i*330+Math.random()*100,y:185+Math.random()*60,w:120+Math.random()*120}));
-const grass=Array.from({length:160},()=>({x:Math.random()*W,y:330+Math.random()*130}));
+const grass=Array.from({length:240},()=>({x:Math.random()*W,y:330+Math.random()*130}));
 function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const DECO={
  dusk:  {trees:"round",tree:"#0f4a20",trunk:"#2a1a10",items:["twig","twig","stone","flower","bush","tuft","tuft"]},
@@ -817,8 +817,8 @@ function terrain(theme,seed){
   const far=[],near=[];let h=0,v=0;for(let x=-400;x<=W+600;x+=60){v+=(r()-0.5)*14;v*=0.85;h+=v;h*=0.92;far.push([x,Math.max(240,Math.min(300,280+h+(r()-0.5)*6))]);}
   h=0;v=0;for(let x=-400;x<=W+600;x+=45){v+=(r()-0.5)*10;v*=0.8;h+=v;h*=0.9;near.push([x,Math.max(300,Math.min(326,316+h*0.6))]);}
   const trees=[];for(let x=-300;x<W+500;x+=30+r()*90){if(r()<0.35)continue;trees.push({x,s:0.6+r()*0.8,k:r()});}
-  const patches=[];for(let i=0;i<40;i++)patches.push({x:r()*W,y:340+r()*130,w:30+r()*120,h:4+r()*10,l:r()<0.5});
-  const items=[];for(let i=0;i<130;i++){const t=D.items[Math.floor(r()*D.items.length)];items.push({t,x:r()*W,y:336+r()*136,s:0.7+r()*0.7,k:r(),f:r()<0.5?-1:1});}
+  const patches=[];for(let i=0;i<60;i++)patches.push({x:r()*W,y:340+r()*130,w:30+r()*120,h:4+r()*10,l:r()<0.5});
+  const items=[];for(let i=0;i<195;i++){const t=D.items[Math.floor(r()*D.items.length)];items.push({t,x:r()*W,y:336+r()*136,s:0.7+r()*0.7,k:r(),f:r()<0.5?-1:1});}
   items.sort((p,q)=>p.y-q.y);
   return TERR[key]={far,near,trees,patches,items};
 }
