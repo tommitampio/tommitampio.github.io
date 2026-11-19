@@ -1275,7 +1275,7 @@ function renderSlots(msg){
 $("bCont").onclick=()=>{if(loadGame())$("menu").classList.add("hide");else applyLang();};
 $("bReset").onclick=()=>{$("menu").classList.add("hide");$("confirm").classList.remove("hide");};
 $("bNo").onclick=()=>{$("confirm").classList.add("hide");showMenu();};
-$("bYes").onclick=()=>{save.coins=0;save.wins=0;save.camp=0;save.campDone=0;mapSel=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();G=null;$("confirm").classList.add("hide");showMenu();};
+$("bYes").onclick=()=>{save.coins=0;save.wins=0;save.camp=0;save.campDone=0;save.stars=[];mapSel=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();G=null;$("confirm").classList.add("hide");showMenu();};
 let quitArm=false;
 $("bQuit").onclick=()=>{if(!quitArm){quitArm=true;$("bQuit").textContent=t("quitSure");$("bQuit").style.background="#c33";return;}quitArm=false;$("bQuit").style.background="";saveGame();$("pause").classList.add("hide");showMenu();};
 $("bPlay").onclick=()=>{$("menu").classList.add("hide");newGame();};
@@ -1290,14 +1290,32 @@ function endGame(){
   state="over";const won=G.winner===0,D=cfg();clearSaved();const n=won?D.reward:1;save.coins+=n;if(won)save.wins++;
   let unlocked=false,final=false;
   if(won&&G.level!=null){if(G.level===save.camp&&save.camp<LEVELS.length){save.camp++;unlocked=save.camp<LEVELS.length;}if(G.level===LEVELS.length-1){final=true;save.campDone=(save.campDone||0)+1;}}
+  let starHtml="";
+  if(won&&G.level!=null){const S=G.statues[0],L=STT[lang]||STT.en,ok=[true,S.hp/S.max>=0.5,G.time<=STAR_TIME],got=ok.filter(Boolean).length;
+    if(!save.stars)save.stars=[];const prev=save.stars[G.level]||0,extra=Math.max(0,got-prev);save.stars[G.level]=Math.max(prev,got);save.coins+=extra;
+    starHtml='<div style="font-size:34px;letter-spacing:4px;margin:4px 0">'+starStr(got)+'</div><div style="font-size:13px;line-height:1.6">'+
+      ok.map((v,i)=>(v?"⭐ ":"☆ ")+L[i]).join("<br>")+'</div>'+(extra?'<div style="color:#f5c400;font-weight:800;margin-top:4px">'+L[3].replace("{n}",extra)+'</div>':'');}
   persist();
   sfx(won?"win":"lose");
   if(final){showCongrats();return;}
   $("oTitle").textContent=won?t("win"):t("lose");
-  $("oText").textContent=t("earned").replace("{n}",n)+"  ("+t("coins")+": "+save.coins+")"+(unlocked?"  "+t("unlocked"):"");
+  $("oText").innerHTML=starHtml+'<div style="margin-top:8px">'+t("earned").replace("{n}",n)+"  ("+t("coins")+": "+save.coins+")"+(unlocked?"  "+t("unlocked"):"")+'</div>';
   if(G.level!=null){$("bAgain").textContent=won?t("mapBtn"):t("retry");}else $("bAgain").textContent=t("again");
   $("over").classList.remove("hide");
 }
+
+/* ================= KEIKAN TÄHDET (1–3 ⭐) ================= */
+// ⭐ voitto · ⭐ oma patsas vähintään puolikunnossa · ⭐ voitto alle 8 minuutissa. Jokainen uusi tähti antaa +1 voittokolikon.
+const STAR_TIME=480;
+const STT={fi:["Voitto","Patsas yli puolikunnossa","Alle 8 minuuttia","Uusi tähti! +{n} 🪙"],
+ sv:["Seger","Statyn mer än halvhel","Under 8 minuter","Ny stjärna! +{n} 🪙"],
+ en:["Victory","Statue above half health","Under 8 minutes","New star! +{n} 🪙"],
+ de:["Sieg","Statue über halber Kraft","Unter 8 Minuten","Neuer Stern! +{n} 🪙"],
+ es:["Victoria","Estatua con más de media vida","Menos de 8 minutos","¡Nueva estrella! +{n} 🪙"],
+ fr:["Victoire","Statue à plus de moitié","Moins de 8 minutes","Nouvelle étoile ! +{n} 🪙"]};
+function starsOf(i){return (save.stars&&save.stars[i])||0;}
+function starStr(n){return "⭐".repeat(n)+"☆".repeat(3-n);}
+function totalStars(){let n=0;for(let i=0;i<LEVELS.length;i++)n+=starsOf(i);return n;}
 
 /* ================= KARTTA ================= */
 const MAPW=1000,MAPH=480,BX=0,BY=0,BW=1000,BH=590;
@@ -1308,12 +1326,12 @@ const ZONES=[[250,175,200,115,"#f3d7a0"],[565,95,175,75,"#e4eef9"],[300,400,160,
 function openMap(){state="map";if(G&&G.winner>=0)G=null;$("map").classList.remove("hide");mapSel=Math.min(save.camp,LEVELS.length-1);showMapInfo();
   $("mapCoins").textContent="🪙 "+save.coins;$("bMapBack").textContent="‹ "+t("menu");$("bCSaves").textContent=t("cSaves");$("cslots").classList.add("hide");if(!mapAnim)mapAnim=requestAnimationFrame(drawMap);}
 let csArm=null;
-function campSnap(){return {camp:save.camp,campDone:save.campDone||0,coins:save.coins,up:Object.assign({},save.up),wins:save.wins,savedAt:Date.now()};}
+function campSnap(){return {camp:save.camp,campDone:save.campDone||0,stars:(save.stars||[]).slice(),coins:save.coins,up:Object.assign({},save.up),wins:save.wins,savedAt:Date.now()};}
 function openCSlots(){csArm=null;$("mapInfo").classList.add("hide");$("cslots").classList.remove("hide");renderCSlots();}
 function closeCSlots(){$("cslots").classList.add("hide");showMapInfo();$("mapCoins").textContent="🪙 "+save.coins;}
 $("bCSaves").onclick=openCSlots;$("bCsBack").onclick=closeCSlots;
 $("bNewCamp").onclick=()=>{if(csArm!=="new"){csArm="new";renderCSlots();return;}
-  save.camp=0;save.campDone=0;save.coins=0;save.wins=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();mapSel=0;closeCSlots();};
+  save.camp=0;save.campDone=0;save.stars=[];save.coins=0;save.wins=0;for(const k in save.up)save.up[k]=0;persist();clearSaved();mapSel=0;closeCSlots();};
 function renderCSlots(msg){
   $("csTitle").textContent=t("csTitle");$("bCsBack").textContent=t("back");
   $("bNewCamp").textContent=csArm==="new"?t("newCampQ"):t("newCamp");
@@ -1329,7 +1347,7 @@ function renderCSlots(msg){
     sv.onclick=()=>{if(d&&csArm!=="s"+i){csArm="s"+i;renderCSlots();return;}csArm=null;try{localStorage.setItem(key,JSON.stringify(campSnap()))}catch(e){}renderCSlots(i);};
     row.appendChild(sv);
     if(d){const ld=document.createElement("button");ld.className="sb on";ld.textContent="📂";
-      ld.onclick=()=>{save.camp=d.camp;save.campDone=d.campDone||0;save.coins=d.coins;save.wins=d.wins||0;save.up=Object.assign({statue:0,tower:0,gold:0,carry:0},d.up);persist();clearSaved();mapSel=Math.min(save.camp,LEVELS.length-1);closeCSlots();};
+      ld.onclick=()=>{save.camp=d.camp;save.campDone=d.campDone||0;save.stars=(d.stars||[]).slice();save.coins=d.coins;save.wins=d.wins||0;save.up=Object.assign({statue:0,tower:0,gold:0,carry:0},d.up);persist();clearSaved();mapSel=Math.min(save.camp,LEVELS.length-1);closeCSlots();};
       row.appendChild(ld);
       const del=document.createElement("button");del.className="sb";del.textContent=csArm==="d"+i?t("sure"):"🗑";if(csArm==="d"+i)del.style.background="#c33";
       del.onclick=()=>{if(csArm!=="d"+i){csArm="d"+i;renderCSlots();return;}csArm=null;try{localStorage.removeItem(key)}catch(e){}renderCSlots();};row.appendChild(del);}
@@ -1340,7 +1358,7 @@ $("bMapBack").onclick=()=>{closeMap();showMenu();};
 $("bFight").onclick=()=>{if(mapSel==null||mapSel>save.camp)return;closeMap();newGame(mapSel);};
 function showMapInfo(){const i=mapSel,box=$("mapInfo");if(i==null||i>save.camp||i>=LEVELS.length){box.classList.add("hide");return;}
   box.classList.remove("hide");$("miName").textContent=(i+1)+". "+LEVELS[i].name;
-  const st=Math.min(5,1+Math.floor(i*4/7));$("miStars").innerHTML='<span style="color:#f5c400">'+"★".repeat(st)+'</span><span style="color:#666">'+"★".repeat(5-st)+"</span>"+(i<save.camp?" ✅":"");
+  const st=Math.min(5,1+Math.floor(i*4/7));$("miStars").innerHTML="🔥".repeat(st)+'<span style="opacity:.25">'+"🔥".repeat(5-st)+'</span>&nbsp;&nbsp;'+(i<save.camp||starsOf(i)?starStr(starsOf(i)):"");
   $("bFight").textContent=t("fight");$("miBlurb").textContent=(t("cities")||[])[i]||"";}
 const mc=$("mapc");
 mc.addEventListener("pointerdown",e=>{if(!$("cslots").classList.contains("hide"))return;const r=mc.getBoundingClientRect(),x=(e.clientX-r.left-mapView.ox)/mapView.s,y=(e.clientY-r.top-mapView.oy)/mapView.s;
@@ -1380,6 +1398,7 @@ function drawMap(now){
     c.fillStyle=done?"#3a2a10":"#fff";c.font="bold 14px system-ui";c.fillText(done?"✓":String(i+1),L.x,L.y-1);
     if(i===mapSel){c.strokeStyle="#fff";c.lineWidth=3;c.beginPath();c.arc(L.x,L.y,19+Math.sin(mapT*4)*2,0,7);c.stroke();}
     c.font="bold 17px system-ui";c.fillStyle=lock?"#8a84a8":"#ffffff";c.strokeStyle="#0c1a3a";c.lineWidth=4;c.lineJoin="round";c.strokeText(L.name,L.x+(L.lx||0),L.y+34+(L.ly||0));c.fillText(L.name,L.x+(L.lx||0),L.y+34+(L.ly||0));c.lineWidth=3;
+    if(done||starsOf(i)){const ns=starsOf(i);c.font="13px system-ui";for(let k=0;k<3;k++){c.globalAlpha=k<ns?1:0.35;c.fillText(k<ns?"⭐":"☆",L.x+(L.lx||0)+(k-1)*15,L.y+((L.ly||0)<0?18:52)+(L.ly||0));}c.globalAlpha=1;}
     if(cur){const by=Math.sin(mapT*3)*3;c.save();c.translate(L.x,L.y-46+by);
       c.fillStyle="#e33";c.strokeStyle="#120a20";c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-26,-14,52,22,5):c.rect(-26,-14,52,22);c.fill();c.stroke();
       c.fillStyle="#bfe6ff";for(const wx of[-20,-9,2])c.fillRect(wx,-10,9,7);c.fillRect(13,-10,9,10);
@@ -1396,7 +1415,7 @@ let fwAnim=null,fwParts=[];
 function showCongrats(){
   state="congrats";$("congrats").classList.remove("hide");
   $("cgTitle").textContent=t("cgTitle");$("cgText").textContent=t("cgText");
-  $("cgStats").textContent=t("cgStats").replace("{a}",LEVELS.length).replace("{c}",save.coins);
+  $("cgStats").textContent=t("cgStats").replace("{a}",LEVELS.length).replace("{c}",save.coins)+" · ⭐ "+totalStars()+"/"+LEVELS.length*3;
   $("bCgMap").textContent=t("again2");$("bCgMenu").textContent=t("menu");
   initFinale();cgT0=0;if(!fwAnim)fwAnim=requestAnimationFrame(drawFw);
 }
