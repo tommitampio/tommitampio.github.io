@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ambigrammikone – Tommi Tampio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Music&text=%F0%9D%84%9E&display=swap">
+<style>
+/* Layout: one narrow left-aligned column, photo and name on top, sections as ruled rows that can be added to later. */
+:root {
+  --bg: #F2F5F7;
+  --fg: #14202A;
+  --muted: #566672;
+  --rule: #CBD5DC;
+  --accent: #1F5C8B;
+  --nv-wood: #4b3027; --nv-fret: #c9c2b0; --nv-string: #e9e4d6; --nv-inlay: #7a5a4c;
+  --nv-root: #c68512; --nv-on-root: #1d1404;
+  --nv-good: #1c7a3c; --nv-bad: #b3261e; --nv-good-bg: #dff3e6; --nv-bad-bg: #fbe3e1;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151B;
+    --fg: #E6ECF0;
+    --muted: #93A3AE;
+    --rule: #26343E;
+    --accent: #78B6E4;
+    --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+    --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+    --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151B;
+  --fg: #E6ECF0;
+  --muted: #93A3AE;
+  --rule: #26343E;
+  --accent: #78B6E4;
+  --nv-wood: #3b2620; --nv-fret: #a39c8b; --nv-string: #d8d2c2; --nv-inlay: #6b4c40;
+  --nv-root: #e2ac4a; --nv-on-root: #1d1404;
+  --nv-good: #63d08c; --nv-bad: #ff8a80; --nv-good-bg: #173524; --nv-bad-bg: #3d1c1a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  padding-block: 4rem 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 40rem; margin: 0 auto; display: flex; flex-direction: column; gap: 3.5rem; }
+.meta {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+.kuva {
+  display: block;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 1.75rem 0 0;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--rule);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 9vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 1.25rem;
+  text-wrap: balance;
+}
+h1 span { color: var(--accent); }
+.lead { font-size: 1.15rem; max-width: 34rem; margin: 0; }
+section {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 0.5rem 2rem;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.25rem;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+}
+section p { margin: 0; max-width: 34rem; }
+section p + p { margin-top: 0.75rem; }
+.soft { color: var(--muted); }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.shelf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+.count { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+input[type="search"] {
+  font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.5rem 0.75rem; width: 100%; max-width: 15rem; min-width: 0;
+}
+input[type="search"]:focus-visible, button.more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.books { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.books li { padding: 0.65rem 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; min-width: 0; }
+.books li.grp { font-family: var(--font-display); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); padding: 1.5rem 0 0.5rem; border-bottom: 1px solid var(--rule); }
+.books li.grp:first-child { padding-top: 0.75rem; }
+.books .t { font-weight: 500; overflow-wrap: anywhere; }
+.books .a { color: var(--muted); font-size: 0.9rem; }
+button.more {
+  font: inherit; color: var(--accent); background: none; border: 0;
+  padding: 0.75rem 0 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em;
+}
+footer { font-size: 0.85rem; color: var(--muted); }
+@media (max-width: 34rem) {
+  body { padding-block: 2.5rem 2rem; }
+  section { grid-template-columns: minmax(0, 1fr); }
+  .kuva { width: 7rem; height: 7rem; }
+}
+
+.top-nav { font-size: 0.9rem; display: flex; gap: 1rem; }
+.top-nav a { text-decoration: none; }
+h1.pg { font-size: clamp(2.2rem, 8vw, 3.4rem); margin: 0.75rem 0 0.5rem; }
+
+
+.games { display: grid; gap: 0.9rem; }
+.game { display: block; text-decoration: none; color: var(--fg); border: 1px solid var(--rule); border-radius: 10px; padding: 1.1rem 1.2rem; }
+.game:hover { border-color: var(--accent); }
+.game b { display: block; font-family: var(--font-display); font-weight: 500; font-size: 1.15rem; color: var(--accent); }
+.game span { display: block; color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+.game i { font-style: normal; display: inline-block; margin-top: 0.6rem; font-size: 0.85rem; color: var(--fg); }
+
+</style>
+</head>
+<body>
+<main class="wrap" style="max-width:760px">
+  <nav class="top-nav"><a href="pelit.html" id="aBack">‹ Pelit</a></nav>
+  <h1 class="pg" id="aT">Ambigrammikone</h1>
+  <p class="lead" id="aL"></p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
+    <label style="flex:1;min-width:200px"><span id="aW1" style="font-size:.85rem;color:var(--muted)"></span><br>
+      <input id="w1" value="suns" maxlength="16" autocomplete="off" style="width:100%;font-size:1.3rem;padding:8px 10px;border:2px solid var(--rule);border-radius:10px;background:#fff;color:#14202A"></label>
+    <label style="flex:1;min-width:200px"><span id="aW2" style="font-size:.85rem;color:var(--muted)"></span><br>
+      <input id="w2" value="" maxlength="16" autocomplete="off" style="width:100%;font-size:1.3rem;padding:8px 10px;border:2px solid var(--rule);border-radius:10px;background:#fff;color:#14202A"></label>
+  </div>
+  <div id="stage" style="background:#14202A;border-radius:16px;padding:18px;text-align:center;overflow:hidden">
+    <canvas id="cv" width="1200" height="400" style="width:100%;max-width:720px;transition:transform 1.1s cubic-bezier(.6,-0.2,.3,1.3)"></canvas>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;align-items:center">
+    <button id="bFlip" style="font-size:1.1rem;font-weight:800;padding:10px 18px;border-radius:12px;border:0;background:#f5c400;color:#14202A;cursor:pointer"></button>
+    <button id="bCol" style="font-size:1rem;padding:10px 14px;border-radius:12px;border:2px solid var(--rule);background:#fff;color:#14202A;cursor:pointer"></button>
+    <button id="bSave" style="font-size:1rem;padding:10px 14px;border-radius:12px;border:2px solid var(--rule);background:#fff;color:#14202A;cursor:pointer"></button>
+    <span id="score" style="font-size:1.1rem;font-weight:700"></span>
+  </div>
+  <p id="aTip" style="color:var(--muted);font-size:.95rem"></p>
+  <p style="color:var(--muted);font-size:.95rem"><span id="aEx"></span> <span id="ex"></span></p>
+</main>
+<script>
+const LANG=(()=>{try{return localStorage.getItem("kieli")||"fi"}catch(e){return "fi"}})();
+const TX={fi:{t:"Ambigrammikone",l:"Ambigrammi on sana, jonka voi lukea myös ylösalaisin. Kirjoita sana – kone kääntää sen ja kertoo, kuinka hyvin se onnistuu.",w1:"Sana",w2:"Ylösalaisin luettuna (vapaaehtoinen)",flip:"↻ Käännä",col:"🎨 Näytä värit",save:"💾 Tallenna kuva",ex:"Kokeile:",back:"‹ Pelit",
+ tip:"Vinkki: pienet kirjaimet kääntyvät parhaiten. Hyviä pareja ovat n↔u, d↔p, b↔q ja m↔w, ja s, o, x, z ja l kääntyvät itsekseen. Isoista kirjaimista N, O, S, X, Z, H ja I kääntyvät itsekseen. Värit-napista näet, mikä viiva kuuluu kumpaankin suuntaan.",s:["Vaikea – lähinnä hauska kokeilu","Kohtalainen","Hyvä","Erinomainen ambigrammi!"]},
+ sv:{t:"Ambigrammaskinen",l:"Ett ambigram är ett ord som också kan läsas upp och ner. Skriv ett ord – maskinen vänder det och berättar hur bra det blir.",w1:"Ord",w2:"Läst upp och ner (frivilligt)",flip:"↻ Vänd",col:"🎨 Visa färger",save:"💾 Spara bild",ex:"Prova:",back:"‹ Spel",
+ tip:"Tips: små bokstäver vänder bäst. Bra par är n↔u, d↔p, b↔q, m↔w samt s, o, x, z och l, som vänder sig själva.",s:["Svårt – mest ett roligt försök","Hyggligt","Bra","Utmärkt ambigram!"]},
+ en:{t:"Ambigram machine",l:"An ambigram is a word you can also read upside down. Type a word – the machine flips it and tells you how well it works.",w1:"Word",w2:"Read upside down (optional)",flip:"↻ Flip",col:"🎨 Show colours",save:"💾 Save picture",ex:"Try:",back:"‹ Games",
+ tip:"Tip: lowercase letters flip best. Good pairs are n↔u, d↔p, b↔q, m↔w, and s, o, x, z and l flip into themselves.",s:["Hard – mostly a fun experiment","Fair","Good","Excellent ambigram!"]}};
+const L=TX[LANG]||TX.fi;
+for(const [id,k] of [["aT","t"],["aL","l"],["aW1","w1"],["aW2","w2"],["bFlip","flip"],["bCol","col"],["bSave","save"],["aEx","ex"],["aTip","tip"],["aBack","back"]])document.getElementById(id).textContent=L[k];
+document.title=L.t+" – Tommi Tampio";
+// Mitä kirjain näyttää 180° käännettynä (tarkat parit) ja melkein-parit
+const EXACT={b:"q",q:"b",d:"p",p:"d",n:"u",u:"n",m:"w",w:"m",s:"s",o:"o",x:"x",z:"z",l:"l",i:"i",N:"N",O:"O",S:"S",X:"X",Z:"Z",H:"H",I:"I",M:"W",W:"M",0:"0",1:"1",8:"8",6:"9",9:"6"," ":" "};
+const NEAR={a:"e",e:"a",h:"y",y:"h",f:"j",j:"f",A:"V",V:"A",U:"N",C:"D",D:"C"};
+const EX=["suns","dollop","swims","pod","mow","sos","NOON","SWIMS","MOW"];
+const ex=document.getElementById("ex");EX.forEach(w=>{const a=document.createElement("a");a.href="#";a.textContent=w;a.style.marginRight="10px";a.onclick=e=>{e.preventDefault();w1.value=w;w2.value="";draw();};ex.appendChild(a);});
+const cv=document.getElementById("cv"),c=cv.getContext("2d"),w1=document.getElementById("w1"),w2=document.getElementById("w2");
+let colors=false,flipped=false;
+function clean(s){return (s||"").replace(/[^A-Za-z0-9ÅÄÖåäö ]/g,"").slice(0,16);}
+function draw(){
+  let A=clean(w1.value)||"suns",B=clean(w2.value)||A;
+  const n=Math.max(A.length,B.length);A=A.padEnd(n," ");B=B.padEnd(n," ");
+  const Br=B.split("").reverse();
+  const F=140,font=`800 ${F}px "Inter",system-ui,sans-serif`;c.font=font;
+  const xh=c.measureText("x").actualBoundingBoxAscent,ch=c.measureText("H").actualBoundingBoxAscent;
+  const ws=[];let total=0;
+  for(let i=0;i<n;i++){const w=Math.max(c.measureText(A[i]).width,c.measureText(Br[i]).width,F*0.32);ws.push(w);total+=w;}
+  const Wd=Math.max(600,total+120),Hd=360;cv.width=Wd;cv.height=Hd;c.font=font;c.textBaseline="alphabetic";c.textAlign="center";
+  c.fillStyle="#14202A";c.fillRect(0,0,Wd,Hd);
+  const base=Hd/2+xh/2;let x=(Wd-total)/2,score=0;
+  for(let i=0;i<n;i++){const a=A[i],b=Br[i],cx=x+ws[i]/2;x+=ws[i];
+    const exact=EXACT[a]===b, near=!exact&&NEAR[a]===b;const up=/[A-ZÅÄÖ0-9]/.test(a)&&/[A-ZÅÄÖ0-9 ]/.test(b)||/[A-ZÅÄÖ0-9]/.test(b)&&a===" ",mid=up?ch/2:xh/2;
+    score+=exact?1:near?0.55:0;
+    const ca=colors?"#f5c400":"#ffffff",cb=colors?"#4fc3f7":"#ffffff";
+    if(exact){c.fillStyle=colors?"#9be37a":"#fff";c.fillText(a===" "?"":a,cx,base);continue;}
+    c.globalAlpha=1;c.fillStyle=ca;if(a!==" ")c.fillText(a,cx,base);
+    c.save();c.translate(cx,base-mid);c.rotate(Math.PI);c.translate(-cx,-(base-mid));c.fillStyle=cb;if(b!==" ")c.fillText(b,cx,base);c.restore();}
+  const r=n?score/n:0,lvl=r>0.95?3:r>0.7?2:r>0.4?1:0;
+  document.getElementById("score").textContent="⭐".repeat(Math.max(1,lvl))+"☆".repeat(3-Math.max(1,lvl))+" "+L.s[lvl];
+}
+w1.oninput=draw;w2.oninput=draw;
+document.getElementById("bFlip").onclick=()=>{flipped=!flipped;cv.style.transform=flipped?"rotate(180deg)":"none";};
+document.getElementById("bCol").onclick=()=>{colors=!colors;draw();};
+document.getElementById("bSave").onclick=()=>{const a=document.createElement("a");a.download="ambigrammi.png";a.href=cv.toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();};
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(draw);draw();
+</script>
+</body></html>
