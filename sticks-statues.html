@@ -627,16 +627,25 @@ function toggleGod(){
 }
 
 /* ================= TEKOÄLY ================= */
+// Kuinka monta sekuntia tekoäly pysyy alussa kotona (helppo pisin, vaikea lyhin)
+function aiCalm(D){if(G.level!=null)return Math.max(80,170-G.level*12);return {easy:170,normal:130,hard:95}[G.diff]||130;}
 function aiThink(){
   const D=cfg(),tm=G.teams[1];
+  // Rauhallinen alku: tekoäly ei hyökkää eikä tee jättiläistä ennen kuin pelaaja on ehtinyt koota bändin
+  const calm=aiCalm(D),early=G.time<calm;
+  const fighters=G.units.filter(u=>u.team===1&&!u.dead&&u.type!=="miner"&&u.type!=="giant").length;
+  const maxGiants=D.units.filter(x=>x==="giant").length;
+  const giantOk=()=>!early&&fighters>=4&&countOf(1,"giant")<maxGiants;
   if(countOf(1,"miner")<D.miners){if(tm.gold>=150)buy(1,"miner");}
   else{if(!tm.wish)tm.wish=D.units[Math.floor(Math.random()*D.units.length)];
+    if(tm.wish==="giant"&&!giantOk()){const o=D.units.filter(x=>x!=="giant");tm.wish=o[Math.floor(Math.random()*o.length)];}
     if(buy(1,tm.wish))tm.wish=null;}
   const my=armyPow(1),pl=armyPow(0);
   const threat=armyPow(0,W-700,W);
   if(threat>=600&&my<pl*0.35)tm.mode="retreat";
   else if(threat>0&&my<pl*1.3)tm.mode="defend";
-  else if((my>=D.attackPow&&my>pl*1.15)||(my>=400&&my>pl*2))tm.mode="attack";
+  else if(early)tm.mode="defend";
+  else if(my>=D.attackPow&&my>pl*1.15)tm.mode="attack";
   else if(my<pl*0.8)tm.mode="defend";
   // vaikealla tasolla vahvistaa patsasta hädässä
   const S=G.statues[1];if((cfg().fix||(G.level==null&&G.diff==="hard"))&&S.hp<S.max*0.35&&!S.fixed&&tm.gold>=500){tm.gold-=500;S.fixed=1;S.hp+=S.max*0.25;}
