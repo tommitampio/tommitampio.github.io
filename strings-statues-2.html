@@ -1716,7 +1716,15 @@ function drawAbil(){drawTip();
       ctx.fillStyle=`rgba(225,230,240,${al})`;ctx.beginPath();ctx.arc(u.x+Math.sin(T*1.5+u.id+j)*10,u.y-22-j*14,r,0,7);ctx.fill();}}}
   if(A.king>0){drawKing(A.kingX,LANE0+34,T,Math.min(1,A.king/1,(AB.king.dur-A.king)/0.6));}
 }
+const KIMG=new Image();KIMG.src="kuvat/bandi/kuningas.png";
 function drawKing(x,y,T,al){
+  if(KIMG.complete&&KIMG.naturalWidth){ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);
+    ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createLinearGradient(0,-230,0,0);g.addColorStop(0,"rgba(255,240,180,0)");g.addColorStop(1,"rgba(255,240,180,0.4)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-10,-230);ctx.lineTo(10,-230);ctx.lineTo(55,0);ctx.lineTo(-55,0);ctx.fill();ctx.restore();
+    const H=110,w=H*KIMG.naturalWidth/KIMG.naturalHeight,b=-Math.abs(Math.sin(T*5))*5,r=Math.sin(T*2.5)*0.05;
+    ctx.save();ctx.translate(0,b);ctx.rotate(r);ctx.drawImage(KIMG,-w/2,-H,w,H);ctx.restore();
+    ctx.fillStyle="#fff";ctx.font="bold 20px system-ui";ctx.textAlign="center";for(let i=0;i<3;i++){const q=(T*0.8+i/3)%1;ctx.globalAlpha=Math.max(0,al)*(1-q);ctx.fillText(i%2?"♫":"♪",30+i*10,-H+10-q*50);}
+    ctx.restore();ctx.globalAlpha=1;return;}
   ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);const s=1.5,sw=Math.sin(T*6)*4;ctx.scale(s,s);
   // pieni lava ja valokeila
   ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createLinearGradient(0,-140,0,0);g.addColorStop(0,"rgba(255,240,180,0)");g.addColorStop(1,"rgba(255,240,180,0.35)");
@@ -1745,7 +1753,7 @@ function drawKing(x,y,T,al){
 const abtns={};
 function buildAbBtns(){const box=$("abtns");
   for(const k of AB_ORDER){const b=document.createElement("button");b.className="ub ab";
-    b.innerHTML=`<span class="ic">${AB[k].ic}</span><span class="pr">${AB[k].cost}</span><span class="cdn"></span>`;
+    b.innerHTML=`<span class="ic">${k==="king"?'<img src="kuvat/bandi/kuningas.png" style="height:30px">':AB[k].ic}</span><span class="pr">${AB[k].cost}</span><span class="cdn"></span>`;
     b.onclick=()=>{if(!G)return;if(!abOpen(k)){G.floats.push({x:camX+viewW()/2,y:GY-150,txt:at("opens").replace("{c}",LEVELS[AB[k].lvl].name),col:"#ffd84a",t:0});return;}useAbility(k);};
     box.appendChild(b);abtns[k]=b;}}
 buildAbBtns();
@@ -1753,7 +1761,7 @@ function updAbUI(){if(!G||G.fake)return;const A=abState(),tm=G.teams[0];
   const any=AB_ORDER.some(abOpen);$("abtns").style.display=any?"flex":"none";
   for(const k of AB_ORDER){const b=abtns[k],open=abOpen(k),used=AB[k].once&&A.used[k],cd=A.cd[k]||0;
     b.title=open?at(k)[0]+" – "+AB[k].cost+" 💰\n"+at(k)[1]:at("opens").replace("{c}",LEVELS[AB[k].lvl].name);
-    b.querySelector(".ic").textContent=open?AB[k].ic:"🔒";b.querySelector(".pr").textContent=used?"✓":AB[k].cost;
+    if(k!=="king")b.querySelector(".ic").textContent=open?AB[k].ic:"🔒";b.querySelector(".pr").textContent=used?"✓":AB[k].cost;
     const cdn=b.querySelector(".cdn");cdn.style.display=cd>0?"flex":"none";cdn.textContent=cd>0?Math.ceil(cd):"";
     b.style.display=open?"":"none";
     const active=(k==="mgr"&&A.mgr>0)||(k==="smoke"&&A.smoke>0)||(k==="king"&&A.king>0)||(k==="roadie"&&A.wall);
