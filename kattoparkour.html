@@ -201,6 +201,8 @@ const RANKS=[
 ];
 let god=false,runGod=false;
 try{god=localStorage.getItem("kattoparkour-god")==="1";}catch(e){}
+let gTap=0,gLast=0;
+function godTap(){const n=performance.now();gTap=(n-gLast>4000)?1:gTap+1;gLast=n;if(gTap>=20){gTap=0;setGod(!god);beep(god?880:330,.12,"triangle",.08);return true;}return false;}
 function setGod(v){god=v;try{localStorage.setItem("kattoparkour-god",v?"1":"0");}catch(e){}}
 let bestRank=0;
 try{bestRank=Math.min(RANKS.length-1,+localStorage.getItem("kattoparkour-rank")||0);}catch(e){}
@@ -775,9 +777,8 @@ function renderTab(){
     L.querySelectorAll(".avg canvas").forEach(cn2=>{const i=+cn2.dataset.i;drawPortrait(cn2,AVATARS[i]);if(i===CUSTOM){const c=cn2.getContext("2d");c.font="30px serif";c.fillText("✏️",6,34);}
       cn2.onclick=()=>{curAv=i;avChosen=true;try{localStorage.setItem("kattoparkour-av",String(curAv));}catch(e){}L.querySelectorAll(".avg canvas").forEach(x=>x.className=(+x.dataset.i===curAv?"on":""));drawCur();};});
     $("bsEdit").onclick=startEdit;
-    let gt=0,gl=0;const gi=$("bsCar");
-    gi.onclick=()=>{const n=performance.now();gt=(n-gl>4000)?1:gt+1;gl=n;
-      if(gt>=20){gt=0;setGod(!god);gi.style.opacity=".9";setTimeout(()=>gi.style.opacity=".28",500);beep(god?880:330,.12,"triangle",.08);}};
+    const gi=$("bsCar");
+    gi.onclick=()=>{if(godTap()){gi.style.opacity=".9";setTimeout(()=>gi.style.opacity=".3",500);}};
     $("bsOk").onclick=()=>{tab="top";renderTab();};
     return;
   }
@@ -810,7 +811,10 @@ $("nmSave").onclick=saveName;
 $("bA").onclick=()=>startGame(startLv);
 $("bB").onclick=()=>startGame(0);
 $("tTop").onclick=()=>{tab="top";renderTab();};
-$("tGar").onclick=()=>{tab="gar";renderTab();};
+$("tGar").onclick=e=>{
+  const r=$("tGar").getBoundingClientRect();
+  if(e&&e.clientX&&e.clientX<r.left+r.width*0.42)godTap(); // pieni salainen kulma: auton ikoni
+  tab="gar";renderTab();};
 $("tBack").onclick=()=>{tab="back";renderTab();};
 $("tRank").onclick=()=>{tab="rank";renderTab();};
 $("tMap").onclick=()=>{tab="map";renderTab();};
