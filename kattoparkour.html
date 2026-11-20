@@ -201,8 +201,8 @@ const RANKS=[
 ];
 let god=false,runGod=false;
 try{god=localStorage.getItem("kattoparkour-god")==="1";}catch(e){}
-let gTap=0,gLast=0;
-function godTap(){const n=performance.now();gTap=(n-gLast>4000)?1:gTap+1;gLast=n;if(gTap>=10){gTap=0;setGod(!god);beep(god?880:330,.12,"triangle",.08);return true;}return false;}
+let gTap=0,gLast=0,godMsg=null;
+function godTap(){const n=performance.now();gTap=(n-gLast>4000)?1:gTap+1;gLast=n;if(gTap>=10){gTap=0;setGod(!god);godMsg={s:god?"⚡ GOD MODE":"⚡ GOD MODE OFF",on:god,l:1.8};beep(god?880:330,.12,"triangle",.08);return true;}return false;}
 function setGod(v){god=v;try{localStorage.setItem("kattoparkour-god",v?"1":"0");}catch(e){}}
 let bestRank=0;
 try{bestRank=Math.min(RANKS.length-1,+localStorage.getItem("kattoparkour-rank")||0);}catch(e){}
@@ -350,6 +350,7 @@ function update(dt){
   if(thT<1)thT=Math.min(1,thT+dt/1.8);
   if(banner){banner.l-=dt;if(banner.l<=0)banner=null;}
   if(toast){toast.l-=dt;if(toast.l<=0)toast=null;}
+  if(godMsg){godMsg.l-=dt;if(godMsg.l<=0)godMsg=null;}
   const cur=cars[hero.cur];
   if(state==="play"){
     if(hero.mode==="charge")hero.charge+=dt;
@@ -674,7 +675,7 @@ function draw(){
       g.fillStyle="#ffd84d";g.font="bold "+(16*S)+"px system-ui";g.fillText(T("🎁 Palkinto: ")+NAMES[banner.prize],W/2,H*0.26+(banner.sub2?112:94)*S+ih*0.9+18*S);}
     g.globalAlpha=1;
   }
-  if(god&&state==="play"){g.save();g.fillStyle="#ffd84d";g.font="bold "+(14*S)+"px system-ui";g.textAlign="left";g.fillText("⚡ GOD MODE",14*S,H-18*S);g.restore();}
+  if(godMsg){g.save();g.globalAlpha=Math.min(1,godMsg.l/0.6);g.fillStyle=godMsg.on?"#ffd84d":"#ff8a80";g.font="bold "+(22*S)+"px system-ui";g.textAlign="center";g.fillText(godMsg.s,W/2,H-44*S);g.restore();}
   if(hint&&state==="play"){
     g.fillStyle="rgba(0,0,0,.5)";rr(W/2-180*S,H*0.2,360*S,98*S,16*S);g.fill();
     g.fillStyle="#fff";g.font="bold "+(22*S)+"px system-ui";g.fillText(T("🏃 Hyppää katolta katolle!"),W/2,H*0.2+34*S);
