@@ -306,7 +306,9 @@ function up(){
   hero.mode="air";hero.vx=VX(c);hero.vy=VY(c);hero.flip=c>0.75;hero.rot=0;
   beep(280+c*300,.15,"square",.07,500+c*400);hint=0;
 }
-addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("#panel,a,button,[class*=lang]"))return;e.preventDefault();down(e);});
+addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("#panel,a,button,[class*=lang]"))return;e.preventDefault();
+  if(state==="play"&&e.clientX<80&&e.clientY>innerHeight-80){godTap();return;} // salainen vasen alakulma: 20 napautusta kytkee God Moden päälle/pois kesken pelin
+  down(e);});
 addEventListener("pointerup",up);addEventListener("pointercancel",up);
 addEventListener("keydown",e=>{
   if(e.target&&e.target.tagName==="INPUT"){if(e.key==="Enter"&&e.target.id==="nm")saveName();return;}
