@@ -307,7 +307,6 @@ function up(){
 addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("#panel,a,button,[class*=lang]"))return;e.preventDefault();down(e);});
 addEventListener("pointerup",up);addEventListener("pointercancel",up);
 addEventListener("keydown",e=>{
-  if(e.code==="KeyG"&&!e.repeat&&document.activeElement.tagName!=="INPUT"){setGod(!god);toast=null;say(hero.x,hero.y+90,god?"⚡ God Mode päällä":"God Mode pois","#ffd84d");}
   if(e.target&&e.target.tagName==="INPUT"){if(e.key==="Enter"&&e.target.id==="nm")saveName();return;}
   if(e.code==="Space"&&!e.repeat){e.preventDefault();if(state==="over"){if($("panel").style.display==="flex")startGame(startLv);}else down();}});
 addEventListener("keyup",e=>{if(e.code==="Space")up();});
@@ -671,7 +670,6 @@ function draw(){
       g.fillStyle="#ffd84d";g.font="bold "+(16*S)+"px system-ui";g.fillText(T("🎁 Palkinto: ")+NAMES[banner.prize],W/2,H*0.26+(banner.sub2?112:94)*S+ih*0.9+18*S);}
     g.globalAlpha=1;
   }
-  if(god&&state==="play"){g.fillStyle="#ffd84d";g.font="bold "+(13*S)+"px system-ui";g.textAlign="left";g.fillText("⚡ GOD MODE",12*S,22*S);g.textAlign="center";}
   if(hint&&state==="play"){
     g.fillStyle="rgba(0,0,0,.5)";rr(W/2-180*S,H*0.2,360*S,98*S,16*S);g.fill();
     g.fillStyle="#fff";g.font="bold "+(22*S)+"px system-ui";g.fillText(T("🏃 Hyppää katolta katolle!"),W/2,H*0.2+34*S);
@@ -771,13 +769,15 @@ function renderTab(){
   }
   if(tab==="edit"){renderEditor();return;}
   if(tab==="back"){
-    L.innerHTML='<div class="sec">'+T("🎭 Backstage: valitse hahmosi ja nimesi")+'</div><input id="bsn" maxlength="16" placeholder="'+T("Nimesi")+'" autocomplete="off"><button class="alt" id="bsGod">'+T(god?"⚡ God Mode: päällä":"⚡ God Mode: pois")+'</button>'+(god?'<div class="sec">'+T("God Mode: tulokset eivät mene Top 20 -listalle. Napin painallus riittää: hyppy osuu aina.")+'</div>':'')+'<button class="alt" id="bsEdit">'+T("✏ Muokkaa hahmoa")+'</button><div class="avg">'+AVATARS.map((a,i)=>'<canvas data-i="'+i+'" width="120" height="120" title="'+T(a.n)+'" class="'+(i===curAv?"on":"")+'"></canvas>').join("")+'</div><button class="main" id="bsOk">'+T("✔ Valmis")+'</button>';
+    L.innerHTML='<div class="sec">'+T("🎭 Backstage: valitse hahmosi ja nimesi")+'</div><input id="bsn" maxlength="16" placeholder="'+T("Nimesi")+'" autocomplete="off"><button class="alt" id="bsEdit">'+T("✏ Muokkaa hahmoa")+'</button><div class="avg">'+AVATARS.map((a,i)=>'<canvas data-i="'+i+'" width="120" height="120" title="'+T(a.n)+'" class="'+(i===curAv?"on":"")+'"></canvas>').join("")+'</div><button class="main" id="bsOk">'+T("✔ Valmis")+'</button><div id="bsCar" style="text-align:right;font-size:15px;opacity:.28;margin-top:8px;user-select:none;cursor:default">🚗</div>';
     $("bsn").value=lastName;
     $("bsn").oninput=()=>{lastName=$("bsn").value.slice(0,16);$("nm").value=lastName;try{localStorage.setItem("kattoparkour-name",lastName);}catch(e){}};
     L.querySelectorAll(".avg canvas").forEach(cn2=>{const i=+cn2.dataset.i;drawPortrait(cn2,AVATARS[i]);if(i===CUSTOM){const c=cn2.getContext("2d");c.font="30px serif";c.fillText("✏️",6,34);}
       cn2.onclick=()=>{curAv=i;avChosen=true;try{localStorage.setItem("kattoparkour-av",String(curAv));}catch(e){}L.querySelectorAll(".avg canvas").forEach(x=>x.className=(+x.dataset.i===curAv?"on":""));drawCur();};});
     $("bsEdit").onclick=startEdit;
-    $("bsGod").onclick=()=>{setGod(!god);renderTab();};
+    let gt=0,gl=0;const gi=$("bsCar");
+    gi.onclick=()=>{const n=performance.now();gt=(n-gl>4000)?1:gt+1;gl=n;
+      if(gt>=20){gt=0;setGod(!god);gi.style.opacity=".9";setTimeout(()=>gi.style.opacity=".28",500);beep(god?880:330,.12,"triangle",.08);}};
     $("bsOk").onclick=()=>{tab="top";renderTab();};
     return;
   }
