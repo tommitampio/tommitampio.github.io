@@ -202,7 +202,7 @@ const RANKS=[
 let god=false,runGod=false;
 try{god=localStorage.getItem("kattoparkour-god")==="1";}catch(e){}
 let gTap=0,gLast=0;
-function godTap(){const n=performance.now();gTap=(n-gLast>4000)?1:gTap+1;gLast=n;if(gTap>=20){gTap=0;setGod(!god);beep(god?880:330,.12,"triangle",.08);return true;}return false;}
+function godTap(){const n=performance.now();gTap=(n-gLast>4000)?1:gTap+1;gLast=n;if(gTap>=10){gTap=0;setGod(!god);beep(god?880:330,.12,"triangle",.08);return true;}return false;}
 function setGod(v){god=v;try{localStorage.setItem("kattoparkour-god",v?"1":"0");}catch(e){}}
 let bestRank=0;
 try{bestRank=Math.min(RANKS.length-1,+localStorage.getItem("kattoparkour-rank")||0);}catch(e){}
