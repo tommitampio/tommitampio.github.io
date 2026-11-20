@@ -674,6 +674,7 @@ function draw(){
       g.fillStyle="#ffd84d";g.font="bold "+(16*S)+"px system-ui";g.fillText(T("🎁 Palkinto: ")+NAMES[banner.prize],W/2,H*0.26+(banner.sub2?112:94)*S+ih*0.9+18*S);}
     g.globalAlpha=1;
   }
+  if(god&&state==="play"){g.save();g.fillStyle="#ffd84d";g.font="bold "+(14*S)+"px system-ui";g.textAlign="left";g.fillText("⚡ GOD MODE",14*S,H-18*S);g.restore();}
   if(hint&&state==="play"){
     g.fillStyle="rgba(0,0,0,.5)";rr(W/2-180*S,H*0.2,360*S,98*S,16*S);g.fill();
     g.fillStyle="#fff";g.font="bold "+(22*S)+"px system-ui";g.fillText(T("🏃 Hyppää katolta katolle!"),W/2,H*0.2+34*S);
