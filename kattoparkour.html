@@ -694,7 +694,7 @@ function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);dr
 
 const $=id=>document.getElementById(id);
 let savedIdx=-1,tab="top";
-function qualifies(){return !runGod&&score>0&&(top20.length<20||score>top20[top20.length-1].score);}
+function qualifies(){return score>0&&(top20.length<20||score>top20[top20.length-1].score);}
 function showPanel(){
   if(state!=="over")return;
   $("pTitle").textContent=T(overMsg);
