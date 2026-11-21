@@ -117,7 +117,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
       <div class="row"><button class="sb aud" data-k="music"></button><button class="sb aud" data-k="sfx"></button></div>
       <p id="mHelp" style="font-size:13px;color:#ddd;white-space:pre-line;text-align:left;line-height:1.55;max-width:480px;margin:10px auto"></p>
       <button class="sb" id="bReset" style="margin-top:4px"></button>
-      <p style="font-size:12px;color:#bbb;margin:10px 0 0;line-height:1.5">🎵 Zenambi – Latino Tribal<br>🎵 Tommi Tampio – Hopeful Road Trip</p>
+      <p style="font-size:12px;color:#bbb;margin:10px 0 0;line-height:1.5">🎵 Zenambi – Latino Tribal<br>🎵 Tommi Tampio – Hopeful Road Trip<br><a id="privLink" href="strings-statues-tietosuoja.html" target="_blank" rel="noopener" style="color:#bbb"></a></p>
       <a id="backHome" href="pelit.html" style="display:none;margin-top:12px;color:#f5c400;font-size:14px">‹ tommitampio.github.io</a>
     </div></div>
     <div id="bstage" class="ov hide" style="z-index:30"><div class="panel">
@@ -1711,7 +1711,7 @@ document.querySelectorAll(".aud").forEach(b=>b.addEventListener("click",()=>{con
 function applyLang(){
   document.documentElement.lang=lang;
   document.querySelectorAll("#langs button").forEach(b=>b.classList.toggle("on",b.dataset.l===lang));
-  renderAudio();$("mSub").textContent=t("sub");$("bPlay").textContent=t("quick");$("bCamp").textContent=t("campaign")+(save.camp>0&&save.camp<LEVELS.length?"  ("+save.camp+"/"+LEVELS.length+")":save.camp>=LEVELS.length?"  👑":"");$("bShop").textContent="🗿 "+t("shop");$("mHelp").textContent=t("help")+"\n"+(typeof ABT!=="undefined"?(ABT[lang]||ABT.en).help:"");
+  renderAudio();$("mSub").textContent=t("sub");$("bPlay").textContent=t("quick");$("bCamp").textContent=t("campaign")+(save.camp>0&&save.camp<LEVELS.length?"  ("+save.camp+"/"+LEVELS.length+")":save.camp>=LEVELS.length?"  👑":"");$("bShop").textContent="🗿 "+t("shop");$("mHelp").textContent=t("help")+"\n"+(typeof ABT!=="undefined"?(ABT[lang]||ABT.en).help:"");$("privLink").textContent="🔒 "+({fi:"Tietosuoja",sv:"Integritetspolicy",en:"Privacy policy",de:"Datenschutz",es:"Privacidad",fr:"Confidentialité"}[lang]||"Privacy policy");
   $("mCoins").textContent="🪙 "+t("coins")+": "+save.coins;
   const dr=$("diffRow");dr.innerHTML="";for(const k of ["easy","normal","hard"]){const b=document.createElement("button");b.className="sb"+(save.diff===k?" on":"");b.textContent=t(k);
     b.onclick=()=>{save.diff=k;persist();applyLang();};dr.appendChild(b);}
@@ -1957,7 +1957,7 @@ function loop(now){
   if(state==="play"){saveT+=dt;if(saveT>5){saveT=0;saveGame();}}
   draw();drawMini();updUI();updAbUI();updTut();bgmTick(Math.min(dt,0.1));requestAnimationFrame(loop);
 }
-if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
+if(location.hostname.indexOf("github.io")>=0&&!matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches&&!String(document.referrer).startsWith("android-app://"))$("backHome").style.display="block";
 if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
 state="intro";
 /* ================= ALKUNÄYTÖS: autotalli → kiertuebussi → kitara murskaa patsaan ================= */
