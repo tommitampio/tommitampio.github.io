@@ -920,14 +920,21 @@ function drawBg(){
       for(let x=Math.floor(x0/40)*40;x<x1;x+=40){ln(x,deck-6,x+20,deck-26);ln(x+20,deck-26,x+40,deck-6);}ln(x0,deck-6,x1,deck-6);ln(x0,deck-26,x1,deck-26);
       for(let x=Math.floor(x0/120)*120+60;x<x1;x+=120){const sw=Math.sin(T*1.5+x)*0.4;ctx.fillStyle="#2a2a34";ctx.fillRect(x-4,deck-6,8,6);const gl=ctx.createRadialGradient(x,deck+2,1,x,deck+2,14);gl.addColorStop(0,SPECTRUM[(x/120|0)%6]);gl.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=gl;ctx.fillRect(x-14,deck-12,28,28);}}
     ctx.fillStyle=shade(V.stand,-0.3);ctx.fillRect(x0,deck,x1-x0,124-deck);
-    const urh=11;for(let y=118-urh,r=0;y>deck-urh;y-=urh,r++){ctx.fillStyle=r%2?shade(V.stand,-0.15):shade(V.seat,-0.15);ctx.fillRect(x0,y,x1-x0,urh+0.5);
+    {ctx.save();ctx.beginPath();ctx.rect(x0,deck,x1-x0,118-deck);ctx.clip();const fr=Math.floor(T*2.4+1)%2;let band=0;
+      for(let y=118-CROWD_H;y>deck-CROWD_H;y-=CROWD_H,band++){const sh=(band&1)?CROWD_W/2:0;
+        for(let tx=Math.floor((x0-sh)/CROWD_W)*CROWD_W+sh;tx<x1;tx+=CROWD_W)ctx.drawImage(crowdTile(V,(fr+(Math.floor(tx/CROWD_W)&1))%2),tx,y,CROWD_W,CROWD_H);}
+      ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x0,deck,x1-x0,118-deck);ctx.restore();}
+    const urh=11;for(let y=118-urh,r=0;false;y-=urh,r++){ctx.fillStyle=r%2?shade(V.stand,-0.15):shade(V.seat,-0.15);ctx.fillRect(x0,y,x1-x0,urh+0.5);
       const sp=6,hr=1.4;for(let x=Math.floor(x0/sp)*sp+(r%2)*3;x<x1;x+=sp){const id=(Math.floor(x/sp)*37+r*13)&1023,bob=((T*4+id)%6<1.2)?-1:0;
         ctx.fillStyle=id%9===0?V.fans[id%3]:shade(V.seat,0.1+(id%5)*0.05);ctx.beginPath();ctx.arc(x,y+urh*0.5+bob,hr,0,7);ctx.fill();
         if(id%29===0){ctx.globalAlpha=0.3+0.7*Math.abs(Math.sin(T*3+id));ctx.fillStyle=id%2?"#fff6b0":"#cfe8ff";ctx.fillRect(x-0.8,y+1+bob,1.6,1.6);ctx.globalAlpha=1;}}}
     ctx.fillStyle="#0a0610";ctx.fillRect(x0,118,x1-x0,8);ctx.fillStyle=V.fans[0];for(let x=Math.floor(x0/90)*90;x<x1;x+=90){ctx.fillRect(x,119,40,5);}}
   const top=192,bot=326,rows=12,rh=(bot-top)/rows;
   ctx.fillStyle="#0a0610";ctx.fillRect(x0,top-14,x1-x0,14);ctx.fillStyle=shade(V.stand,0.25);ctx.fillRect(x0,top-4,x1-x0,4);
-  for(let r=0;r<rows;r++){const y=top+r*rh;ctx.fillStyle=r%2?V.stand:V.seat;ctx.fillRect(x0,y,x1-x0,rh+0.5);
+  {const fr=Math.floor(T*2.4)%2;for(let tx=Math.floor(x0/CROWD_W)*CROWD_W;tx<x1;tx+=CROWD_W){const f=(fr+(Math.floor(tx/CROWD_W)&1))%2;ctx.drawImage(crowdTile(V,f),tx,top,CROWD_W,bot-top);}
+    for(let i=0;i<7;i++){const fx=x0+((i*373+Math.floor(T*0.7+i*0.37)*911)%Math.max(1,Math.floor(x1-x0))),fy=top+8+((i*53+Math.floor(T*0.7+i*0.37)*29)%(bot-top-16));
+      if(((T*0.7+i*0.37)%1)<0.06){const g=ctx.createRadialGradient(fx,fy,0,fx,fy,7);g.addColorStop(0,"rgba(255,255,255,.95)");g.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=g;ctx.fillRect(fx-7,fy-7,14,14);}}}
+  if(false)for(let r=0;r<rows;r++){const y=top+r*rh;ctx.fillStyle=r%2?V.stand:V.seat;ctx.fillRect(x0,y,x1-x0,rh+0.5);
     const sp=6.5-r*0.12,hr=1.5+r*0.1;let xs=Math.floor(x0/sp)*sp+(r%2)*sp/2;
     for(let x=xs;x<x1;x+=sp){const id=(Math.floor(x/sp)*31+r*17)&1023,bob=((T*4+id)%6<1.2)?-1.2:0;
       ctx.fillStyle=id%9===0?V.fans[id%3]:shade(V.seat,0.18+(id%5)*0.05);ctx.beginPath();ctx.arc(x,y+rh*0.45+bob,hr,0,7);ctx.fill();
@@ -981,22 +988,25 @@ function drawMine(m){
 }
 const SHOPX=105;
 function drawShop(S){
-  const dir=S.team?-1:1,cx=S.x+dir*SHOPX,by=LANE0-4,w=84,h=74,x0=cx-w/2,T=G?G.time:0,acc=S.team?"#d42424":"#e8b000";
+  const dir=S.team?-1:1,cx=S.x+dir*SHOPX,by=LANE0-4,w=84,h=74,x0=cx-w/2,T=G?G.time:0,acc=S.team?"#c03ad8":"#e8b000";
   // runko ja katto
   ctx.fillStyle="rgba(0,0,0,0.25)";ctx.fillRect(x0+4,by-2,w,5);
-  ctx.fillStyle=S.team?"#5a2a2a":"#3a3a5a";ctx.fillRect(x0,by-h,w,h);
-  ctx.fillStyle=S.team?"#3e1a1a":"#28283e";for(let y=by-h+6;y<by;y+=7)ctx.fillRect(x0,y,w,1);
+  ctx.fillStyle=S.team?"#4a2a5a":"#3a3a5a";ctx.fillRect(x0,by-h,w,h);
+  ctx.fillStyle=S.team?"#341a3e":"#28283e";for(let y=by-h+6;y<by;y+=7)ctx.fillRect(x0,y,w,1);
   ctx.fillStyle="#1a1a22";ctx.fillRect(x0-4,by-h-4,w+8,6);
   // neonkyltti
   const on=Math.sin(T*7)>-0.92;ctx.fillStyle="#120c18";ctx.fillRect(x0+6,by-h-24,w-12,18);
   ctx.save();ctx.translate(cx,by-h-11);ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
-  if(on){ctx.shadowColor=S.team?"#ff4a6a":"#ff4ad8";ctx.shadowBlur=8;}ctx.fillStyle=on?(S.team?"#ff8a9a":"#ff9cf0"):"#5a3a5a";ctx.fillText("♪ GUITARS ♪",0,1);ctx.restore();
+  if(on){ctx.shadowColor=S.team?"#c86aff":"#ff4ad8";ctx.shadowBlur=8;}ctx.fillStyle=on?(S.team?"#e0b0ff":"#ff9cf0"):"#5a3a5a";ctx.fillText(S.team?"♪ VINYL ♪":"♪ GUITARS ♪",0,1);ctx.restore();
+  if(S.team){const mx=cx,my=by-h-36,r=7;ctx.strokeStyle="#888";ctx.lineWidth=1;ln(mx,by-h-26,mx,my+r);ctx.fillStyle="#cfd4e0";ctx.beginPath();ctx.arc(mx,my,r,0,7);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(mx,my,r,0,7);ctx.clip();
+    for(let gx=-r;gx<r;gx+=3)for(let gy=-r;gy<r;gy+=3){ctx.fillStyle=SPECTRUM[(Math.floor(gx+gy+T*6)%6+6)%6];ctx.globalAlpha=0.35+0.35*Math.abs(Math.sin(T*4+gx*gy));ctx.fillRect(mx+gx+0.4,my+gy+0.4,2.2,2.2);}ctx.restore();ctx.globalAlpha=1;}
   // markiisi
   for(let i=0;i<8;i++){ctx.fillStyle=i%2?"#f4f0e6":acc;ctx.beginPath();const ax=x0-3+i*(w+6)/8;ctx.moveTo(ax,by-h+6);ctx.lineTo(ax+(w+6)/8,by-h+6);ctx.lineTo(ax+(w+6)/8,by-h+16);ctx.arc(ax+(w+6)/16,by-h+16,(w+6)/16,0,Math.PI);ctx.fill();}
   // näyteikkuna kitaroineen (tiski kaupan puolella patsaasta poispäin)
   const wx=dir>0?x0+6:x0+w-46,wy=by-h+24;
   ctx.fillStyle="#ffe8b0";ctx.fillRect(wx,wy,40,30);ctx.fillStyle="rgba(255,190,90,0.35)";ctx.fillRect(wx,wy,40,30);
-  for(let i=0;i<3;i++){drawGuitar(wx+7+i*13,wy+3,Math.PI/2,0.62,i);}
+  if(S.team){for(let i=0;i<3;i++){const rx=wx+8+i*12,ry=wy+16,sp=T*3+i;ctx.fillStyle="#111";ctx.beginPath();ctx.arc(rx,ry,6,0,7);ctx.fill();ctx.strokeStyle="#333";ctx.lineWidth=0.5;ctx.beginPath();ctx.arc(rx,ry,4,0,7);ctx.stroke();ctx.fillStyle=SPECTRUM[(i*2)%6];ctx.beginPath();ctx.arc(rx,ry,2,0,7);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(rx+Math.cos(sp)*1.2-0.4,ry+Math.sin(sp)*1.2-0.4,0.8,0.8);}}
+  else for(let i=0;i<3;i++){drawGuitar(wx+7+i*13,wy+3,Math.PI/2,0.62,i);}
   ctx.strokeStyle="#1a1a22";ctx.lineWidth=2;ctx.strokeRect(wx,wy,40,30);ln(wx+20,wy,wx+20,wy+30);
   ctx.fillStyle="rgba(255,255,255,0.35)";ctx.beginPath();ctx.moveTo(wx+4,wy+28);ctx.lineTo(wx+12,wy+2);ctx.lineTo(wx+16,wy+2);ctx.lineTo(wx+8,wy+28);ctx.fill();
   // ovi + OPEN-kyltti + kultaläjä
@@ -1509,14 +1519,61 @@ function drawFinArms(u,c,sx,sy,lw,T){
 }
 const FANCOL=["#2a3a6a","#6a2a4a","#2a6a5a","#5a4a2a","#4a2a6a","#6a5a2a","#2a4a3a","#6a3a2a"];
 function fanUnit(id,x,y,team,fin,sc){return {id,type:"fan",team,x,y,face:team?-1:1,moving:false,phase:0,atk:0,hp:1,max:1,fin,sc,col:FANCOL[id%FANCOL.length],flag:team?"#d42424":"#e8b000"};}
+
+/* Katsomon yleisö: valmiiksi piirretyt siluettilaatat (2 kuvaa vuorotellen = yleisö hyppii) */
+const CROWD_T={},CROWD_W=600,CROWD_H=134;
+function crowdTile(V,fr){const key=V.stand+V.seat+fr;if(CROWD_T[key])return CROWD_T[key];
+  const k=3,c=document.createElement("canvas");c.width=CROWD_W*k;c.height=CROWD_H*k;const x=c.getContext("2d");x.scale(k,k);x.lineCap="round";
+  const rows=12,rh=CROWD_H/rows,DARK=["#1b1426","#231a30","#2a1f38","#18121f","#201628"];
+  for(let r=0;r<rows;r++){const y=r*rh;x.fillStyle=r%2?V.stand:V.seat;x.fillRect(0,y,CROWD_W,rh+0.6);}
+  for(let r=0;r<rows;r++){const y=r*rh,hr=1.55+r*0.13,n=Math.round(CROWD_W/(6.6-r*0.13)),sp=CROWD_W/n;
+    for(let j=0;j<n;j++){const id=(j*31+r*17)%1024,h=(id*2654435761>>>0)%997,xx=(j+((r%2)?0.5:0))*sp+((h%7)-3)*0.25,yh=y+rh*0.42;
+      const col=DARK[h%DARK.length];x.fillStyle=col;
+      x.beginPath();x.ellipse(xx,yh+hr*1.9,hr*1.45,hr*1.05,0,0,7);x.fill();
+      x.beginPath();x.arc(xx,yh,hr,0,7);x.fill();
+      x.strokeStyle=V.fans[h%3];x.globalAlpha=0.55;x.lineWidth=0.7;x.beginPath();x.arc(xx,yh,hr*0.95,Math.PI*1.15,Math.PI*1.85);x.stroke();x.globalAlpha=1;
+      const up=(h%5===fr*2)||(h%13===fr+3);
+      if(up){x.strokeStyle=col;x.lineWidth=hr*0.75;const sw=((h>>3)%3-1)*hr*0.6;
+        x.beginPath();x.moveTo(xx-hr*1.1,yh+hr*1.4);x.lineTo(xx-hr*1.7+sw,yh-hr*2.6);x.moveTo(xx+hr*1.1,yh+hr*1.4);x.lineTo(xx+hr*1.7+sw,yh-hr*2.6);x.stroke();
+        if(h%3===0){const lx=xx+hr*1.7+sw,ly=yh-hr*3.1;const g=x.createRadialGradient(lx,ly,0,lx,ly,hr*2.2);g.addColorStop(0,h%2?"rgba(255,246,176,.9)":"rgba(207,232,255,.9)");g.addColorStop(1,"rgba(255,255,255,0)");
+          x.fillStyle=g;x.fillRect(lx-hr*2.2,ly-hr*2.2,hr*4.4,hr*4.4);x.fillStyle="#fff";x.fillRect(lx-0.5,ly-0.7,1,1.4);}}
+      else if(h%37===fr){x.fillStyle=V.fans[(h>>2)%3];x.fillRect(xx-hr*2.6,yh-hr*2.2,hr*5.2,hr*0.9);}}}
+  const sh=x.createLinearGradient(0,0,0,CROWD_H);sh.addColorStop(0,"rgba(0,0,0,.45)");sh.addColorStop(0.5,"rgba(0,0,0,.12)");sh.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=sh;x.fillRect(0,0,CROWD_W,CROWD_H);
+  CROWD_T[key]=c;return c;}
+/* Eturivin fanit ja lehdistö siluetteina */
+function drawFanSil(x,y,team,kind,i,T,hop){
+  const dark="#17101f",acc=team?"#d42464":"#e8b000",w=Math.sin(T*6+i*1.7)*0.5;ctx.save();ctx.translate(x,y-hop);ctx.scale(0.82,0.82);ctx.lineCap="round";
+  ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(0,1+hop/0.82,9,2.5,0,0,7);ctx.fill();
+  ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-4,0);ln(3,-14,4,0);
+  ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(0,-22,7.5,10,0,0,7);ctx.fill();
+  ctx.fillStyle=acc;ctx.fillRect(-7.5,-28,15,3.4);ctx.fillRect(team?-7:4,-28,3,9);
+  ctx.fillStyle=dark;ctx.beginPath();ctx.arc(0,-37,5.8,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(255,236,190,.45)";ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,-37,5.6,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+  ctx.strokeStyle=dark;ctx.lineWidth=3.6;
+  if(kind==="flag"){ln(5,-28,9,-42);ln(-5,-28,-9,-40+w*4);ctx.strokeStyle="#cfcfcf";ctx.lineWidth=1.3;ln(9,-36,9,-66);
+    ctx.fillStyle=acc;ctx.beginPath();ctx.moveTo(9,-66);ctx.quadraticCurveTo(18,-64+w*5,27,-66);ctx.lineTo(27,-54);ctx.quadraticCurveTo(18,-52+w*5,9,-54);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="900 7px system-ui";ctx.textAlign="center";ctx.fillText(team?"★":"🤘",18,-57+w*2);}
+  else{const ax=-10+w*3,bx=10-w*3;ln(-5,-28,ax,-47);ln(5,-28,bx,-47);ctx.fillStyle=dark;ctx.beginPath();ctx.arc(ax,-48,2.3,0,7);ctx.arc(bx,-48,2.3,0,7);ctx.fill();
+    if(i%3===0){const g=ctx.createRadialGradient(bx,-53,0,bx,-53,7);g.addColorStop(0,"rgba(207,232,255,.95)");g.addColorStop(1,"rgba(207,232,255,0)");ctx.fillStyle=g;ctx.fillRect(bx-7,-60,14,14);ctx.fillStyle="#fff";ctx.fillRect(bx-1.4,-55.5,2.8,4.5);}
+    else{ctx.strokeStyle=dark;ctx.lineWidth=1.4;ln(ax-1.3,-49,ax-1.8,-53);ln(ax+1.3,-49,ax+1.8,-53);ln(bx-1.3,-49,bx-1.8,-53);ln(bx+1.3,-49,bx+1.8,-53);}}
+  ctx.restore();}
+function drawPress(px,T){const dark="#120c18";ctx.save();ctx.lineCap="round";
+  // kameramies
+  ctx.translate(px-26,348);ctx.scale(0.85,0.85);ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-5,0);ln(3,-14,5,0);ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(0,-22,8,10,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.arc(1,-37,5.8,0,7);ctx.fill();ctx.fillStyle="#2a2a34";ctx.fillRect(-4,-46,22,12);ctx.fillStyle="#111";ctx.fillRect(18,-44,6,8);ctx.fillStyle="#7aa8ff";ctx.fillRect(21,-43,3,6);
+  ctx.fillStyle=Math.floor(T*2)%2?"#ff2a2a":"#5a0a0a";ctx.beginPath();ctx.arc(-1,-43,1.6,0,7);ctx.fill();
+  ctx.restore();ctx.save();ctx.lineCap="round";
+  // toimittaja mikrofonin kanssa
+  ctx.translate(px+18,350);ctx.scale(0.85,0.85);ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-4,0);ln(3,-14,4,0);ctx.fillStyle="#3a2a4a";ctx.beginPath();ctx.ellipse(0,-22,7.5,10,0,0,7);ctx.fill();
+  ctx.fillStyle=dark;ctx.beginPath();ctx.arc(0,-37,5.8,0,7);ctx.fill();ctx.strokeStyle=dark;ctx.lineWidth=3.6;ln(-5,-28,-10,-36);ctx.fillStyle="#d22";ctx.fillRect(-13,-41,5,6);ctx.fillStyle="#222";ctx.beginPath();ctx.arc(-10.5,-42,2.6,0,7);ctx.fill();
+  ctx.restore();}
 function drawCrowd(){
   const T=G.time,ex=G.banners&&G.banners.length;
   for(const S of G.statues){const dir=S.team?-1:1;
-    for(let i=0;i<7;i++){const u=fanUnit(i+S.team*10,S.x+dir*(175+i*20),346+(i%2)*6,S.team,i%3===1?"flag":"cheer",0.78);
-      const hop=ex||((T+i*0.53)%2.8<0.5)?Math.abs(Math.sin(T*9+i))*6:0;u.y-=hop;u.face=dir;drawUnit(u);}}
+    for(let i=0;i<7;i++){const hop=ex||((T+i*0.53)%2.8<0.5)?Math.abs(Math.sin(T*9+i))*6:0;
+      drawFanSil(S.x+dir*(175+i*20),346+(i%2)*6,S.team,i%3===1?"flag":"cheer",i+S.team*10,T,hop);}}
   // lehdistö keskellä
-  const px=W/2;const cam=fanUnit(91,px-26,348,0,"camera",0.85);cam.col="#3a3a44";cam.face=1;drawUnit(cam);
-  const rep=fanUnit(92,px+18,350,1,"mic",0.85);rep.col="#4a3a5a";rep.face=-1;drawUnit(rep);
+  const px=W/2;drawPress(px,T);
   ctx.fillStyle="#d22";ctx.beginPath();ctx.roundRect?ctx.roundRect(px-14,318,30,11,3):ctx.rect(px-14,318,30,11);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 8px system-ui";ctx.textAlign="center";ctx.fillText("LIVE",px+3,326.5);
   if(Math.floor(T*2)%2===0){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(px-9,323.5,2,0,7);ctx.fill();}
 }
