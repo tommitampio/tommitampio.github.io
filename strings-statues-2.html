@@ -807,13 +807,17 @@ function drawStatueFig(S,T){
   }
 }
 
+const STATUE_IMG=[new Image(),new Image()];STATUE_IMG[0].src="kuvat/bandi/patsas-p.png";STATUE_IMG[1].src="kuvat/bandi/patsas-e.png";
+function drawStatueImg(S){const im=STATUE_IMG[S.team?1:0];if(!im.complete||!im.naturalWidth)return false;
+  const H=S.team?228:240,w=H*im.naturalWidth/im.naturalHeight;ctx.save();if(S.team)ctx.scale(-1,1);
+  ctx.drawImage(im,-w/2,-H+4,w,H);ctx.restore();return true;}
 function drawStatue(S){
   const s=S.size,T=G?G.time:0;ctx.save();
   ctx.translate(S.x+(S.shake?(Math.random()-0.5)*4:0),GY);ctx.scale(s,s);ctx.lineCap="round";
   if(S.alive){const fc=S.team?"#9a1515":"#c99400",fe=S.team?"#2a0a0a":"#fff3a0";drawFlag(-86,T,fc,fe);drawFlag(50,T+1,fc,fe);}
   drawPedestal(S);
   if(S.alive){
-    ctx.save();ctx.translate(0,-PED);ctx.save();drawStatueFig(S,T);ctx.restore();
+    ctx.save();ctx.translate(0,-PED);ctx.save();if(!drawStatueImg(S))drawStatueFig(S,T);ctx.restore();
     const dmg=1-S.hp/S.max;ctx.strokeStyle="#2a2a2a";ctx.lineWidth=1.6;
     for(let i=0;i<Math.floor(dmg*10);i++){const y=-25-i*17,x=((i*37)%15)-7;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4,y-6);ctx.lineTo(x-1,y-11);ctx.lineTo(x+3,y-16);ctx.stroke();}
     ctx.restore();
@@ -1888,7 +1892,7 @@ if(false){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sti
 state="intro";
 /* ================= ALKUNÄYTÖS: autotalli → kiertuebussi → kitara murskaa patsaan ================= */
 const PROCAP={"en": ["It all started in a garage…", "…then the band hit the road…", "…and the guitars got LOUDER…", "Now the whole world is waiting.", "Skip ▶"], "fi": ["Kaikki alkoi autotallista…", "…sitten bändi lähti tien päälle…", "…ja kitarat soivat yhä KOVEMPAA…", "Nyt koko maailma odottaa.", "Ohita ▶"], "sv": ["Allt började i ett garage…", "…sedan gav sig bandet ut på vägarna…", "…och gitarrerna blev allt HÖGRE…", "Nu väntar hela världen.", "Hoppa över ▶"], "de": ["Alles begann in einer Garage…", "…dann ging die Band auf Tour…", "…und die Gitarren wurden immer LAUTER…", "Jetzt wartet die ganze Welt.", "Überspringen ▶"], "es": ["Todo empezó en un garaje…", "…luego la banda salió de gira…", "…y las guitarras sonaron cada vez MÁS FUERTE…", "Ahora el mundo entero espera.", "Saltar ▶"], "fr": ["Tout a commencé dans un garage…", "…puis le groupe a pris la route…", "…et les guitares ont joué de plus en plus FORT…", "Maintenant, le monde entier attend.", "Passer ▶"]};
-(function prologue(){
+(function prologue(){return; // alkuelokuva pois: kansikuva ja peli heti (sääntö 2)
   const intro=$("intro");if(!intro)return;intro.classList.add("wait");
   const P=PROCAP[lang]||PROCAP.en,box=document.createElement("div");box.id="pro";
   box.innerHTML='<canvas></canvas><div id="proCap"></div><button id="proSkip"></button>';document.body.appendChild(box);
