@@ -52,7 +52,11 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pips{display:flex;gap:3px}.pips i{width:9px;height:9px;border-radius:50%;background:#555;display:block}.pips i.f{background:#f5c400}
 .card .sb{width:100%;margin-top:2px}
 #intro{position:fixed;inset:0;z-index:20;background:#000;cursor:pointer;overflow:hidden}
-#intro canvas{position:absolute;inset:0;width:100%;height:100%}
+#intro canvas{position:absolute;inset:0;width:100%;height:100%;visibility:hidden}
+#cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;animation:coverIn 1.2s ease-out both}
+@keyframes coverIn{from{transform:scale(1.12);filter:brightness(.3)}to{transform:scale(1);filter:none}}
+#intro #introTxt{justify-content:flex-end;padding:0 16px 4vh;background:linear-gradient(rgba(0,0,0,0) 45%,rgba(8,4,20,.88) 85%)}
+#intro #iLines{display:none}
 #introTxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:4vh 16px 0;text-align:center;pointer-events:none}
 #introTxt .wel{font-size:clamp(15px,2.6vw,22px);color:#fff;letter-spacing:3px;text-transform:uppercase;opacity:0;animation:fin 1s .2s forwards;text-shadow:0 2px 6px #000}
 #introTxt h1{margin:2px 0 4px;font-size:clamp(30px,7vw,64px);color:#f5c400;text-shadow:0 4px 0 #7a5a00,0 0 24px #f5c40088;opacity:0;animation:pop .9s .6s forwards;line-height:1.05}
@@ -85,7 +89,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 <meta name="apple-mobile-web-app-title" content="Strings & Statues">
 </head>
 <body>
-<div id="intro"><canvas id="introc"></canvas><div id="introTxt">
+<div id="intro"><canvas id="introc"></canvas><img id="cover" src="kuvat/strings-statues-bandi.jpg" alt=""><div id="introTxt">
   <div class="wel" id="iWel"></div>
   <h1>Strings &amp; Statues</h1>
   <div id="iLines"></div>
@@ -95,7 +99,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div id="top">
     <div id="ubtns" style="display:flex;gap:5px"></div>
     <div id="abtns" style="display:flex;gap:4px;margin-left:4px;padding-left:6px;border-left:2px dashed #6b3b3b"></div>
-    <div id="stats"><button id="bZout" class="zb">－</button><button id="bZin" class="zb">＋</button><button id="bPause" title="Pause"><span id="pLbl" style="display:none"></span>❚❚</button><span id="sGold">💰 0</span><span id="sPop">👥 0/50</span></div>
+    <div id="stats"><button id="bBack" class="zb" style="width:auto;padding:0 10px;background:linear-gradient(#ff7ab0,#c2185b);color:#fff;font-weight:900;font-size:14px">🎤 Backstage</button><button id="bZout" class="zb">－</button><button id="bZin" class="zb">＋</button><button id="bPause" title="Pause"><span id="pLbl" style="display:none"></span>❚❚</button><span id="sGold">💰 0</span><span id="sPop">👥 0/50</span></div>
   </div>
   <div id="wrap">
     <canvas id="c"></canvas>
@@ -114,6 +118,21 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
       <p id="mHelp" style="font-size:13px;color:#ddd;white-space:pre-line;text-align:left;line-height:1.55;max-width:480px;margin:10px auto"></p>
       <button class="sb" id="bReset" style="margin-top:4px"></button>
       <a id="backHome" href="pelit.html" style="display:none;margin-top:12px;color:#f5c400;font-size:14px">‹ tommitampio.github.io</a>
+    </div></div>
+    <div id="bstage" class="ov hide" style="z-index:30"><div class="panel">
+      <h2 id="bsT" style="color:#f5c400;margin:0 0 6px">🎤 Backstage</h2>
+      <p id="bsP" style="margin:0 0 10px;font-size:14px"></p>
+      <canvas id="bsC" width="640" height="480" style="width:100%;border-radius:12px;background:#120a20"></canvas>
+      <div style="display:flex;gap:8px;justify-content:center;margin:10px 0;flex-wrap:wrap">
+        <label class="sb on" style="cursor:pointer">📸 <span id="bsCam"></span><input id="bsFile" type="file" accept="image/*" capture="user" style="display:none"></label>
+        <label class="sb" style="cursor:pointer">🖼 <span id="bsGal"></span><input id="bsFile2" type="file" accept="image/*" style="display:none"></label>
+      </div>
+      <p id="bsW" style="margin:4px 0;font-size:14px;font-weight:800"></p>
+      <div id="bsSlots" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+        <button class="sb" id="bsSave">💾</button><button class="sb" id="bsDel">🗑</button><button class="sb on" id="bsClose">✔</button>
+      </div>
+      <p id="bsPriv" style="font-size:11px;opacity:.7;margin:8px 0 0"></p>
     </div></div>
     <div id="shop" class="ov hide"><div class="panel">
       <h1 id="shTitle"></h1>
@@ -186,12 +205,12 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
 "use strict";
 /* ================= KIELET ================= */
 const TXT={
-fi:{"sub": "Puolusta patsastasi ja kaada kilpailevan bändin patsas.", "play": "Pelaa", "shop": "Patsaspaja", "coins": "Voittokolikot", "easy": "Helppo", "normal": "Normaali", "hard": "Vaikea", "help": "🎸 NÄIN ROKATAAN\n⛏ Palkkaa ensin kaivajia. Ne hakkaavat kultaa jättiplektroilla ja kantavat sen kitarakauppaan.\n💰 Kullalla kokoat bändin: huilisteja, harpisteja, keihäsmiehiä mikrofonitelineineen ja jättiläiskitaristeja.\n🛡 Puolusta: bändi vartioi patsastasi.\n🤘 Hyökkää: bändi rynnii kilpailijan patsaalle.\n🏠 Vetäydy: kaikki piiloutuvat patsaan taakse, ja patsas ampuu itse nuolia.\n🗿 Kaada kilpailijan patsas ennen kuin omasi kaatuu, niin ilta on sinun.\n🪙 Voitoista saat voittokolikoita. Niillä vahvistat patsastasi pajassa.\n✖ Mieli muuttui? Napin punainen ✖ peruu oston, ja kulta palaa.\n👆 Vedä ruutua tai napauta pienoiskarttaa liikkuaksesi stadionilla.", "retreat": "🏠 Vetäydy", "defend": "🛡 Puolusta", "attack": "Hyökkää", "strengthen": "🗿+", "paused": "Tauko", "resume": "Jatka", "quit": "Lopeta peli", "win": "Voitto!", "lose": "Tappio", "earned": "Sait {n} voittokolikkoa.", "again": "Uusi peli", "menu": "Valikkoon", "back": "Takaisin", "max": "Täynnä", "level": "taso", "units": {"miner": "Kaivaja", "sword": "Huilisti", "archer": "Harpisti", "spear": "Keihäsmies", "giant": "Jättiläinen"}, "up": {"statue": ["Patsas", "Patsas kestää 25 % enemmän ja kasvaa."], "tower": ["Linnan harpisti", "+1 harpisti paaluaidan luo ampumaan lähelle tulevia vihollisia."], "gold": ["Aloituskulta", "+150 kultaa pelin alkuun."], "carry": ["Kaivajan säkki", "Kaivaja kantaa +15 kultaa kerralla."]}, "statTip": "Vahvista patsasta kullalla (enintään 3 kertaa pelissä)", "cont": "▶ Jatka tallennettua peliä", "saveQuit": "Lopeta peli (tallentuu)", "quitSure": "Lopetetaanko varmasti?", "bFirst": "LÄMPPÄRI KAATUI!", "bMulti": "ÄÄNIVALLI!", "bMultiE": "VIHOLLISEN ÄÄNIVALLI!", "bGiant": "JÄTTILÄINEN LAVALLA!", "bGiantE": "VIHOLLISEN JÄTTILÄINEN LAVALLA!", "bCrackMine": "PATSAASI HALKEILEE!", "bCrackEnemy": "VIHOLLISPATSAS HALKEILEE!", "bFall": "ESIRIPPU LASKEE!", "music": "Musiikki", "sounds": "Äänet", "pauseBtn": "Tauko", "popFull": "Täynnä – enintään 50", "campaign": "🗺 Maailmankiertue", "quick": "⚔ Pikataistelu", "fight": "🎸 Soita keikka", "mapBtn": "🗺 Kartalle", "retry": "↻ Yritä uudelleen", "cgTitle": "Onneksi olkoon!", "cgText": "Soitit kaikki kahdeksan stadionia täyteen. Jokainen kilpaileva patsas on kaatunut, ja sinun patsaasi seisoo yhä pystyssä. Olet kiertueen legenda!", "cgStats": "Keikat: {a}/8 · Voittokolikot: {c}", "again2": "↻ Soita kiertue uudelleen", "unlocked": "Uusi stadion avautui kiertuekartalla!", "introWel": "Tervetuloa peliin", "introLines": ["Kahdeksan stadionia. Kahdeksan kilpailevaa bändiä. Yksi legendaarinen kiertue.", "Jokainen bändi vartioi omaa jättipatsastaan ja soittaa kullasta.", "Nyt on sinun vuorosi: kokoa bändi, suojele patsastasi", "ja kaada kiertueen jokainen kilpaileva patsas.", "Maailmankiertue alkaa tänä iltana!"], "introGo": "▶ Aloita kiertue", "cSaves": "💾 Tallennukset", "csTitle": "Kiertueen tallennukset", "newCamp": "✚ Uusi kiertue tyhjästä", "newCampQ": "Varmasti? Kolikot ja vahvistukset nollautuvat", "camp": "Paikka", "rotateMap": "Käännä puhelin vaakaan isompaa karttaa varten", "rotate": "Käännä puhelin vaakaan, niin ukot näkyvät isompina", "reset": "↺ Aloita alusta", "resetQ": "Kaikki voittokolikot ja patsaan vahvistukset nollataan, ja automaattinen tallennus poistetaan. Aloitat ihan tyhjästä. Omat tallennuspaikkasi säilyvät. Oletko varma?", "yes": "Kyllä, alusta", "cancel": "Peruuta", "autosave": "Peli tallentuu myös itsestään.", "saveBtn": "💾 Tallenna peli", "loadBtn": "📂 Lataa peli", "slotsSave": "Tallenna peli", "slotsLoad": "Lataa peli", "slot": "Paikka", "empty": "tyhjä", "time": "peliaika", "savedOk": "Tallennettu ✓", "sure": "Varmasti?", "saveHere": "Tallenna", "loadHere": "Lataa", "overwrite": "Tallenna päälle?", "cities": ["Kotikaupungin keikka. Ulkona on −15 astetta, mutta yleisö toi oman lämpönsä.", "Punaista pölyä, paahtava aurinko ja yleisö, joka tanssii ensimmäisestä soinnusta asti.", "Neonvaloja, veitsenteräviä lasereita ja faneja, jotka osaavat joka sanan.", "Maapallon toisella puolella, missä aallotkin huutavat lisää.", "Karnevaalirytmi, trooppinen helle ja 80 000 rumpalia katsomossa.", "Sadetta, flanellipaitoja ja kitarat täysillä.", "Kaupunki, joka ei koskaan nuku, eikä tänä yönä kukaan edes räpäytä silmiään.", "Suuri finaali. Yksi jättistadion, ja vain yksi patsas jää pystyyn."]},
-sv:{"sub": "Försvara din staty och fäll det rivaliserande bandets.", "play": "Spela", "shop": "Statyverkstad", "coins": "Segermynt", "easy": "Lätt", "normal": "Normal", "hard": "Svår", "help": "🎸 SÅ HÄR ROCKAR DU\n⛏ Anlita gruvarbetare först. De hackar guld med jätteplektrum och bär det till gitarraffären.\n💰 För guldet bildar du ditt band: flöjtister, harpister, spjutmän med mikrofonstativ och jättegitarrister.\n🛡 Försvara: bandet vaktar din staty.\n🤘 Anfall: bandet stormar rivalens staty.\n🏠 Retirera: alla gömmer sig bakom statyn, som själv skjuter pilar.\n🗿 Fäll rivalens staty innan din faller, så är kvällen din.\n🪙 Segrar ger segermynt. Med dem stärker du statyn i verkstaden.\n✖ Ångrat dig? Det röda ✖ på knappen avbryter köpet och du får tillbaka guldet.\n👆 Dra skärmen eller tryck på minikartan för att röra dig på arenan.", "retreat": "🏠 Retirera", "defend": "🛡 Försvara", "attack": "Anfall", "strengthen": "🗿+", "paused": "Paus", "resume": "Fortsätt", "quit": "Avsluta", "win": "Seger!", "lose": "Förlust", "earned": "Du fick {n} segermynt.", "again": "Nytt spel", "menu": "Till menyn", "back": "Tillbaka", "max": "Fullt", "level": "nivå", "units": {"miner": "Gruvarbetare", "sword": "Flöjtist", "archer": "Harpist", "spear": "Spjutman", "giant": "Jätte"}, "up": {"statue": ["Staty", "Statyn tål 25 % mer och växer."], "tower": ["Borgharpist", "+1 harpist vid pålverket som skjuter på fiender som kommer nära."], "gold": ["Startguld", "+150 guld i början."], "carry": ["Gruvsäck", "Gruvarbetaren bär +15 guld per tur."]}, "statTip": "Stärk statyn med guld (högst 3 gånger per spel)", "cont": "▶ Fortsätt sparat spel", "saveQuit": "Avsluta spelet (sparas)", "quitSure": "Avsluta på riktigt?", "bFirst": "FÖRBANDET FÖLL!", "bMulti": "LJUDVÄGG!", "bMultiE": "FIENDENS LJUDVÄGG!", "bGiant": "JÄTTEN PÅ SCENEN!", "bGiantE": "FIENDENS JÄTTE PÅ SCENEN!", "bCrackMine": "DIN STATY SPRICKER!", "bCrackEnemy": "FIENDENS STATY SPRICKER!", "bFall": "RIDÅN GÅR NER!", "music": "Musik", "sounds": "Ljud", "pauseBtn": "Paus", "popFull": "Fullt – högst 50", "campaign": "🗺 Världsturné", "quick": "⚔ Snabbstrid", "fight": "🎸 Spela konserten", "mapBtn": "🗺 Till kartan", "retry": "↻ Försök igen", "cgTitle": "Grattis!", "cgText": "Du har fyllt alla åtta arenor. Varje rivaliserande staty har fallit och din står fortfarande kvar. Du är turnéns legend!", "cgStats": "Spelningar: {a}/8 · Segermynt: {c}", "again2": "↻ Spela turnén igen", "unlocked": "En ny arena öppnades på turnékartan!", "introWel": "Välkommen till", "introLines": ["Åtta arenor. Åtta rivaliserande band. En legendarisk turné.", "Varje band vaktar sin egen jättestaty och spelar för guld.", "Nu är det din tur: bilda ett band, skydda din staty", "och fäll varje rivaliserande staty på turnén.", "Världsturnén börjar i kväll!"], "introGo": "▶ Starta turnén", "cSaves": "💾 Sparade", "csTitle": "Sparade turnéer", "newCamp": "✚ Ny turné från noll", "newCampQ": "Säker? Mynt och förstärkningar nollställs", "camp": "Plats", "rotateMap": "Vrid telefonen för en större karta", "rotate": "Vrid telefonen, så blir gubbarna större", "reset": "↺ Börja om", "resetQ": "Alla segermynt och statyförstärkningar nollställs och den automatiska sparningen raderas. Du börjar från noll. Dina egna sparplatser finns kvar. Är du säker?", "yes": "Ja, börja om", "cancel": "Avbryt", "autosave": "Spelet sparas också automatiskt.", "saveBtn": "💾 Spara spelet", "loadBtn": "📂 Ladda spel", "slotsSave": "Spara spelet", "slotsLoad": "Ladda spel", "slot": "Plats", "empty": "tom", "time": "speltid", "savedOk": "Sparat ✓", "sure": "Säker?", "saveHere": "Spara", "loadHere": "Ladda", "overwrite": "Skriv över?", "cities": ["Hemmaspelning. Det är −15 grader ute, men publiken har med sig egen värme.", "Rött damm, stekande sol och en publik som dansar från första ackordet.", "Neonljus, knivskarpa lasrar och fans som kan varenda ord.", "På andra sidan jordklotet, där till och med vågorna ropar på extranummer.", "Karnevalsrytm, tropisk hetta och 80 000 trummisar på läktarna.", "Regn, flanellskjortor och gitarrerna på högsta volym.", "Staden som aldrig sover, och i kväll blinkar ingen ens.", "Den stora finalen. En jättearena, och bara en staty blir stående."]},
-en:{"sub": "Defend your statue and topple the rival band's.", "play": "Play", "shop": "Statue forge", "coins": "Victory coins", "easy": "Easy", "normal": "Normal", "hard": "Hard", "help": "🎸 HOW TO ROCK\n⛏ Hire miners first. They dig gold with giant picks and haul it to the guitar shop.\n💰 Gold hires your band: flutists, harpists, spearmen with mic stands and giant guitarists.\n🛡 Defend: the band guards your statue.\n🤘 Attack: the band storms the rival statue.\n🏠 Retreat: everyone hides behind the statue, and it fires arrows itself.\n🗿 Topple the rival statue before yours falls, and the night is yours.\n🪙 Wins earn victory coins. Spend them in the forge to make your statue stronger.\n✖ Changed your mind? The red ✖ on a button cancels the purchase and returns the gold.\n👆 Drag the screen or tap the mini map to move around the stadium.", "retreat": "🏠 Retreat", "defend": "🛡 Defend", "attack": "Attack", "strengthen": "🗿+", "paused": "Paused", "resume": "Resume", "quit": "Quit game", "win": "Victory!", "lose": "Defeat", "earned": "You earned {n} victory coins.", "again": "Play again", "menu": "Menu", "back": "Back", "max": "Max", "level": "level", "units": {"miner": "Miner", "sword": "Flutist", "archer": "Harpist", "spear": "Spearman", "giant": "Giant"}, "up": {"statue": ["Statue", "Statue has 25% more health and grows."], "tower": ["Castle harpist", "+1 harpist at the palisade, shooting enemies that come close."], "gold": ["Starting gold", "+150 gold at the start."], "carry": ["Miner's sack", "Miners carry +15 gold per trip."]}, "statTip": "Strengthen the statue with gold (up to 3 times per game)", "cont": "▶ Continue saved game", "saveQuit": "Quit game (saved)", "quitSure": "Really quit?", "bFirst": "OPENING ACT DOWN!", "bMulti": "WALL OF SOUND!", "bMultiE": "RIVAL WALL OF SOUND!", "bGiant": "GIANT ON STAGE!", "bGiantE": "RIVAL GIANT ON STAGE!", "bCrackMine": "YOUR STATUE IS CRACKING!", "bCrackEnemy": "ENEMY STATUE CRACKING!", "bFall": "CURTAIN CALL!", "music": "Music", "sounds": "Sounds", "pauseBtn": "Pause", "popFull": "Full – max 50", "campaign": "🗺 World tour", "quick": "⚔ Quick battle", "fight": "🎸 Play the show", "mapBtn": "🗺 To the map", "retry": "↻ Try again", "cgTitle": "Congratulations!", "cgText": "You packed all eight stadiums. Every rival statue has fallen and yours still stands tall. You are the Legend of the World Tour!", "cgStats": "Shows: {a}/8 · Victory coins: {c}", "again2": "↻ Play the tour again", "unlocked": "A new stadium opened on the tour map!", "introWel": "Welcome to", "introLines": ["Eight stadiums. Eight rival bands. One legendary tour.", "Every band guards its own giant statue and plays for gold.", "Now it's your turn: form a band, protect your statue", "and topple every rival statue on the tour.", "The world tour starts tonight!"], "introGo": "▶ Start the tour", "cSaves": "💾 Saves", "csTitle": "Tour saves", "newCamp": "✚ New tour from scratch", "newCampQ": "Sure? Coins and upgrades reset to zero", "camp": "Place", "rotateMap": "Turn your phone sideways for a bigger map", "rotate": "Turn your phone sideways for bigger fighters", "reset": "↺ Start over", "resetQ": "All victory coins and statue upgrades are reset and the autosave is deleted. You start from scratch. Your own save slots are kept. Are you sure?", "yes": "Yes, start over", "cancel": "Cancel", "autosave": "The game also saves automatically.", "saveBtn": "💾 Save game", "loadBtn": "📂 Load game", "slotsSave": "Save game", "slotsLoad": "Load game", "slot": "Slot", "empty": "empty", "time": "game time", "savedOk": "Saved ✓", "sure": "Sure?", "saveHere": "Save", "loadHere": "Load", "overwrite": "Overwrite?", "cities": ["Hometown show. It's −15 °C outside, but the crowd brought its own heat.", "Red dust, blazing sun and a crowd that dances from the first chord.", "Neon lights, razor-sharp lasers and fans who know every word.", "The other side of the world, where even the waves shout for an encore.", "Carnival rhythm, tropical heat and 80,000 drummers in the stands.", "Rain, flannel shirts and guitars turned all the way up.", "The city that never sleeps, and tonight nobody even blinks.", "The grand finale. One giant stadium, and only one statue left standing."]},
-de:{"sub": "Verteidige deine Statue und stürze die der Rivalenband.", "play": "Spielen", "shop": "Statuenschmiede", "coins": "Siegesmünzen", "easy": "Leicht", "normal": "Normal", "hard": "Schwer", "help": "🎸 SO WIRD GEROCKT\n⛏ Heuere zuerst Bergleute an. Sie schürfen Gold mit Riesenplektren und bringen es in den Gitarrenladen.\n💰 Mit Gold stellst du deine Band zusammen: Flötisten, Harfenisten, Speerträger mit Mikrofonständer und Riesengitarristen.\n🛡 Verteidigen: Die Band bewacht deine Statue.\n🤘 Angriff: Die Band stürmt die Rivalenstatue.\n🏠 Rückzug: Alle verstecken sich hinter der Statue, und sie schießt selbst Pfeile.\n🗿 Stürze die Rivalenstatue, bevor deine fällt, und der Abend gehört dir.\n🪙 Siege bringen Siegesmünzen. Damit verstärkst du deine Statue in der Schmiede.\n✖ Umentschieden? Das rote ✖ am Knopf bricht den Kauf ab, und du bekommst das Gold zurück.\n👆 Wische über den Bildschirm oder tippe auf die Minikarte, um dich im Stadion zu bewegen.", "retreat": "🏠 Rückzug", "defend": "🛡 Verteidigen", "attack": "Angriff", "strengthen": "🗿+", "paused": "Pause", "resume": "Weiter", "quit": "Spiel beenden", "win": "Sieg!", "lose": "Niederlage", "earned": "Du hast {n} Siegesmünzen verdient.", "again": "Nochmal spielen", "menu": "Menü", "back": "Zurück", "max": "Max", "level": "Stufe", "units": {"miner": "Bergmann", "sword": "Flötist", "archer": "Harfenist", "spear": "Speerträger", "giant": "Riese"}, "up": {"statue": ["Statue", "Die Statue hält 25 % mehr aus und wächst."], "tower": ["Burgharfenist", "+1 Harfenist am Palisadenzaun, der nahe Feinde beschießt."], "gold": ["Startgold", "+150 Gold zu Spielbeginn."], "carry": ["Bergmannssack", "Bergleute tragen +15 Gold pro Gang."]}, "statTip": "Verstärke die Statue mit Gold (höchstens 3-mal pro Spiel)", "cont": "▶ Gespeichertes Spiel fortsetzen", "saveQuit": "Spiel beenden (gespeichert)", "quitSure": "Wirklich beenden?", "bFirst": "VORBAND GEFALLEN!", "bMulti": "KLANGWAND!", "bMultiE": "KLANGWAND DER RIVALEN!", "bGiant": "RIESE AUF DER BÜHNE!", "bGiantE": "RIVALENRIESE AUF DER BÜHNE!", "bCrackMine": "DEINE STATUE BEKOMMT RISSE!", "bCrackEnemy": "FEINDLICHE STATUE BEKOMMT RISSE!", "bFall": "DER VORHANG FÄLLT!", "music": "Musik", "sounds": "Geräusche", "pauseBtn": "Pause", "popFull": "Voll – höchstens 50", "campaign": "🗺 Welttournee", "quick": "⚔ Schnelles Spiel", "fight": "🎸 Konzert spielen", "mapBtn": "🗺 Zur Karte", "retry": "↻ Nochmal versuchen", "cgTitle": "Glückwunsch!", "cgText": "Du hast alle acht Stadien gefüllt. Jede Rivalenstatue ist gefallen, und deine steht noch immer. Du bist die Legende der Welttournee!", "cgStats": "Konzerte: {a}/8 · Siegesmünzen: {c}", "again2": "↻ Tournee nochmal spielen", "unlocked": "Ein neues Stadion ist auf der Tourneekarte frei!", "introWel": "Willkommen bei", "introLines": ["Acht Stadien. Acht rivalisierende Bands. Eine legendäre Tournee.", "Jede Band bewacht ihre eigene Riesenstatue und spielt um Gold.", "Jetzt bist du dran: Gründe eine Band, schütze deine Statue", "und stürze jede Rivalenstatue auf der Tournee.", "Heute Abend beginnt die Welttournee!"], "introGo": "▶ Tournee starten", "cSaves": "💾 Spielstände", "csTitle": "Tournee-Spielstände", "newCamp": "✚ Neue Tournee von vorn", "newCampQ": "Sicher? Münzen und Verbesserungen werden auf null gesetzt", "camp": "Ort", "rotateMap": "Dreh das Handy quer für eine größere Karte", "rotate": "Dreh das Handy quer für größere Kämpfer", "reset": "↺ Neu anfangen", "resetQ": "Alle Siegesmünzen und Statuenverbesserungen werden zurückgesetzt und der automatische Spielstand gelöscht. Du fängst von vorn an. Deine eigenen Speicherplätze bleiben erhalten. Bist du sicher?", "yes": "Ja, neu anfangen", "cancel": "Abbrechen", "autosave": "Das Spiel speichert auch automatisch.", "saveBtn": "💾 Spiel speichern", "loadBtn": "📂 Spiel laden", "slotsSave": "Spiel speichern", "slotsLoad": "Spiel laden", "slot": "Platz", "empty": "leer", "time": "Spielzeit", "savedOk": "Gespeichert ✓", "sure": "Sicher?", "saveHere": "Speichern", "loadHere": "Laden", "overwrite": "Überschreiben?", "cities": ["Heimspiel. Draußen sind es −15 °C, aber das Publikum bringt seine eigene Hitze mit.", "Roter Staub, brennende Sonne und ein Publikum, das ab dem ersten Akkord tanzt.", "Neonlichter, messerscharfe Laser und Fans, die jedes Wort kennen.", "Am anderen Ende der Welt, wo sogar die Wellen nach einer Zugabe rufen.", "Karnevalsrhythmus, tropische Hitze und 80.000 Trommler auf den Rängen.", "Regen, Flanellhemden und Gitarren auf voller Lautstärke.", "Die Stadt, die niemals schläft, und heute Nacht blinzelt nicht einmal jemand.", "Das große Finale. Ein Riesenstadion, und nur eine Statue bleibt stehen."]},
-es:{"sub": "Defiende tu estatua y derriba la de la banda rival.", "play": "Jugar", "shop": "Taller de estatuas", "coins": "Monedas de victoria", "easy": "Fácil", "normal": "Normal", "hard": "Difícil", "help": "🎸 ASÍ SE ROCKEA\n⛏ Contrata primero mineros. Extraen oro con púas gigantes y lo llevan a la tienda de guitarras.\n💰 Con el oro formas tu banda: flautistas, arpistas, lanceros con pie de micro y guitarristas gigantes.\n🛡 Defender: la banda protege tu estatua.\n🤘 Atacar: la banda asalta la estatua rival.\n🏠 Retirada: todos se esconden detrás de la estatua, que dispara flechas por sí misma.\n🗿 Derriba la estatua rival antes de que caiga la tuya y la noche será tuya.\n🪙 Las victorias dan monedas. Con ellas refuerzas tu estatua en el taller.\n✖ ¿Cambiaste de idea? La ✖ roja del botón cancela la compra y recuperas el oro.\n👆 Desliza la pantalla o toca el minimapa para moverte por el estadio.", "retreat": "🏠 Retirada", "defend": "🛡 Defender", "attack": "Atacar", "strengthen": "🗿+", "paused": "Pausa", "resume": "Continuar", "quit": "Salir del juego", "win": "¡Victoria!", "lose": "Derrota", "earned": "Has ganado {n} monedas de victoria.", "again": "Jugar otra vez", "menu": "Menú", "back": "Atrás", "max": "Máx.", "level": "nivel", "units": {"miner": "Minero", "sword": "Flautista", "archer": "Arpista", "spear": "Lancero", "giant": "Gigante"}, "up": {"statue": ["Estatua", "La estatua resiste un 25 % más y crece."], "tower": ["Arpista del castillo", "+1 arpista en la empalizada que dispara a los enemigos cercanos."], "gold": ["Oro inicial", "+150 de oro al empezar."], "carry": ["Saco de minero", "Los mineros llevan +15 de oro por viaje."]}, "statTip": "Refuerza la estatua con oro (hasta 3 veces por partida)", "cont": "▶ Continuar partida guardada", "saveQuit": "Salir del juego (guardado)", "quitSure": "¿Seguro que quieres salir?", "bFirst": "¡CAYÓ EL TELONERO!", "bMulti": "¡MURO DE SONIDO!", "bMultiE": "¡MURO DE SONIDO RIVAL!", "bGiant": "¡GIGANTE EN EL ESCENARIO!", "bGiantE": "¡GIGANTE RIVAL EN EL ESCENARIO!", "bCrackMine": "¡TU ESTATUA SE AGRIETA!", "bCrackEnemy": "¡LA ESTATUA ENEMIGA SE AGRIETA!", "bFall": "¡CAE EL TELÓN!", "music": "Música", "sounds": "Sonidos", "pauseBtn": "Pausa", "popFull": "Lleno – máximo 50", "campaign": "🗺 Gira mundial", "quick": "⚔ Partida rápida", "fight": "🎸 Dar el concierto", "mapBtn": "🗺 Al mapa", "retry": "↻ Intentar de nuevo", "cgTitle": "¡Enhorabuena!", "cgText": "Llenaste los ocho estadios. Todas las estatuas rivales han caído y la tuya sigue en pie. ¡Eres la leyenda de la gira mundial!", "cgStats": "Conciertos: {a}/8 · Monedas de victoria: {c}", "again2": "↻ Jugar la gira otra vez", "unlocked": "¡Se abrió un nuevo estadio en el mapa de la gira!", "introWel": "Bienvenido a", "introLines": ["Ocho estadios. Ocho bandas rivales. Una gira legendaria.", "Cada banda protege su propia estatua gigante y toca por oro.", "Ahora te toca a ti: forma una banda, protege tu estatua", "y derriba todas las estatuas rivales de la gira.", "¡La gira mundial empieza esta noche!"], "introGo": "▶ Empezar la gira", "cSaves": "💾 Partidas", "csTitle": "Partidas de la gira", "newCamp": "✚ Nueva gira desde cero", "newCampQ": "¿Seguro? Las monedas y mejoras vuelven a cero", "camp": "Lugar", "rotateMap": "Gira el móvil para ver un mapa más grande", "rotate": "Gira el móvil para ver a los luchadores más grandes", "reset": "↺ Empezar de nuevo", "resetQ": "Se borrarán todas las monedas de victoria y mejoras de la estatua, y también la partida automática. Empiezas desde cero. Tus propias ranuras de guardado se conservan. ¿Estás seguro?", "yes": "Sí, empezar de nuevo", "cancel": "Cancelar", "autosave": "El juego también guarda automáticamente.", "saveBtn": "💾 Guardar partida", "loadBtn": "📂 Cargar partida", "slotsSave": "Guardar partida", "slotsLoad": "Cargar partida", "slot": "Ranura", "empty": "vacía", "time": "tiempo de juego", "savedOk": "Guardado ✓", "sure": "¿Seguro?", "saveHere": "Guardar", "loadHere": "Cargar", "overwrite": "¿Sobrescribir?", "cities": ["Concierto en casa. Fuera hace −15 °C, pero el público trae su propio calor.", "Polvo rojo, sol abrasador y un público que baila desde el primer acorde.", "Luces de neón, láseres afilados y fans que se saben cada palabra.", "En la otra punta del mundo, donde hasta las olas piden otra.", "Ritmo de carnaval, calor tropical y 80.000 tamborileros en las gradas.", "Lluvia, camisas de franela y guitarras a todo volumen.", "La ciudad que nunca duerme, y esta noche nadie ni parpadea.", "La gran final. Un estadio gigante y solo una estatua en pie."]},
-fr:{"sub": "Défends ta statue et renverse celle du groupe rival.", "play": "Jouer", "shop": "Forge des statues", "coins": "Pièces de victoire", "easy": "Facile", "normal": "Normal", "hard": "Difficile", "help": "🎸 COMMENT ON ROCKE\n⛏ Engage d'abord des mineurs. Ils extraient l'or avec des médiators géants et le portent au magasin de guitares.\n💰 Avec l'or, tu formes ton groupe : flûtistes, harpistes, lanciers à pied de micro et guitaristes géants.\n🛡 Défendre : le groupe garde ta statue.\n🤘 Attaquer : le groupe charge la statue rivale.\n🏠 Repli : tout le monde se cache derrière la statue, qui tire elle-même des flèches.\n🗿 Renverse la statue rivale avant que la tienne tombe, et la soirée est à toi.\n🪙 Les victoires rapportent des pièces. Elles renforcent ta statue à la forge.\n✖ Changé d'avis ? Le ✖ rouge du bouton annule l'achat et l'or est rendu.\n👆 Fais glisser l'écran ou touche la mini-carte pour te déplacer dans le stade.", "retreat": "🏠 Repli", "defend": "🛡 Défendre", "attack": "Attaquer", "strengthen": "🗿+", "paused": "Pause", "resume": "Reprendre", "quit": "Quitter la partie", "win": "Victoire !", "lose": "Défaite", "earned": "Tu as gagné {n} pièces de victoire.", "again": "Rejouer", "menu": "Menu", "back": "Retour", "max": "Max", "level": "niveau", "units": {"miner": "Mineur", "sword": "Flûtiste", "archer": "Harpiste", "spear": "Lancier", "giant": "Géant"}, "up": {"statue": ["Statue", "La statue résiste 25 % de plus et grandit."], "tower": ["Harpiste du château", "+1 harpiste à la palissade, qui tire sur les ennemis proches."], "gold": ["Or de départ", "+150 d'or au début."], "carry": ["Sac du mineur", "Les mineurs portent +15 d'or par trajet."]}, "statTip": "Renforce la statue avec de l'or (3 fois maximum par partie)", "cont": "▶ Continuer la partie sauvegardée", "saveQuit": "Quitter la partie (sauvegardée)", "quitSure": "Vraiment quitter ?", "bFirst": "LA PREMIÈRE PARTIE EST TOMBÉE !", "bMulti": "MUR DU SON !", "bMultiE": "MUR DU SON RIVAL !", "bGiant": "GÉANT SUR SCÈNE !", "bGiantE": "GÉANT RIVAL SUR SCÈNE !", "bCrackMine": "TA STATUE SE FISSURE !", "bCrackEnemy": "LA STATUE ENNEMIE SE FISSURE !", "bFall": "LE RIDEAU TOMBE !", "music": "Musique", "sounds": "Sons", "pauseBtn": "Pause", "popFull": "Complet – 50 maximum", "campaign": "🗺 Tournée mondiale", "quick": "⚔ Partie rapide", "fight": "🎸 Jouer le concert", "mapBtn": "🗺 Vers la carte", "retry": "↻ Réessayer", "cgTitle": "Félicitations !", "cgText": "Tu as rempli les huit stades. Toutes les statues rivales sont tombées et la tienne tient toujours debout. Tu es la légende de la tournée mondiale !", "cgStats": "Concerts : {a}/8 · Pièces de victoire : {c}", "again2": "↻ Rejouer la tournée", "unlocked": "Un nouveau stade s'est ouvert sur la carte de la tournée !", "introWel": "Bienvenue dans", "introLines": ["Huit stades. Huit groupes rivaux. Une tournée légendaire.", "Chaque groupe garde sa propre statue géante et joue pour de l'or.", "À toi maintenant : forme un groupe, protège ta statue", "et renverse chaque statue rivale de la tournée.", "La tournée mondiale commence ce soir !"], "introGo": "▶ Lancer la tournée", "cSaves": "💾 Sauvegardes", "csTitle": "Sauvegardes de la tournée", "newCamp": "✚ Nouvelle tournée à zéro", "newCampQ": "Sûr ? Les pièces et améliorations repartent à zéro", "camp": "Lieu", "rotateMap": "Tourne ton téléphone pour une carte plus grande", "rotate": "Tourne ton téléphone pour des combattants plus grands", "reset": "↺ Recommencer", "resetQ": "Toutes les pièces de victoire et améliorations de la statue sont remises à zéro et la sauvegarde automatique est effacée. Tu repars de zéro. Tes propres emplacements de sauvegarde sont conservés. Es-tu sûr ?", "yes": "Oui, recommencer", "cancel": "Annuler", "autosave": "Le jeu sauvegarde aussi automatiquement.", "saveBtn": "💾 Sauvegarder", "loadBtn": "📂 Charger", "slotsSave": "Sauvegarder la partie", "slotsLoad": "Charger une partie", "slot": "Emplacement", "empty": "vide", "time": "temps de jeu", "savedOk": "Sauvegardé ✓", "sure": "Sûr ?", "saveHere": "Sauvegarder", "loadHere": "Charger", "overwrite": "Écraser ?", "cities": ["Concert à domicile. Il fait −15 °C dehors, mais le public apporte sa propre chaleur.", "Poussière rouge, soleil brûlant et un public qui danse dès le premier accord.", "Néons, lasers tranchants et fans qui connaissent chaque parole.", "À l'autre bout du monde, où même les vagues réclament un rappel.", "Rythme de carnaval, chaleur tropicale et 80 000 percussionnistes dans les tribunes.", "Pluie, chemises en flanelle et guitares à fond.", "La ville qui ne dort jamais, et ce soir personne ne cligne même des yeux.", "La grande finale. Un stade géant, et une seule statue restera debout."]}
+fi:{"sub": "Puolusta patsastasi ja kaada kilpailevan bändin patsas.", "play": "Pelaa", "shop": "Patsaspaja", "coins": "Voittokolikot", "easy": "Helppo", "normal": "Normaali", "hard": "Vaikea", "help": "🎸 NÄIN ROKATAAN\n💰 Kultaa tulee itsestään. Sillä kokoat bändin: rumpaleita, kitaristeja, laulajia mikkitelineineen ja jättiläisbasisteja.\n🛡 Puolusta: bändi vartioi patsastasi.\n🤘 Hyökkää: bändi rynnii kilpailijan patsaalle.\n🏠 Vetäydy: kaikki piiloutuvat patsaan taakse, ja patsas ampuu itse nuolia.\n🗿 Kaada diskobändin patsas ennen kuin omasi kaatuu, niin ilta on sinun.\n🪙 Voitoista saat voittokolikoita. Niillä vahvistat patsastasi pajassa.\n✖ Mieli muuttui? Napin punainen ✖ peruu oston, ja kulta palaa.\n👆 Vedä ruutua tai napauta pienoiskarttaa liikkuaksesi stadionilla.", "retreat": "🏠 Vetäydy", "defend": "🛡 Puolusta", "attack": "Hyökkää", "strengthen": "🗿+", "paused": "Tauko", "resume": "Jatka", "quit": "Lopeta peli", "win": "Voitto!", "lose": "Tappio", "earned": "Sait {n} voittokolikkoa.", "again": "Uusi peli", "menu": "Valikkoon", "back": "Takaisin", "max": "Täynnä", "level": "taso", "units": {"miner": "Kaivaja", "sword": "Rumpali", "archer": "Kitaristi", "spear": "Laulaja", "giant": "Jättiläisbasisti"}, "up": {"statue": ["Patsas", "Patsas kestää 25 % enemmän ja kasvaa."], "tower": ["Linnan kitaristi", "+1 kitaristi paaluaidan luo ampumaan lähelle tulevia vihollisia."], "gold": ["Aloituskulta", "+150 kultaa pelin alkuun."], "carry": ["Kaivajan säkki", "Kaivaja kantaa +15 kultaa kerralla."]}, "statTip": "Vahvista patsasta kullalla (enintään 3 kertaa pelissä)", "cont": "▶ Jatka tallennettua peliä", "saveQuit": "Lopeta peli (tallentuu)", "quitSure": "Lopetetaanko varmasti?", "bFirst": "LÄMPPÄRI KAATUI!", "bMulti": "ÄÄNIVALLI!", "bMultiE": "VIHOLLISEN ÄÄNIVALLI!", "bGiant": "JÄTTILÄINEN LAVALLA!", "bGiantE": "VIHOLLISEN JÄTTILÄINEN LAVALLA!", "bCrackMine": "PATSAASI HALKEILEE!", "bCrackEnemy": "VIHOLLISPATSAS HALKEILEE!", "bFall": "ESIRIPPU LASKEE!", "music": "Musiikki", "sounds": "Äänet", "pauseBtn": "Tauko", "popFull": "Täynnä – enintään 50", "campaign": "🗺 Maailmankiertue", "quick": "⚔ Pikataistelu", "fight": "🎸 Soita keikka", "mapBtn": "🗺 Kartalle", "retry": "↻ Yritä uudelleen", "cgTitle": "Onneksi olkoon!", "cgText": "Soitit kaikki kahdeksan stadionia täyteen. Jokainen kilpaileva patsas on kaatunut, ja sinun patsaasi seisoo yhä pystyssä. Olet kiertueen legenda!", "cgStats": "Keikat: {a}/8 · Voittokolikot: {c}", "again2": "↻ Soita kiertue uudelleen", "unlocked": "Uusi stadion avautui kiertuekartalla!", "introWel": "Tervetuloa peliin", "introLines": ["Kahdeksan stadionia. Kahdeksan kilpailevaa bändiä. Yksi legendaarinen kiertue.", "Jokainen bändi vartioi omaa jättipatsastaan ja soittaa kullasta.", "Nyt on sinun vuorosi: kokoa bändi, suojele patsastasi", "ja kaada kiertueen jokainen kilpaileva patsas.", "Maailmankiertue alkaa tänä iltana!"], "introGo": "▶ Aloita kiertue", "cSaves": "💾 Tallennukset", "csTitle": "Kiertueen tallennukset", "newCamp": "✚ Uusi kiertue tyhjästä", "newCampQ": "Varmasti? Kolikot ja vahvistukset nollautuvat", "camp": "Paikka", "rotateMap": "Käännä puhelin vaakaan isompaa karttaa varten", "rotate": "Käännä puhelin vaakaan, niin ukot näkyvät isompina", "reset": "↺ Aloita alusta", "resetQ": "Kaikki voittokolikot ja patsaan vahvistukset nollataan, ja automaattinen tallennus poistetaan. Aloitat ihan tyhjästä. Omat tallennuspaikkasi säilyvät. Oletko varma?", "yes": "Kyllä, alusta", "cancel": "Peruuta", "autosave": "Peli tallentuu myös itsestään.", "saveBtn": "💾 Tallenna peli", "loadBtn": "📂 Lataa peli", "slotsSave": "Tallenna peli", "slotsLoad": "Lataa peli", "slot": "Paikka", "empty": "tyhjä", "time": "peliaika", "savedOk": "Tallennettu ✓", "sure": "Varmasti?", "saveHere": "Tallenna", "loadHere": "Lataa", "overwrite": "Tallenna päälle?", "cities": ["Kotikaupungin keikka. Ulkona on −15 astetta, mutta yleisö toi oman lämpönsä.", "Punaista pölyä, paahtava aurinko ja yleisö, joka tanssii ensimmäisestä soinnusta asti.", "Neonvaloja, veitsenteräviä lasereita ja faneja, jotka osaavat joka sanan.", "Maapallon toisella puolella, missä aallotkin huutavat lisää.", "Karnevaalirytmi, trooppinen helle ja 80 000 rumpalia katsomossa.", "Sadetta, flanellipaitoja ja kitarat täysillä.", "Kaupunki, joka ei koskaan nuku, eikä tänä yönä kukaan edes räpäytä silmiään.", "Suuri finaali. Yksi jättistadion, ja vain yksi patsas jää pystyyn."]},
+sv:{"sub": "Försvara din staty och fäll det rivaliserande bandets.", "play": "Spela", "shop": "Statyverkstad", "coins": "Segermynt", "easy": "Lätt", "normal": "Normal", "hard": "Svår", "help": "🎸 SÅ HÄR ROCKAR DU\n💰 Guldet kommer av sig självt. Med det bildar du ditt band: trummisar, gitarrister, sångare med mikrofonstativ och jättebasister.\n🛡 Försvara: bandet vaktar din staty.\n🤘 Anfall: bandet stormar rivalens staty.\n🏠 Retirera: alla gömmer sig bakom statyn, som själv skjuter pilar.\n🗿 Fäll discobandets staty innan din faller, så är kvällen din.\n🪙 Segrar ger segermynt. Med dem stärker du statyn i verkstaden.\n✖ Ångrat dig? Det röda ✖ på knappen avbryter köpet och du får tillbaka guldet.\n👆 Dra skärmen eller tryck på minikartan för att röra dig på arenan.", "retreat": "🏠 Retirera", "defend": "🛡 Försvara", "attack": "Anfall", "strengthen": "🗿+", "paused": "Paus", "resume": "Fortsätt", "quit": "Avsluta", "win": "Seger!", "lose": "Förlust", "earned": "Du fick {n} segermynt.", "again": "Nytt spel", "menu": "Till menyn", "back": "Tillbaka", "max": "Fullt", "level": "nivå", "units": {"miner": "Gruvarbetare", "sword": "Trummis", "archer": "Gitarrist", "spear": "Sångare", "giant": "Jättebasist"}, "up": {"statue": ["Staty", "Statyn tål 25 % mer och växer."], "tower": ["Borggitarrist", "+1 gitarrist vid pålverket som skjuter på fiender som kommer nära."], "gold": ["Startguld", "+150 guld i början."], "carry": ["Gruvsäck", "Gruvarbetaren bär +15 guld per tur."]}, "statTip": "Stärk statyn med guld (högst 3 gånger per spel)", "cont": "▶ Fortsätt sparat spel", "saveQuit": "Avsluta spelet (sparas)", "quitSure": "Avsluta på riktigt?", "bFirst": "FÖRBANDET FÖLL!", "bMulti": "LJUDVÄGG!", "bMultiE": "FIENDENS LJUDVÄGG!", "bGiant": "JÄTTEN PÅ SCENEN!", "bGiantE": "FIENDENS JÄTTE PÅ SCENEN!", "bCrackMine": "DIN STATY SPRICKER!", "bCrackEnemy": "FIENDENS STATY SPRICKER!", "bFall": "RIDÅN GÅR NER!", "music": "Musik", "sounds": "Ljud", "pauseBtn": "Paus", "popFull": "Fullt – högst 50", "campaign": "🗺 Världsturné", "quick": "⚔ Snabbstrid", "fight": "🎸 Spela konserten", "mapBtn": "🗺 Till kartan", "retry": "↻ Försök igen", "cgTitle": "Grattis!", "cgText": "Du har fyllt alla åtta arenor. Varje rivaliserande staty har fallit och din står fortfarande kvar. Du är turnéns legend!", "cgStats": "Spelningar: {a}/8 · Segermynt: {c}", "again2": "↻ Spela turnén igen", "unlocked": "En ny arena öppnades på turnékartan!", "introWel": "Välkommen till", "introLines": ["Åtta arenor. Åtta rivaliserande band. En legendarisk turné.", "Varje band vaktar sin egen jättestaty och spelar för guld.", "Nu är det din tur: bilda ett band, skydda din staty", "och fäll varje rivaliserande staty på turnén.", "Världsturnén börjar i kväll!"], "introGo": "▶ Starta turnén", "cSaves": "💾 Sparade", "csTitle": "Sparade turnéer", "newCamp": "✚ Ny turné från noll", "newCampQ": "Säker? Mynt och förstärkningar nollställs", "camp": "Plats", "rotateMap": "Vrid telefonen för en större karta", "rotate": "Vrid telefonen, så blir gubbarna större", "reset": "↺ Börja om", "resetQ": "Alla segermynt och statyförstärkningar nollställs och den automatiska sparningen raderas. Du börjar från noll. Dina egna sparplatser finns kvar. Är du säker?", "yes": "Ja, börja om", "cancel": "Avbryt", "autosave": "Spelet sparas också automatiskt.", "saveBtn": "💾 Spara spelet", "loadBtn": "📂 Ladda spel", "slotsSave": "Spara spelet", "slotsLoad": "Ladda spel", "slot": "Plats", "empty": "tom", "time": "speltid", "savedOk": "Sparat ✓", "sure": "Säker?", "saveHere": "Spara", "loadHere": "Ladda", "overwrite": "Skriv över?", "cities": ["Hemmaspelning. Det är −15 grader ute, men publiken har med sig egen värme.", "Rött damm, stekande sol och en publik som dansar från första ackordet.", "Neonljus, knivskarpa lasrar och fans som kan varenda ord.", "På andra sidan jordklotet, där till och med vågorna ropar på extranummer.", "Karnevalsrytm, tropisk hetta och 80 000 trummisar på läktarna.", "Regn, flanellskjortor och gitarrerna på högsta volym.", "Staden som aldrig sover, och i kväll blinkar ingen ens.", "Den stora finalen. En jättearena, och bara en staty blir stående."]},
+en:{"sub": "Defend your statue and topple the rival band's.", "play": "Play", "shop": "Statue forge", "coins": "Victory coins", "easy": "Easy", "normal": "Normal", "hard": "Hard", "help": "🎸 HOW TO ROCK\n💰 Gold comes in by itself. It hires your band: drummers, guitarists, singers with mic stands and giant bassists.\n🛡 Defend: the band guards your statue.\n🤘 Attack: the band storms the rival statue.\n🏠 Retreat: everyone hides behind the statue, and it fires arrows itself.\n🗿 Topple the disco band's statue before yours falls, and the night is yours.\n🪙 Wins earn victory coins. Spend them in the forge to make your statue stronger.\n✖ Changed your mind? The red ✖ on a button cancels the purchase and returns the gold.\n👆 Drag the screen or tap the mini map to move around the stadium.", "retreat": "🏠 Retreat", "defend": "🛡 Defend", "attack": "Attack", "strengthen": "🗿+", "paused": "Paused", "resume": "Resume", "quit": "Quit game", "win": "Victory!", "lose": "Defeat", "earned": "You earned {n} victory coins.", "again": "Play again", "menu": "Menu", "back": "Back", "max": "Max", "level": "level", "units": {"miner": "Miner", "sword": "Drummer", "archer": "Guitarist", "spear": "Singer", "giant": "Giant bassist"}, "up": {"statue": ["Statue", "Statue has 25% more health and grows."], "tower": ["Castle guitarist", "+1 guitarist at the palisade, shooting enemies that come close."], "gold": ["Starting gold", "+150 gold at the start."], "carry": ["Miner's sack", "Miners carry +15 gold per trip."]}, "statTip": "Strengthen the statue with gold (up to 3 times per game)", "cont": "▶ Continue saved game", "saveQuit": "Quit game (saved)", "quitSure": "Really quit?", "bFirst": "OPENING ACT DOWN!", "bMulti": "WALL OF SOUND!", "bMultiE": "RIVAL WALL OF SOUND!", "bGiant": "GIANT ON STAGE!", "bGiantE": "RIVAL GIANT ON STAGE!", "bCrackMine": "YOUR STATUE IS CRACKING!", "bCrackEnemy": "ENEMY STATUE CRACKING!", "bFall": "CURTAIN CALL!", "music": "Music", "sounds": "Sounds", "pauseBtn": "Pause", "popFull": "Full – max 50", "campaign": "🗺 World tour", "quick": "⚔ Quick battle", "fight": "🎸 Play the show", "mapBtn": "🗺 To the map", "retry": "↻ Try again", "cgTitle": "Congratulations!", "cgText": "You packed all eight stadiums. Every rival statue has fallen and yours still stands tall. You are the Legend of the World Tour!", "cgStats": "Shows: {a}/8 · Victory coins: {c}", "again2": "↻ Play the tour again", "unlocked": "A new stadium opened on the tour map!", "introWel": "Welcome to", "introLines": ["Eight stadiums. Eight rival bands. One legendary tour.", "Every band guards its own giant statue and plays for gold.", "Now it's your turn: form a band, protect your statue", "and topple every rival statue on the tour.", "The world tour starts tonight!"], "introGo": "▶ Start the tour", "cSaves": "💾 Saves", "csTitle": "Tour saves", "newCamp": "✚ New tour from scratch", "newCampQ": "Sure? Coins and upgrades reset to zero", "camp": "Place", "rotateMap": "Turn your phone sideways for a bigger map", "rotate": "Turn your phone sideways for bigger fighters", "reset": "↺ Start over", "resetQ": "All victory coins and statue upgrades are reset and the autosave is deleted. You start from scratch. Your own save slots are kept. Are you sure?", "yes": "Yes, start over", "cancel": "Cancel", "autosave": "The game also saves automatically.", "saveBtn": "💾 Save game", "loadBtn": "📂 Load game", "slotsSave": "Save game", "slotsLoad": "Load game", "slot": "Slot", "empty": "empty", "time": "game time", "savedOk": "Saved ✓", "sure": "Sure?", "saveHere": "Save", "loadHere": "Load", "overwrite": "Overwrite?", "cities": ["Hometown show. It's −15 °C outside, but the crowd brought its own heat.", "Red dust, blazing sun and a crowd that dances from the first chord.", "Neon lights, razor-sharp lasers and fans who know every word.", "The other side of the world, where even the waves shout for an encore.", "Carnival rhythm, tropical heat and 80,000 drummers in the stands.", "Rain, flannel shirts and guitars turned all the way up.", "The city that never sleeps, and tonight nobody even blinks.", "The grand finale. One giant stadium, and only one statue left standing."]},
+de:{"sub": "Verteidige deine Statue und stürze die der Rivalenband.", "play": "Spielen", "shop": "Statuenschmiede", "coins": "Siegesmünzen", "easy": "Leicht", "normal": "Normal", "hard": "Schwer", "help": "🎸 SO WIRD GEROCKT\n💰 Gold kommt von selbst. Damit stellst du deine Band zusammen: Schlagzeuger, Gitarristinnen, Sänger mit Mikrofonständer und Riesenbassisten.\n🛡 Verteidigen: Die Band bewacht deine Statue.\n🤘 Angriff: Die Band stürmt die Rivalenstatue.\n🏠 Rückzug: Alle verstecken sich hinter der Statue, und sie schießt selbst Pfeile.\n🗿 Stürze die Statue der Discoband, bevor deine fällt, und der Abend gehört dir.\n🪙 Siege bringen Siegesmünzen. Damit verstärkst du deine Statue in der Schmiede.\n✖ Umentschieden? Das rote ✖ am Knopf bricht den Kauf ab, und du bekommst das Gold zurück.\n👆 Wische über den Bildschirm oder tippe auf die Minikarte, um dich im Stadion zu bewegen.", "retreat": "🏠 Rückzug", "defend": "🛡 Verteidigen", "attack": "Angriff", "strengthen": "🗿+", "paused": "Pause", "resume": "Weiter", "quit": "Spiel beenden", "win": "Sieg!", "lose": "Niederlage", "earned": "Du hast {n} Siegesmünzen verdient.", "again": "Nochmal spielen", "menu": "Menü", "back": "Zurück", "max": "Max", "level": "Stufe", "units": {"miner": "Bergmann", "sword": "Schlagzeuger", "archer": "Gitarristin", "spear": "Sänger", "giant": "Riesenbassist"}, "up": {"statue": ["Statue", "Die Statue hält 25 % mehr aus und wächst."], "tower": ["Burggitarristin", "+1 Gitarristin am Palisadenzaun, die nahe Feinde beschießt."], "gold": ["Startgold", "+150 Gold zu Spielbeginn."], "carry": ["Bergmannssack", "Bergleute tragen +15 Gold pro Gang."]}, "statTip": "Verstärke die Statue mit Gold (höchstens 3-mal pro Spiel)", "cont": "▶ Gespeichertes Spiel fortsetzen", "saveQuit": "Spiel beenden (gespeichert)", "quitSure": "Wirklich beenden?", "bFirst": "VORBAND GEFALLEN!", "bMulti": "KLANGWAND!", "bMultiE": "KLANGWAND DER RIVALEN!", "bGiant": "RIESE AUF DER BÜHNE!", "bGiantE": "RIVALENRIESE AUF DER BÜHNE!", "bCrackMine": "DEINE STATUE BEKOMMT RISSE!", "bCrackEnemy": "FEINDLICHE STATUE BEKOMMT RISSE!", "bFall": "DER VORHANG FÄLLT!", "music": "Musik", "sounds": "Geräusche", "pauseBtn": "Pause", "popFull": "Voll – höchstens 50", "campaign": "🗺 Welttournee", "quick": "⚔ Schnelles Spiel", "fight": "🎸 Konzert spielen", "mapBtn": "🗺 Zur Karte", "retry": "↻ Nochmal versuchen", "cgTitle": "Glückwunsch!", "cgText": "Du hast alle acht Stadien gefüllt. Jede Rivalenstatue ist gefallen, und deine steht noch immer. Du bist die Legende der Welttournee!", "cgStats": "Konzerte: {a}/8 · Siegesmünzen: {c}", "again2": "↻ Tournee nochmal spielen", "unlocked": "Ein neues Stadion ist auf der Tourneekarte frei!", "introWel": "Willkommen bei", "introLines": ["Acht Stadien. Acht rivalisierende Bands. Eine legendäre Tournee.", "Jede Band bewacht ihre eigene Riesenstatue und spielt um Gold.", "Jetzt bist du dran: Gründe eine Band, schütze deine Statue", "und stürze jede Rivalenstatue auf der Tournee.", "Heute Abend beginnt die Welttournee!"], "introGo": "▶ Tournee starten", "cSaves": "💾 Spielstände", "csTitle": "Tournee-Spielstände", "newCamp": "✚ Neue Tournee von vorn", "newCampQ": "Sicher? Münzen und Verbesserungen werden auf null gesetzt", "camp": "Ort", "rotateMap": "Dreh das Handy quer für eine größere Karte", "rotate": "Dreh das Handy quer für größere Kämpfer", "reset": "↺ Neu anfangen", "resetQ": "Alle Siegesmünzen und Statuenverbesserungen werden zurückgesetzt und der automatische Spielstand gelöscht. Du fängst von vorn an. Deine eigenen Speicherplätze bleiben erhalten. Bist du sicher?", "yes": "Ja, neu anfangen", "cancel": "Abbrechen", "autosave": "Das Spiel speichert auch automatisch.", "saveBtn": "💾 Spiel speichern", "loadBtn": "📂 Spiel laden", "slotsSave": "Spiel speichern", "slotsLoad": "Spiel laden", "slot": "Platz", "empty": "leer", "time": "Spielzeit", "savedOk": "Gespeichert ✓", "sure": "Sicher?", "saveHere": "Speichern", "loadHere": "Laden", "overwrite": "Überschreiben?", "cities": ["Heimspiel. Draußen sind es −15 °C, aber das Publikum bringt seine eigene Hitze mit.", "Roter Staub, brennende Sonne und ein Publikum, das ab dem ersten Akkord tanzt.", "Neonlichter, messerscharfe Laser und Fans, die jedes Wort kennen.", "Am anderen Ende der Welt, wo sogar die Wellen nach einer Zugabe rufen.", "Karnevalsrhythmus, tropische Hitze und 80.000 Trommler auf den Rängen.", "Regen, Flanellhemden und Gitarren auf voller Lautstärke.", "Die Stadt, die niemals schläft, und heute Nacht blinzelt nicht einmal jemand.", "Das große Finale. Ein Riesenstadion, und nur eine Statue bleibt stehen."]},
+es:{"sub": "Defiende tu estatua y derriba la de la banda rival.", "play": "Jugar", "shop": "Taller de estatuas", "coins": "Monedas de victoria", "easy": "Fácil", "normal": "Normal", "hard": "Difícil", "help": "🎸 ASÍ SE ROCKEA\n💰 El oro llega solo. Con él formas tu banda: baterías, guitarristas, cantantes con pie de micro y bajistas gigantes.\n🛡 Defender: la banda protege tu estatua.\n🤘 Atacar: la banda asalta la estatua rival.\n🏠 Retirada: todos se esconden detrás de la estatua, que dispara flechas por sí misma.\n🗿 Derriba la estatua de la banda disco antes de que caiga la tuya y la noche será tuya.\n🪙 Las victorias dan monedas. Con ellas refuerzas tu estatua en el taller.\n✖ ¿Cambiaste de idea? La ✖ roja del botón cancela la compra y recuperas el oro.\n👆 Desliza la pantalla o toca el minimapa para moverte por el estadio.", "retreat": "🏠 Retirada", "defend": "🛡 Defender", "attack": "Atacar", "strengthen": "🗿+", "paused": "Pausa", "resume": "Continuar", "quit": "Salir del juego", "win": "¡Victoria!", "lose": "Derrota", "earned": "Has ganado {n} monedas de victoria.", "again": "Jugar otra vez", "menu": "Menú", "back": "Atrás", "max": "Máx.", "level": "nivel", "units": {"miner": "Minero", "sword": "Batería", "archer": "Guitarrista", "spear": "Cantante", "giant": "Bajista gigante"}, "up": {"statue": ["Estatua", "La estatua resiste un 25 % más y crece."], "tower": ["Guitarrista del castillo", "+1 guitarrista en la empalizada que dispara a los enemigos cercanos."], "gold": ["Oro inicial", "+150 de oro al empezar."], "carry": ["Saco de minero", "Los mineros llevan +15 de oro por viaje."]}, "statTip": "Refuerza la estatua con oro (hasta 3 veces por partida)", "cont": "▶ Continuar partida guardada", "saveQuit": "Salir del juego (guardado)", "quitSure": "¿Seguro que quieres salir?", "bFirst": "¡CAYÓ EL TELONERO!", "bMulti": "¡MURO DE SONIDO!", "bMultiE": "¡MURO DE SONIDO RIVAL!", "bGiant": "¡GIGANTE EN EL ESCENARIO!", "bGiantE": "¡GIGANTE RIVAL EN EL ESCENARIO!", "bCrackMine": "¡TU ESTATUA SE AGRIETA!", "bCrackEnemy": "¡LA ESTATUA ENEMIGA SE AGRIETA!", "bFall": "¡CAE EL TELÓN!", "music": "Música", "sounds": "Sonidos", "pauseBtn": "Pausa", "popFull": "Lleno – máximo 50", "campaign": "🗺 Gira mundial", "quick": "⚔ Partida rápida", "fight": "🎸 Dar el concierto", "mapBtn": "🗺 Al mapa", "retry": "↻ Intentar de nuevo", "cgTitle": "¡Enhorabuena!", "cgText": "Llenaste los ocho estadios. Todas las estatuas rivales han caído y la tuya sigue en pie. ¡Eres la leyenda de la gira mundial!", "cgStats": "Conciertos: {a}/8 · Monedas de victoria: {c}", "again2": "↻ Jugar la gira otra vez", "unlocked": "¡Se abrió un nuevo estadio en el mapa de la gira!", "introWel": "Bienvenido a", "introLines": ["Ocho estadios. Ocho bandas rivales. Una gira legendaria.", "Cada banda protege su propia estatua gigante y toca por oro.", "Ahora te toca a ti: forma una banda, protege tu estatua", "y derriba todas las estatuas rivales de la gira.", "¡La gira mundial empieza esta noche!"], "introGo": "▶ Empezar la gira", "cSaves": "💾 Partidas", "csTitle": "Partidas de la gira", "newCamp": "✚ Nueva gira desde cero", "newCampQ": "¿Seguro? Las monedas y mejoras vuelven a cero", "camp": "Lugar", "rotateMap": "Gira el móvil para ver un mapa más grande", "rotate": "Gira el móvil para ver a los luchadores más grandes", "reset": "↺ Empezar de nuevo", "resetQ": "Se borrarán todas las monedas de victoria y mejoras de la estatua, y también la partida automática. Empiezas desde cero. Tus propias ranuras de guardado se conservan. ¿Estás seguro?", "yes": "Sí, empezar de nuevo", "cancel": "Cancelar", "autosave": "El juego también guarda automáticamente.", "saveBtn": "💾 Guardar partida", "loadBtn": "📂 Cargar partida", "slotsSave": "Guardar partida", "slotsLoad": "Cargar partida", "slot": "Ranura", "empty": "vacía", "time": "tiempo de juego", "savedOk": "Guardado ✓", "sure": "¿Seguro?", "saveHere": "Guardar", "loadHere": "Cargar", "overwrite": "¿Sobrescribir?", "cities": ["Concierto en casa. Fuera hace −15 °C, pero el público trae su propio calor.", "Polvo rojo, sol abrasador y un público que baila desde el primer acorde.", "Luces de neón, láseres afilados y fans que se saben cada palabra.", "En la otra punta del mundo, donde hasta las olas piden otra.", "Ritmo de carnaval, calor tropical y 80.000 tamborileros en las gradas.", "Lluvia, camisas de franela y guitarras a todo volumen.", "La ciudad que nunca duerme, y esta noche nadie ni parpadea.", "La gran final. Un estadio gigante y solo una estatua en pie."]},
+fr:{"sub": "Défends ta statue et renverse celle du groupe rival.", "play": "Jouer", "shop": "Forge des statues", "coins": "Pièces de victoire", "easy": "Facile", "normal": "Normal", "hard": "Difficile", "help": "🎸 COMMENT ON ROCKE\n💰 L'or arrive tout seul. Avec lui, tu formes ton groupe : batteurs, guitaristes, chanteurs à pied de micro et bassistes géants.\n🛡 Défendre : le groupe garde ta statue.\n🤘 Attaquer : le groupe charge la statue rivale.\n🏠 Repli : tout le monde se cache derrière la statue, qui tire elle-même des flèches.\n🗿 Renverse la statue du groupe disco avant que la tienne tombe, et la soirée est à toi.\n🪙 Les victoires rapportent des pièces. Elles renforcent ta statue à la forge.\n✖ Changé d'avis ? Le ✖ rouge du bouton annule l'achat et l'or est rendu.\n👆 Fais glisser l'écran ou touche la mini-carte pour te déplacer dans le stade.", "retreat": "🏠 Repli", "defend": "🛡 Défendre", "attack": "Attaquer", "strengthen": "🗿+", "paused": "Pause", "resume": "Reprendre", "quit": "Quitter la partie", "win": "Victoire !", "lose": "Défaite", "earned": "Tu as gagné {n} pièces de victoire.", "again": "Rejouer", "menu": "Menu", "back": "Retour", "max": "Max", "level": "niveau", "units": {"miner": "Mineur", "sword": "Batteur", "archer": "Guitariste", "spear": "Chanteur", "giant": "Bassiste géant"}, "up": {"statue": ["Statue", "La statue résiste 25 % de plus et grandit."], "tower": ["Guitariste du château", "+1 guitariste à la palissade, qui tire sur les ennemis proches."], "gold": ["Or de départ", "+150 d'or au début."], "carry": ["Sac du mineur", "Les mineurs portent +15 d'or par trajet."]}, "statTip": "Renforce la statue avec de l'or (3 fois maximum par partie)", "cont": "▶ Continuer la partie sauvegardée", "saveQuit": "Quitter la partie (sauvegardée)", "quitSure": "Vraiment quitter ?", "bFirst": "LA PREMIÈRE PARTIE EST TOMBÉE !", "bMulti": "MUR DU SON !", "bMultiE": "MUR DU SON RIVAL !", "bGiant": "GÉANT SUR SCÈNE !", "bGiantE": "GÉANT RIVAL SUR SCÈNE !", "bCrackMine": "TA STATUE SE FISSURE !", "bCrackEnemy": "LA STATUE ENNEMIE SE FISSURE !", "bFall": "LE RIDEAU TOMBE !", "music": "Musique", "sounds": "Sons", "pauseBtn": "Pause", "popFull": "Complet – 50 maximum", "campaign": "🗺 Tournée mondiale", "quick": "⚔ Partie rapide", "fight": "🎸 Jouer le concert", "mapBtn": "🗺 Vers la carte", "retry": "↻ Réessayer", "cgTitle": "Félicitations !", "cgText": "Tu as rempli les huit stades. Toutes les statues rivales sont tombées et la tienne tient toujours debout. Tu es la légende de la tournée mondiale !", "cgStats": "Concerts : {a}/8 · Pièces de victoire : {c}", "again2": "↻ Rejouer la tournée", "unlocked": "Un nouveau stade s'est ouvert sur la carte de la tournée !", "introWel": "Bienvenue dans", "introLines": ["Huit stades. Huit groupes rivaux. Une tournée légendaire.", "Chaque groupe garde sa propre statue géante et joue pour de l'or.", "À toi maintenant : forme un groupe, protège ta statue", "et renverse chaque statue rivale de la tournée.", "La tournée mondiale commence ce soir !"], "introGo": "▶ Lancer la tournée", "cSaves": "💾 Sauvegardes", "csTitle": "Sauvegardes de la tournée", "newCamp": "✚ Nouvelle tournée à zéro", "newCampQ": "Sûr ? Les pièces et améliorations repartent à zéro", "camp": "Lieu", "rotateMap": "Tourne ton téléphone pour une carte plus grande", "rotate": "Tourne ton téléphone pour des combattants plus grands", "reset": "↺ Recommencer", "resetQ": "Toutes les pièces de victoire et améliorations de la statue sont remises à zéro et la sauvegarde automatique est effacée. Tu repars de zéro. Tes propres emplacements de sauvegarde sont conservés. Es-tu sûr ?", "yes": "Oui, recommencer", "cancel": "Annuler", "autosave": "Le jeu sauvegarde aussi automatiquement.", "saveBtn": "💾 Sauvegarder", "loadBtn": "📂 Charger", "slotsSave": "Sauvegarder la partie", "slotsLoad": "Charger une partie", "slot": "Emplacement", "empty": "vide", "time": "temps de jeu", "savedOk": "Sauvegardé ✓", "sure": "Sûr ?", "saveHere": "Sauvegarder", "loadHere": "Charger", "overwrite": "Écraser ?", "cities": ["Concert à domicile. Il fait −15 °C dehors, mais le public apporte sa propre chaleur.", "Poussière rouge, soleil brûlant et un public qui danse dès le premier accord.", "Néons, lasers tranchants et fans qui connaissent chaque parole.", "À l'autre bout du monde, où même les vagues réclament un rappel.", "Rythme de carnaval, chaleur tropicale et 80 000 percussionnistes dans les tribunes.", "Pluie, chemises en flanelle et guitares à fond.", "La ville qui ne dort jamais, et ce soir personne ne cligne même des yeux.", "La grande finale. Un stade géant, et une seule statue restera debout."]}
 };
 let lang="en";
 const t=k=>TXT[lang][k];
@@ -205,10 +224,10 @@ const UT={
   spear :{icon:'<svg viewBox="0 0 28 28" width="26" height="26"><g stroke="#333" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="26" x2="10" y2="12"/><line x1="10" y1="26" x2="5" y2="27"/><line x1="10" y1="26" x2="15" y2="27"/><line x1="10" y1="12" x2="19" y2="8"/></g><rect x="17.5" y="2.5" width="6.5" height="9" rx="3.2" transform="rotate(25 20.7 7)" fill="#555" stroke="#222" stroke-width="1"/><g stroke="#aaa" stroke-width=".6" transform="rotate(25 20.7 7)"><line x1="18" y1="4.5" x2="23.5" y2="4.5"/><line x1="18" y1="6.5" x2="23.5" y2="6.5"/><line x1="18" y1="8.5" x2="23.5" y2="8.5"/></g><text x="1" y="10" font-size="9" fill="#5a2a00" font-weight="bold">♪</text></svg>',cost:500, pop:2,hp:450, spd:46,dmg:26,range:36, rate:1.3,train:6, size:1.15,armor:0.35},
   giant :{icon:'<svg viewBox="0 0 28 28" width="26" height="26"><g transform="rotate(-40 14 14)"><rect x="-1" y="12.4" width="13" height="3.2" fill="#5a3412"/><rect x="-4" y="11.5" width="4" height="5" rx="1" fill="#3a1e08"/><ellipse cx="15" cy="14" rx="4.6" ry="4.2" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="22" cy="14" rx="6.4" ry="5.8" fill="#e89a30" stroke="#3a1a08" stroke-width="1.2"/><ellipse cx="17.5" cy="14" rx="2.6" ry="2.4" fill="#e89a30"/><circle cx="17" cy="14" r="2" fill="#1a0a04"/><rect x="22.8" y="11.6" width="1.4" height="4.8" fill="#2a160a"/><line x1="-2" y1="14" x2="23.5" y2="14" stroke="#fff" stroke-width=".4"/></g></svg>',cost:1200,pop:4,hp:1500,spd:30,dmg:75,range:48, rate:2.2,train:10,size:2.1,splash:45,armor:0.15},
 };
-const ORDER=["miner","sword","archer","spear","giant"];
-const W=2700,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
-const STATUE_HP=2500,MINE_TIME=2.4,BASE_CARRY=60;
-const MINES_X=[400,570,740,1350,1960,2130,2300]; // 3 omalla puolella, 1 keskellä, 3 vastustajan puolella
+const ORDER=["sword","archer","spear","giant"];
+const W=1900,H=480,GY=400,LANE0=372,LANE1=440,POPMAX=50;
+const STATUE_HP=1300,MINE_TIME=2.4,BASE_CARRY=60;
+const MINES_X=[]; // 3 omalla puolella, 1 keskellä, 3 vastustajan puolella
 const DIFF={
   easy  :{miners:4,units:["sword","sword","archer"],think:2.6,income:0.8,attackPow:600,tower:0,hpMul:0.9,reward:4},
   normal:{miners:6,units:["sword","archer","spear","sword","archer"],think:1.6,income:1.0,attackPow:900,tower:0,hpMul:1.1,reward:7},
@@ -217,7 +236,7 @@ const DIFF={
 const SHOP={statue:{max:5,cost:[3,6,10,15,22]},tower:{max:3,cost:[5,10,18]},gold:{max:4,cost:[2,4,7,11]},carry:{max:4,cost:[3,6,10,14]}};
 const STAT_COST=[300,600,900];
 const LEVELS=[
- {name:"Helsinki",x:569,y:136,theme:"ice",ly:-58,cfg:{miners:3,units:["sword","sword"],think:3.0,income:0.7,attackPow:500,tower:0,hpMul:0.8,reward:3}},
+ {name:"Helsinki",x:569,y:136,theme:"ice",ly:-58,cfg:{miners:3,units:["sword"],think:4.0,income:0.4,attackPow:99999,tower:0,hpMul:0.5,reward:3}},
  {name:"Johannesburg",x:578,y:376,theme:"desert",cfg:{miners:4,units:["sword","sword","archer"],think:2.6,income:0.8,attackPow:600,tower:0,hpMul:0.9,reward:4}},
  {name:"Tokyo",x:888,y:204,theme:"dusk",cfg:{miners:5,units:["sword","archer","sword","archer"],think:2.0,income:0.9,attackPow:700,tower:0,hpMul:1.0,reward:5}},
  {name:"Sydney",x:920,y:398,theme:"meadow",cfg:{miners:6,units:["sword","archer","spear","sword","archer"],think:1.6,income:1.0,attackPow:900,tower:0,hpMul:1.1,reward:6}},
@@ -238,8 +257,8 @@ const COL=["#111","#7d1010"];
 
 /* ================= TALLENNUS ================= */
 let save={coins:0,up:{statue:0,tower:0,gold:0,carry:0},camp:0,campDone:0,lang:"en",diff:"normal",wins:0};
-try{const s=JSON.parse(localStorage.getItem("tikkusota"));if(s)save=Object.assign(save,s,{up:Object.assign(save.up,s.up||{})});}catch(e){}
-function persist(){try{localStorage.setItem("tikkusota",JSON.stringify(save))}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem("sstour2"));if(s)save=Object.assign(save,s,{up:Object.assign(save.up,s.up||{})});}catch(e){}
+function persist(){try{localStorage.setItem("sstour2",JSON.stringify(save))}catch(e){}}
 if(!save.langV2){save.lang="en";save.langV2=1;persist();}
 if(!save.langChosen){const nl=((navigator.languages&&navigator.languages[0])||navigator.language||"en").slice(0,2).toLowerCase();save.lang=TXT[nl]?nl:"en";}
 lang=save.lang||"en";
@@ -256,10 +275,13 @@ function audioInit(){
   const len=c.sampleRate;AU.noise=c.createBuffer(1,len,c.sampleRate);const dd=AU.noise.getChannelData(0);for(let i=0;i<len;i++)dd[i]=Math.random()*2-1;
   AU.next=c.currentTime+0.1;AU.timer=setInterval(schedMusic,50);
 }
+const BGM=new Audio("musiikki/hopeful-road-trip.mp3");BGM.loop=true;BGM.volume=0.55;BGM.preload="auto";
+function bgmSync(){try{if(save.music&&!document.hidden){const p=BGM.play();if(p&&p.catch)p.catch(()=>{});}else BGM.pause();}catch(e){}}
+document.addEventListener("pointerdown",bgmSync,{capture:true});
 document.addEventListener("pointerdown",audioInit,{capture:true});
 document.addEventListener("keydown",audioInit,{capture:true});
-document.addEventListener("visibilitychange",()=>{if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend();else AU.ctx.resume();});
-function setAudio(){if(!AU.ctx)return;const t0=AU.ctx.currentTime;AU.mus.gain.setTargetAtTime(save.music?0.5:0,t0,0.1);AU.fx.gain.setTargetAtTime(save.sfx?0.9:0,t0,0.05);}
+document.addEventListener("visibilitychange",()=>{bgmSync();if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend();else AU.ctx.resume();});
+function setAudio(){bgmSync();if(!AU.ctx)return;const t0=AU.ctx.currentTime;AU.mus.gain.setTargetAtTime(save.music?0.5:0,t0,0.1);AU.fx.gain.setTargetAtTime(save.sfx?0.9:0,t0,0.05);}
 function tone(type,f1,f2,dur,vol,when,dest,filt){
   const c=AU.ctx,t0=when||c.currentTime,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f1,t0);
   if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
@@ -294,7 +316,7 @@ const ROOT=[48,45,41,43,48,45,41,43],CHORD=[[0,4,7],[0,3,7],[0,4,7],[0,4,7],[0,4
 function n2f(m){return 440*Math.pow(2,(m-69)/12);}
 function mallet(f,t0,vol){tone("sine",f,0,0.45,vol,t0,AU.mus);tone("triangle",f*2,0,0.12,vol*0.25,t0,AU.mus);}
 function schedMusic(){
-  const c=AU.ctx;if(!c||!save.music)return;const sd=60/92/4;
+  const c=AU.ctx;if(!c||!save.music||BGM)return;const sd=60/92/4;
   if(AU.next<c.currentTime)AU.next=c.currentTime+0.05;
   while(AU.next<c.currentTime+0.3){
     const st=AU.step%128,bar=Math.floor(st/16),b=st%16,t0=AU.next,D=AU.mus,r=ROOT[bar];
@@ -309,9 +331,9 @@ function schedMusic(){
 }
 
 /* ================= PELIN TALLENNUS ================= */
-function hasSaved(){try{return !!localStorage.getItem("tikkusota_peli")}catch(e){return false}}
-function clearSaved(){try{localStorage.removeItem("tikkusota_peli")}catch(e){}}
-function saveGame(key){key=key||"tikkusota_peli";
+function hasSaved(){try{return !!localStorage.getItem("sstour2_peli")}catch(e){return false}}
+function clearSaved(){try{localStorage.removeItem("sstour2_peli")}catch(e){}}
+function saveGame(key){key=key||"sstour2_peli";
   if(!G||G.winner>=0||(state!=="play"&&state!=="paused"))return false;
   const d=Object.assign({},G,{units:G.units.filter(u=>!u.dead).map(u=>Object.assign({},u,{mine:u.mine?G.mines.indexOf(u.mine):-1})),
     arrows:[],pieces:[],dust:[],floats:[],camX,nextId,savedAt:Date.now()});
@@ -319,7 +341,7 @@ function saveGame(key){key=key||"tikkusota_peli";
 }
 function readSlot(key){try{return JSON.parse(localStorage.getItem(key))}catch(e){return null}}
 function loadGame(key){
-  const d=readSlot(key||"tikkusota_peli");
+  const d=readSlot(key||"sstour2_peli");
   if(!d||!d.units)return false;
   // vanha, pidempi kenttä: skaalaa sijainnit uuteen kokoon
   const oldW=d.statues&&d.statues[1]?d.statues[1].x+170:W;if(oldW!==W){const f=(W-340)/(oldW-340),fx=x=>170+(x-170)*f;
@@ -340,20 +362,20 @@ function newGame(level){
   G={diff:save.diff,cfg:D,level:lv?level:null,theme:lv?lv.theme:"dusk",time:0,units:[],arrows:[],pieces:[],floats:[],dust:[],overT:-1,winner:-1,aiT:0,
     mines:MINES_X.map(x=>({x,y:GY+12,slots:[null,null,null,null]})),
     teams:[
-      {gold:300+150*save.up.gold,mode:"defend",q:{},carry:BASE_CARRY+15*save.up.carry,income:1,statUps:0},
+      {gold:250+100*save.up.gold,mode:"defend",q:{},carry:BASE_CARRY+15*save.up.carry,income:1,statUps:0},
       {gold:300,mode:"defend",q:{},carry:BASE_CARRY,income:D.income,wish:null}],
     statues:[
       {team:0,x:170,hp:pHp,max:pHp,size:1+0.07*save.up.statue,tower:save.up.tower,tcd:0,alive:true,shake:0},
       {team:1,x:W-170,hp:eHp,max:eHp,size:1+0.05*(D.hpMul-1)*4,tower:D.tower,tcd:0,alive:true,shake:0}]};
   for(const tm of G.teams)for(const k of ORDER)tm.q[k]=[];
-  for(let i=0;i<2;i++){spawn(0,"miner");spawn(1,"miner");}
+  for(let i=0;i<2;i++){spawn(0,"sword");spawn(1,"sword");}G.tip=4;
   camX=0;state="play";
 }
 function spawn(team,type){
   const d=UT[type],S=G.statues[team],dir=team?-1:1;
   const u={id:nextId++,team,type,x:S.x+dir*(40+Math.random()*20),y:LANE0+Math.random()*(LANE1-LANE0),hp:d.hp,max:d.hp,
     face:dir,cd:Math.random()*0.5,atk:0,phase:Math.random()*6,moving:false,dead:false,deadT:0,state:"toMine",mine:null,carrying:0,timer:0};
-  u.ty=u.y;G.units.push(u);if(team===0&&G.time>0.5)sfx("spawn");
+  u.ty=u.y;G.units.push(u);if(team===0&&G.time>0.5){sfx("spawn");u.spin=SPIN;fx();for(let i=0;i<6;i++)G.sparks.push({x:u.x,y:u.y-20,vx:(Math.random()-0.5)*220,vy:-Math.random()*200,t:0,col:SPECTRUM[i%6]});}
   if(team===0&&G.time>0.5&&Math.random()<0.15&&QUIP[type].spawn)say(u.id,pick(QUIP[type].spawn));
   if(type==="giant"&&G.time>0.5){banner(team?t("bGiantE"):t("bGiant"),team?"#ff5a5a":"#c9a0ff");G.shk=Math.max(G.shk||0,0.35);sfx("thud");}
   return u;
@@ -369,7 +391,7 @@ function buy(team,type){
   if(team===0&&G.god){if(popOf(0)+d.pop>POPMAX)return false;tm.q[type].push(0.02);return true;}
   if(team===0&&G.ab&&G.ab.mgr>0){if(tm.gold<d.cost||popOf(0)+d.pop>POPMAX)return false;tm.gold-=d.cost;tm.q[type].push(0.02);return true;}
   if(tm.gold<d.cost||popOf(team)+d.pop>POPMAX)return false;
-  tm.gold-=d.cost;tm.q[type].push(d.train);return true;
+  tm.gold-=d.cost;tm.q[type].push(Math.min(1.2,d.train*0.25));return true;
 }
 function armyPow(team,minX,maxX){let p=0;for(const u of G.units)if(u.team===team&&!u.dead&&u.type!=="miner"&&(minX==null||(u.x>=minX&&u.x<=maxX)))p+=UT[u.type].cost;return p;}
 
@@ -377,6 +399,8 @@ function armyPow(team,minX,maxX){let p=0;for(const u of G.units)if(u.team===team
 function step(dt){
   if(!G||G.fake)return;
   G.time+=dt;
+  // kulta tulee itsestään (ei kaivajia)
+  G.teams[0].gold+=dt*(32+6*save.up.gold+4*save.up.carry)*(G.ab&&G.ab.mgr>0?2:1);G.teams[1].gold+=dt*32*G.teams[1].income;
   // koulutusjonot
   G.teams.forEach((tm,i)=>{for(const k of ORDER){const q=tm.q[k];if(q.length){q[0]-=dt;if(q[0]<=0){q.shift();spawn(i,k);}}}});
   // tekoäly
@@ -498,6 +522,7 @@ function killUnit(u,dmg){
   const kt=1-u.team;G.kills=G.kills||[[],[]];const L=G.kills[kt];L.push(G.time);while(L.length&&G.time-L[0]>1.2)L.shift();
   if(L.length>=3&&(!G.lastMulti||G.time-G.lastMulti>4)){G.lastMulti=G.time;banner(kt===0?t("bMulti"):t("bMultiE"),kt===0?"#f5c400":"#ff5a5a");G.shk=Math.max(G.shk||0,0.4);}
   sfx("pop",u.x);if(Math.random()<0.35)pop(u.x,u.y-30,POPS.kill);
+  if(u.team===1){const b=Math.round(UT[u.type].cost*0.2);G.teams[0].gold+=b;G.floats.push({x:u.x,y:u.y-60,txt:"+"+b+" 💰",col:"#ffe14d",t:0});}
   if(big||Math.random()<0.45){u.deadT=0;u.fx=0;u.fy=0;u.fvx=dir*(big?280:130)*(0.7+Math.random()*0.6);u.fvy=-(big?360:220)*(0.7+Math.random()*0.5);u.rot=0;u.frot=-dir*u.face*(7+Math.random()*7);}
   else{gibs(u);u.deadT=3.3;}
 }
@@ -638,7 +663,7 @@ function toggleGod(){
 
 /* ================= TEKOÄLY ================= */
 // Kuinka monta sekuntia tekoäly pysyy alussa kotona (helppo pisin, vaikea lyhin)
-function aiCalm(D){if(G.level!=null)return Math.max(80,170-G.level*12);return {easy:170,normal:130,hard:95}[G.diff]||130;}
+function aiCalm(D){if(G.level===0)return 1e9;if(G.level!=null)return Math.max(40,70-G.level*4);return {easy:50,normal:35,hard:22}[G.diff]||35;}
 function aiThink(){
   const D=cfg(),tm=G.teams[1];
   // Rauhallinen alku: tekoäly ei hyökkää eikä tee jättiläistä ennen kuin pelaaja on ehtinyt koota bändin
@@ -646,8 +671,7 @@ function aiThink(){
   const fighters=G.units.filter(u=>u.team===1&&!u.dead&&u.type!=="miner"&&u.type!=="giant").length;
   const maxGiants=D.units.filter(x=>x==="giant").length;
   const giantOk=()=>!early&&fighters>=4&&countOf(1,"giant")<maxGiants;
-  if(countOf(1,"miner")<D.miners){if(tm.gold>=150)buy(1,"miner");}
-  else{if(!tm.wish)tm.wish=D.units[Math.floor(Math.random()*D.units.length)];
+  {if(!tm.wish)tm.wish=D.units[Math.floor(Math.random()*D.units.length)];
     if(tm.wish==="giant"&&!giantOk()){const o=D.units.filter(x=>x!=="giant");tm.wish=o[Math.floor(Math.random()*o.length)];}
     if(buy(1,tm.wish))tm.wish=null;}
   const my=armyPow(1),pl=armyPow(0);
@@ -783,13 +807,17 @@ function drawStatueFig(S,T){
   }
 }
 
+const STATUE_IMG=[new Image(),new Image()];STATUE_IMG[0].src="kuvat/bandi/patsas-p.png";STATUE_IMG[1].src="kuvat/bandi/patsas-e.png";
+function drawStatueImg(S){const im=STATUE_IMG[S.team?1:0];if(!im.complete||!im.naturalWidth)return false;
+  const H=S.team?228:240,w=H*im.naturalWidth/im.naturalHeight;ctx.save();if(S.team)ctx.scale(-1,1);
+  ctx.drawImage(im,-w/2,-H+4,w,H);ctx.restore();return true;}
 function drawStatue(S){
   const s=S.size,T=G?G.time:0;ctx.save();
   ctx.translate(S.x+(S.shake?(Math.random()-0.5)*4:0),GY);ctx.scale(s,s);ctx.lineCap="round";
   if(S.alive){const fc=S.team?"#9a1515":"#c99400",fe=S.team?"#2a0a0a":"#fff3a0";drawFlag(-86,T,fc,fe);drawFlag(50,T+1,fc,fe);}
   drawPedestal(S);
   if(S.alive){
-    ctx.save();ctx.translate(0,-PED);ctx.save();drawStatueFig(S,T);ctx.restore();
+    ctx.save();ctx.translate(0,-PED);ctx.save();if(!drawStatueImg(S))drawStatueFig(S,T);ctx.restore();
     const dmg=1-S.hp/S.max;ctx.strokeStyle="#2a2a2a";ctx.lineWidth=1.6;
     for(let i=0;i<Math.floor(dmg*10);i++){const y=-25-i*17,x=((i*37)%15)-7;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4,y-6);ctx.lineTo(x-1,y-11);ctx.lineTo(x+3,y-16);ctx.stroke();}
     ctx.restore();
@@ -892,14 +920,21 @@ function drawBg(){
       for(let x=Math.floor(x0/40)*40;x<x1;x+=40){ln(x,deck-6,x+20,deck-26);ln(x+20,deck-26,x+40,deck-6);}ln(x0,deck-6,x1,deck-6);ln(x0,deck-26,x1,deck-26);
       for(let x=Math.floor(x0/120)*120+60;x<x1;x+=120){const sw=Math.sin(T*1.5+x)*0.4;ctx.fillStyle="#2a2a34";ctx.fillRect(x-4,deck-6,8,6);const gl=ctx.createRadialGradient(x,deck+2,1,x,deck+2,14);gl.addColorStop(0,SPECTRUM[(x/120|0)%6]);gl.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=gl;ctx.fillRect(x-14,deck-12,28,28);}}
     ctx.fillStyle=shade(V.stand,-0.3);ctx.fillRect(x0,deck,x1-x0,124-deck);
-    const urh=11;for(let y=118-urh,r=0;y>deck-urh;y-=urh,r++){ctx.fillStyle=r%2?shade(V.stand,-0.15):shade(V.seat,-0.15);ctx.fillRect(x0,y,x1-x0,urh+0.5);
+    {ctx.save();ctx.beginPath();ctx.rect(x0,deck,x1-x0,118-deck);ctx.clip();const fr=Math.floor(T*2.4+1)%2;let band=0;
+      for(let y=118-CROWD_H;y>deck-CROWD_H;y-=CROWD_H,band++){const sh=(band&1)?CROWD_W/2:0;
+        for(let tx=Math.floor((x0-sh)/CROWD_W)*CROWD_W+sh;tx<x1;tx+=CROWD_W)ctx.drawImage(crowdTile(V,(fr+(Math.floor(tx/CROWD_W)&1))%2),tx,y,CROWD_W,CROWD_H);}
+      ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x0,deck,x1-x0,118-deck);ctx.restore();}
+    const urh=11;for(let y=118-urh,r=0;false;y-=urh,r++){ctx.fillStyle=r%2?shade(V.stand,-0.15):shade(V.seat,-0.15);ctx.fillRect(x0,y,x1-x0,urh+0.5);
       const sp=6,hr=1.4;for(let x=Math.floor(x0/sp)*sp+(r%2)*3;x<x1;x+=sp){const id=(Math.floor(x/sp)*37+r*13)&1023,bob=((T*4+id)%6<1.2)?-1:0;
         ctx.fillStyle=id%9===0?V.fans[id%3]:shade(V.seat,0.1+(id%5)*0.05);ctx.beginPath();ctx.arc(x,y+urh*0.5+bob,hr,0,7);ctx.fill();
         if(id%29===0){ctx.globalAlpha=0.3+0.7*Math.abs(Math.sin(T*3+id));ctx.fillStyle=id%2?"#fff6b0":"#cfe8ff";ctx.fillRect(x-0.8,y+1+bob,1.6,1.6);ctx.globalAlpha=1;}}}
     ctx.fillStyle="#0a0610";ctx.fillRect(x0,118,x1-x0,8);ctx.fillStyle=V.fans[0];for(let x=Math.floor(x0/90)*90;x<x1;x+=90){ctx.fillRect(x,119,40,5);}}
   const top=192,bot=326,rows=12,rh=(bot-top)/rows;
   ctx.fillStyle="#0a0610";ctx.fillRect(x0,top-14,x1-x0,14);ctx.fillStyle=shade(V.stand,0.25);ctx.fillRect(x0,top-4,x1-x0,4);
-  for(let r=0;r<rows;r++){const y=top+r*rh;ctx.fillStyle=r%2?V.stand:V.seat;ctx.fillRect(x0,y,x1-x0,rh+0.5);
+  {const fr=Math.floor(T*2.4)%2;for(let tx=Math.floor(x0/CROWD_W)*CROWD_W;tx<x1;tx+=CROWD_W){const f=(fr+(Math.floor(tx/CROWD_W)&1))%2;ctx.drawImage(crowdTile(V,f),tx,top,CROWD_W,bot-top);}
+    for(let i=0;i<7;i++){const fx=x0+((i*373+Math.floor(T*0.7+i*0.37)*911)%Math.max(1,Math.floor(x1-x0))),fy=top+8+((i*53+Math.floor(T*0.7+i*0.37)*29)%(bot-top-16));
+      if(((T*0.7+i*0.37)%1)<0.06){const g=ctx.createRadialGradient(fx,fy,0,fx,fy,7);g.addColorStop(0,"rgba(255,255,255,.95)");g.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=g;ctx.fillRect(fx-7,fy-7,14,14);}}}
+  if(false)for(let r=0;r<rows;r++){const y=top+r*rh;ctx.fillStyle=r%2?V.stand:V.seat;ctx.fillRect(x0,y,x1-x0,rh+0.5);
     const sp=6.5-r*0.12,hr=1.5+r*0.1;let xs=Math.floor(x0/sp)*sp+(r%2)*sp/2;
     for(let x=xs;x<x1;x+=sp){const id=(Math.floor(x/sp)*31+r*17)&1023,bob=((T*4+id)%6<1.2)?-1.2:0;
       ctx.fillStyle=id%9===0?V.fans[id%3]:shade(V.seat,0.18+(id%5)*0.05);ctx.beginPath();ctx.arc(x,y+rh*0.45+bob,hr,0,7);ctx.fill();
@@ -953,22 +988,25 @@ function drawMine(m){
 }
 const SHOPX=105;
 function drawShop(S){
-  const dir=S.team?-1:1,cx=S.x+dir*SHOPX,by=LANE0-4,w=84,h=74,x0=cx-w/2,T=G?G.time:0,acc=S.team?"#d42424":"#e8b000";
+  const dir=S.team?-1:1,cx=S.x+dir*SHOPX,by=LANE0-4,w=84,h=74,x0=cx-w/2,T=G?G.time:0,acc=S.team?"#c03ad8":"#e8b000";
   // runko ja katto
   ctx.fillStyle="rgba(0,0,0,0.25)";ctx.fillRect(x0+4,by-2,w,5);
-  ctx.fillStyle=S.team?"#5a2a2a":"#3a3a5a";ctx.fillRect(x0,by-h,w,h);
-  ctx.fillStyle=S.team?"#3e1a1a":"#28283e";for(let y=by-h+6;y<by;y+=7)ctx.fillRect(x0,y,w,1);
+  ctx.fillStyle=S.team?"#4a2a5a":"#3a3a5a";ctx.fillRect(x0,by-h,w,h);
+  ctx.fillStyle=S.team?"#341a3e":"#28283e";for(let y=by-h+6;y<by;y+=7)ctx.fillRect(x0,y,w,1);
   ctx.fillStyle="#1a1a22";ctx.fillRect(x0-4,by-h-4,w+8,6);
   // neonkyltti
   const on=Math.sin(T*7)>-0.92;ctx.fillStyle="#120c18";ctx.fillRect(x0+6,by-h-24,w-12,18);
   ctx.save();ctx.translate(cx,by-h-11);ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
-  if(on){ctx.shadowColor=S.team?"#ff4a6a":"#ff4ad8";ctx.shadowBlur=8;}ctx.fillStyle=on?(S.team?"#ff8a9a":"#ff9cf0"):"#5a3a5a";ctx.fillText("♪ GUITARS ♪",0,1);ctx.restore();
+  if(on){ctx.shadowColor=S.team?"#c86aff":"#ff4ad8";ctx.shadowBlur=8;}ctx.fillStyle=on?(S.team?"#e0b0ff":"#ff9cf0"):"#5a3a5a";ctx.fillText(S.team?"♪ VINYL ♪":"♪ GUITARS ♪",0,1);ctx.restore();
+  if(S.team){const mx=cx,my=by-h-36,r=7;ctx.strokeStyle="#888";ctx.lineWidth=1;ln(mx,by-h-26,mx,my+r);ctx.fillStyle="#cfd4e0";ctx.beginPath();ctx.arc(mx,my,r,0,7);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(mx,my,r,0,7);ctx.clip();
+    for(let gx=-r;gx<r;gx+=3)for(let gy=-r;gy<r;gy+=3){ctx.fillStyle=SPECTRUM[(Math.floor(gx+gy+T*6)%6+6)%6];ctx.globalAlpha=0.35+0.35*Math.abs(Math.sin(T*4+gx*gy));ctx.fillRect(mx+gx+0.4,my+gy+0.4,2.2,2.2);}ctx.restore();ctx.globalAlpha=1;}
   // markiisi
   for(let i=0;i<8;i++){ctx.fillStyle=i%2?"#f4f0e6":acc;ctx.beginPath();const ax=x0-3+i*(w+6)/8;ctx.moveTo(ax,by-h+6);ctx.lineTo(ax+(w+6)/8,by-h+6);ctx.lineTo(ax+(w+6)/8,by-h+16);ctx.arc(ax+(w+6)/16,by-h+16,(w+6)/16,0,Math.PI);ctx.fill();}
   // näyteikkuna kitaroineen (tiski kaupan puolella patsaasta poispäin)
   const wx=dir>0?x0+6:x0+w-46,wy=by-h+24;
   ctx.fillStyle="#ffe8b0";ctx.fillRect(wx,wy,40,30);ctx.fillStyle="rgba(255,190,90,0.35)";ctx.fillRect(wx,wy,40,30);
-  for(let i=0;i<3;i++){drawGuitar(wx+7+i*13,wy+3,Math.PI/2,0.62,i);}
+  if(S.team){for(let i=0;i<3;i++){const rx=wx+8+i*12,ry=wy+16,sp=T*3+i;ctx.fillStyle="#111";ctx.beginPath();ctx.arc(rx,ry,6,0,7);ctx.fill();ctx.strokeStyle="#333";ctx.lineWidth=0.5;ctx.beginPath();ctx.arc(rx,ry,4,0,7);ctx.stroke();ctx.fillStyle=SPECTRUM[(i*2)%6];ctx.beginPath();ctx.arc(rx,ry,2,0,7);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(rx+Math.cos(sp)*1.2-0.4,ry+Math.sin(sp)*1.2-0.4,0.8,0.8);}}
+  else for(let i=0;i<3;i++){drawGuitar(wx+7+i*13,wy+3,Math.PI/2,0.62,i);}
   ctx.strokeStyle="#1a1a22";ctx.lineWidth=2;ctx.strokeRect(wx,wy,40,30);ln(wx+20,wy,wx+20,wy+30);
   ctx.fillStyle="rgba(255,255,255,0.35)";ctx.beginPath();ctx.moveTo(wx+4,wy+28);ctx.lineTo(wx+12,wy+2);ctx.lineTo(wx+16,wy+2);ctx.lineTo(wx+8,wy+28);ctx.fill();
   // ovi + OPEN-kyltti + kultaläjä
@@ -993,6 +1031,17 @@ function limb(x0,y0,a1,l1,a2,l2){const x1=x0+Math.sin(a1)*l1,y1=y0+Math.cos(a1)*
   ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();return [x2,y2];}
 const SPIN=0.55;
 const TCOL={miner:["#5b3a1c","#6e2412"],sword:["#16181d","#5c0b0b"],archer:["#1d5a30","#6a1838"],spear:["#22427a","#8a3410"],giant:["#3e2460","#4d0f0f"]};
+const SPR={},SPR_OK={sword:1,archer:1,spear:1,giant:1};
+for(const k in SPR_OK)for(const tm of["p","e"]){const im=new Image();im.src="kuvat/bandi/"+k+"-"+tm+".png";SPR[k+tm]=im;}
+function drawSprite(u,s,T){
+  const im=SPR[u.type+(u.team?"e":"p")];if(!im||!im.complete||!im.naturalWidth)return false;
+  const Hh=u.type==="giant"?52:70,w=Hh*im.naturalWidth/im.naturalHeight,mv=u.moving&&!u.dead,p=u.phase||0,a=u.atk>0?u.atk/0.35:0;
+  let bob=0,rot=0,sy=1;
+  if(mv){bob=-Math.abs(Math.sin(p))*3.5;rot=Math.sin(p)*0.07;}
+  else if(!u.dead){sy=1+Math.sin(T*2.2+u.id)*0.018;}
+  if(a>0){rot+=Math.sin(a*Math.PI)*0.28;ctx.translate(Math.sin(a*Math.PI)*5,0);}
+  ctx.translate(0,bob);ctx.rotate(rot);ctx.scale(1,sy);
+  ctx.drawImage(im,-w/2,-Hh,w,Hh);drawFace(u,Hh,w);return true;}
 function drawUnit(u){
   const d=UT[u.type]||UT.sword,s=u.sc||d.size,c=u.col||(TCOL[u.type]||TCOL.sword)[u.team],acc=u.team?"#d42424":"#e8b000",T=G?G.time:0;
   // pyörähdys / hyppy
@@ -1002,6 +1051,7 @@ function drawUnit(u){
   if(u.hidden)ctx.globalAlpha=0.45;
   if(u.dead){ctx.translate(u.fx||0,(u.fy||0)-18*s);ctx.rotate(u.rot||0);ctx.translate(0,18*s);}
   ctx.scale(u.face*s,s);ctx.translate(0,jy);if(rot){ctx.translate(0,-18);ctx.rotate(rot);ctx.translate(0,18);}
+  if(u.type!=="miner"&&drawSprite(u,s,T)){ctx.restore();if(!u.dead&&u.hp<u.max){const y=u.y-(u.type==="giant"?56:74)*s+jy*s;ctx.fillStyle="#000a";ctx.fillRect(u.x-13,y,26,4);ctx.fillStyle=u.team?"#e33":"#3d3";ctx.fillRect(u.x-13,y,26*Math.max(0,u.hp/u.max),4);}return;}
   ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineCap="round";ctx.lineJoin="round";
   const lw=u.type==="giant"?3.6:2.8;ctx.lineWidth=lw;
   const p=u.phase,mv=u.moving&&!u.dead,a=u.atk>0?u.atk/0.35:0;
@@ -1229,7 +1279,7 @@ const SWORD1='<g><polygon points="11,2 13,0.5 15,2 14.6,15 11.4,15" fill="#e6e9e
 const SWORDS_SVG='<svg viewBox="0 0 26 26" width="26" height="26" style="vertical-align:-7px"><g transform="rotate(-40 13 13)">'+SWORD1+'</g><g transform="rotate(40 13 13)">'+SWORD1+'</g></svg>';
 const ubtns={};
 for(const k of ORDER){const b=document.createElement("button");b.className="ub";
-  b.innerHTML=`<span class="ic">${UT[k].icon}</span><span class="pr">${UT[k].cost}</span><span class="cnt"></span><span class="bar"></span><span class="cx">✖</span>`;
+  b.innerHTML=`<span class="ic">${SPR_OK[k]?`<img src="kuvat/bandi/${k}-ikoni.png" style="width:34px;height:34px;border-radius:50%;background:#fff3;object-fit:cover">`:UT[k].icon}</span><span class="pr">${UT[k].cost}</span><span class="cnt"></span><span class="bar"></span><span class="cx">✖</span>`;
   b.onclick=()=>{godSeq(k);if(state==="play"&&G&&G.winner<0&&!buy(0,k)&&popOf(0)+UT[k].pop>POPMAX)popFull();};b.querySelector(".cx").addEventListener("click",e=>{e.stopPropagation();if(state==="play")cancelBuy(0,k);});
   $("ubtns").appendChild(b);ubtns[k]=b;}
 $("bDef").onclick=()=>{if(G)G.teams[0].mode="defend";};
@@ -1253,7 +1303,7 @@ $("bSlBack").onclick=()=>{$("slots").classList.add("hide");if(slotMode==="save")
 function renderSlots(msg){
   $("slTitle").textContent=slotMode==="save"?t("slotsSave"):t("slotsLoad");$("bSlBack").textContent=t("back");
   const L=$("slList");L.innerHTML="";
-  for(let i=1;i<=5;i++){const key="tikkusota_slot"+i,d=readSlot(key);const row=document.createElement("div");row.className="shopi";
+  for(let i=1;i<=5;i++){const key="sstour2_slot"+i,d=readSlot(key);const row=document.createElement("div");row.className="shopi";
     let info=`<b>${t("slot")} ${i}</b>`;
     if(d){const m=Math.floor(d.time/60),sec=String(Math.floor(d.time%60)).padStart(2,"0");
       const when=new Date(d.savedAt||0).toLocaleString(({en:"en-GB",sv:"sv-SE",fi:"fi-FI",de:"de-DE",es:"es-ES",fr:"fr-FR"})[lang]||"en-GB",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -1305,14 +1355,14 @@ function endGame(){
 }
 
 /* ================= KEIKAN TÄHDET (1–3 ⭐) ================= */
-// ⭐ voitto · ⭐ oma patsas vähintään puolikunnossa · ⭐ voitto alle 8 minuutissa. Jokainen uusi tähti antaa +1 voittokolikon.
-const STAR_TIME=480;
-const STT={fi:["Voitto","Patsas yli puolikunnossa","Alle 8 minuuttia","Uusi tähti! +{n} 🪙"],
- sv:["Seger","Statyn mer än halvhel","Under 8 minuter","Ny stjärna! +{n} 🪙"],
- en:["Victory","Statue above half health","Under 8 minutes","New star! +{n} 🪙"],
- de:["Sieg","Statue über halber Kraft","Unter 8 Minuten","Neuer Stern! +{n} 🪙"],
- es:["Victoria","Estatua con más de media vida","Menos de 8 minutos","¡Nueva estrella! +{n} 🪙"],
- fr:["Victoire","Statue à plus de moitié","Moins de 8 minutes","Nouvelle étoile ! +{n} 🪙"]};
+// ⭐ voitto · ⭐ oma patsas vähintään puolikunnossa · ⭐ voitto alle 3 minuutissa. Jokainen uusi tähti antaa +1 voittokolikon.
+const STAR_TIME=180;
+const STT={fi:["Voitto","Patsas yli puolikunnossa","Alle 3 minuuttia","Uusi tähti! +{n} 🪙"],
+ sv:["Seger","Statyn mer än halvhel","Under 3 minuter","Ny stjärna! +{n} 🪙"],
+ en:["Victory","Statue above half health","Under 3 minutes","New star! +{n} 🪙"],
+ de:["Sieg","Statue über halber Kraft","Unter 3 Minuten","Neuer Stern! +{n} 🪙"],
+ es:["Victoria","Estatua con más de media vida","Menos de 3 minutos","¡Nueva estrella! +{n} 🪙"],
+ fr:["Victoire","Statue à plus de moitié","Moins de 3 minutes","Nouvelle étoile ! +{n} 🪙"]};
 function starsOf(i){return (save.stars&&save.stars[i])||0;}
 function starStr(n){return "⭐".repeat(n)+"☆".repeat(3-n);}
 function totalStars(){let n=0;for(let i=0;i<LEVELS.length;i++)n+=starsOf(i);return n;}
@@ -1336,7 +1386,7 @@ function renderCSlots(msg){
   $("csTitle").textContent=t("csTitle");$("bCsBack").textContent=t("back");
   $("bNewCamp").textContent=csArm==="new"?t("newCampQ"):t("newCamp");
   const L=$("csList");L.innerHTML="";
-  for(let i=1;i<=5;i++){const key="tikkusota_camp"+i;let d=null;try{d=JSON.parse(localStorage.getItem(key))}catch(e){}
+  for(let i=1;i<=5;i++){const key="sstour2_camp"+i;let d=null;try{d=JSON.parse(localStorage.getItem(key))}catch(e){}
     const row=document.createElement("div");row.className="shopi";let info=`<b>${t("slot")} ${i}</b>`;
     if(d){const when=new Date(d.savedAt||0).toLocaleString(({en:"en-GB",sv:"sv-SE",fi:"fi-FI",de:"de-DE",es:"es-ES",fr:"fr-FR"})[lang]||"en-GB",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"});
       const where=d.camp>=LEVELS.length?"👑":(d.camp+1)+". "+LEVELS[d.camp].name;let ups=0;for(const k in d.up)ups+=d.up[k];
@@ -1469,14 +1519,61 @@ function drawFinArms(u,c,sx,sy,lw,T){
 }
 const FANCOL=["#2a3a6a","#6a2a4a","#2a6a5a","#5a4a2a","#4a2a6a","#6a5a2a","#2a4a3a","#6a3a2a"];
 function fanUnit(id,x,y,team,fin,sc){return {id,type:"fan",team,x,y,face:team?-1:1,moving:false,phase:0,atk:0,hp:1,max:1,fin,sc,col:FANCOL[id%FANCOL.length],flag:team?"#d42424":"#e8b000"};}
+
+/* Katsomon yleisö: valmiiksi piirretyt siluettilaatat (2 kuvaa vuorotellen = yleisö hyppii) */
+const CROWD_T={},CROWD_W=600,CROWD_H=134;
+function crowdTile(V,fr){const key=V.stand+V.seat+fr;if(CROWD_T[key])return CROWD_T[key];
+  const k=3,c=document.createElement("canvas");c.width=CROWD_W*k;c.height=CROWD_H*k;const x=c.getContext("2d");x.scale(k,k);x.lineCap="round";
+  const rows=12,rh=CROWD_H/rows,DARK=["#1b1426","#231a30","#2a1f38","#18121f","#201628"];
+  for(let r=0;r<rows;r++){const y=r*rh;x.fillStyle=r%2?V.stand:V.seat;x.fillRect(0,y,CROWD_W,rh+0.6);}
+  for(let r=0;r<rows;r++){const y=r*rh,hr=1.55+r*0.13,n=Math.round(CROWD_W/(6.6-r*0.13)),sp=CROWD_W/n;
+    for(let j=0;j<n;j++){const id=(j*31+r*17)%1024,h=(id*2654435761>>>0)%997,xx=(j+((r%2)?0.5:0))*sp+((h%7)-3)*0.25,yh=y+rh*0.42;
+      const col=DARK[h%DARK.length];x.fillStyle=col;
+      x.beginPath();x.ellipse(xx,yh+hr*1.9,hr*1.45,hr*1.05,0,0,7);x.fill();
+      x.beginPath();x.arc(xx,yh,hr,0,7);x.fill();
+      x.strokeStyle=V.fans[h%3];x.globalAlpha=0.55;x.lineWidth=0.7;x.beginPath();x.arc(xx,yh,hr*0.95,Math.PI*1.15,Math.PI*1.85);x.stroke();x.globalAlpha=1;
+      const up=(h%5===fr*2)||(h%13===fr+3);
+      if(up){x.strokeStyle=col;x.lineWidth=hr*0.75;const sw=((h>>3)%3-1)*hr*0.6;
+        x.beginPath();x.moveTo(xx-hr*1.1,yh+hr*1.4);x.lineTo(xx-hr*1.7+sw,yh-hr*2.6);x.moveTo(xx+hr*1.1,yh+hr*1.4);x.lineTo(xx+hr*1.7+sw,yh-hr*2.6);x.stroke();
+        if(h%3===0){const lx=xx+hr*1.7+sw,ly=yh-hr*3.1;const g=x.createRadialGradient(lx,ly,0,lx,ly,hr*2.2);g.addColorStop(0,h%2?"rgba(255,246,176,.9)":"rgba(207,232,255,.9)");g.addColorStop(1,"rgba(255,255,255,0)");
+          x.fillStyle=g;x.fillRect(lx-hr*2.2,ly-hr*2.2,hr*4.4,hr*4.4);x.fillStyle="#fff";x.fillRect(lx-0.5,ly-0.7,1,1.4);}}
+      else if(h%37===fr){x.fillStyle=V.fans[(h>>2)%3];x.fillRect(xx-hr*2.6,yh-hr*2.2,hr*5.2,hr*0.9);}}}
+  const sh=x.createLinearGradient(0,0,0,CROWD_H);sh.addColorStop(0,"rgba(0,0,0,.45)");sh.addColorStop(0.5,"rgba(0,0,0,.12)");sh.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=sh;x.fillRect(0,0,CROWD_W,CROWD_H);
+  CROWD_T[key]=c;return c;}
+/* Eturivin fanit ja lehdistö siluetteina */
+function drawFanSil(x,y,team,kind,i,T,hop){
+  const dark="#17101f",acc=team?"#d42464":"#e8b000",w=Math.sin(T*6+i*1.7)*0.5;ctx.save();ctx.translate(x,y-hop);ctx.scale(0.82,0.82);ctx.lineCap="round";
+  ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(0,1+hop/0.82,9,2.5,0,0,7);ctx.fill();
+  ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-4,0);ln(3,-14,4,0);
+  ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(0,-22,7.5,10,0,0,7);ctx.fill();
+  ctx.fillStyle=acc;ctx.fillRect(-7.5,-28,15,3.4);ctx.fillRect(team?-7:4,-28,3,9);
+  ctx.fillStyle=dark;ctx.beginPath();ctx.arc(0,-37,5.8,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(255,236,190,.45)";ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,-37,5.6,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+  ctx.strokeStyle=dark;ctx.lineWidth=3.6;
+  if(kind==="flag"){ln(5,-28,9,-42);ln(-5,-28,-9,-40+w*4);ctx.strokeStyle="#cfcfcf";ctx.lineWidth=1.3;ln(9,-36,9,-66);
+    ctx.fillStyle=acc;ctx.beginPath();ctx.moveTo(9,-66);ctx.quadraticCurveTo(18,-64+w*5,27,-66);ctx.lineTo(27,-54);ctx.quadraticCurveTo(18,-52+w*5,9,-54);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="900 7px system-ui";ctx.textAlign="center";ctx.fillText(team?"★":"🤘",18,-57+w*2);}
+  else{const ax=-10+w*3,bx=10-w*3;ln(-5,-28,ax,-47);ln(5,-28,bx,-47);ctx.fillStyle=dark;ctx.beginPath();ctx.arc(ax,-48,2.3,0,7);ctx.arc(bx,-48,2.3,0,7);ctx.fill();
+    if(i%3===0){const g=ctx.createRadialGradient(bx,-53,0,bx,-53,7);g.addColorStop(0,"rgba(207,232,255,.95)");g.addColorStop(1,"rgba(207,232,255,0)");ctx.fillStyle=g;ctx.fillRect(bx-7,-60,14,14);ctx.fillStyle="#fff";ctx.fillRect(bx-1.4,-55.5,2.8,4.5);}
+    else{ctx.strokeStyle=dark;ctx.lineWidth=1.4;ln(ax-1.3,-49,ax-1.8,-53);ln(ax+1.3,-49,ax+1.8,-53);ln(bx-1.3,-49,bx-1.8,-53);ln(bx+1.3,-49,bx+1.8,-53);}}
+  ctx.restore();}
+function drawPress(px,T){const dark="#120c18";ctx.save();ctx.lineCap="round";
+  // kameramies
+  ctx.translate(px-26,348);ctx.scale(0.85,0.85);ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-5,0);ln(3,-14,5,0);ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(0,-22,8,10,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.arc(1,-37,5.8,0,7);ctx.fill();ctx.fillStyle="#2a2a34";ctx.fillRect(-4,-46,22,12);ctx.fillStyle="#111";ctx.fillRect(18,-44,6,8);ctx.fillStyle="#7aa8ff";ctx.fillRect(21,-43,3,6);
+  ctx.fillStyle=Math.floor(T*2)%2?"#ff2a2a":"#5a0a0a";ctx.beginPath();ctx.arc(-1,-43,1.6,0,7);ctx.fill();
+  ctx.restore();ctx.save();ctx.lineCap="round";
+  // toimittaja mikrofonin kanssa
+  ctx.translate(px+18,350);ctx.scale(0.85,0.85);ctx.strokeStyle=dark;ctx.lineWidth=5;ln(-3,-14,-4,0);ln(3,-14,4,0);ctx.fillStyle="#3a2a4a";ctx.beginPath();ctx.ellipse(0,-22,7.5,10,0,0,7);ctx.fill();
+  ctx.fillStyle=dark;ctx.beginPath();ctx.arc(0,-37,5.8,0,7);ctx.fill();ctx.strokeStyle=dark;ctx.lineWidth=3.6;ln(-5,-28,-10,-36);ctx.fillStyle="#d22";ctx.fillRect(-13,-41,5,6);ctx.fillStyle="#222";ctx.beginPath();ctx.arc(-10.5,-42,2.6,0,7);ctx.fill();
+  ctx.restore();}
 function drawCrowd(){
   const T=G.time,ex=G.banners&&G.banners.length;
   for(const S of G.statues){const dir=S.team?-1:1;
-    for(let i=0;i<7;i++){const u=fanUnit(i+S.team*10,S.x+dir*(175+i*20),346+(i%2)*6,S.team,i%3===1?"flag":"cheer",0.78);
-      const hop=ex||((T+i*0.53)%2.8<0.5)?Math.abs(Math.sin(T*9+i))*6:0;u.y-=hop;u.face=dir;drawUnit(u);}}
+    for(let i=0;i<7;i++){const hop=ex||((T+i*0.53)%2.8<0.5)?Math.abs(Math.sin(T*9+i))*6:0;
+      drawFanSil(S.x+dir*(175+i*20),346+(i%2)*6,S.team,i%3===1?"flag":"cheer",i+S.team*10,T,hop);}}
   // lehdistö keskellä
-  const px=W/2;const cam=fanUnit(91,px-26,348,0,"camera",0.85);cam.col="#3a3a44";cam.face=1;drawUnit(cam);
-  const rep=fanUnit(92,px+18,350,1,"mic",0.85);rep.col="#4a3a5a";rep.face=-1;drawUnit(rep);
+  const px=W/2;drawPress(px,T);
   ctx.fillStyle="#d22";ctx.beginPath();ctx.roundRect?ctx.roundRect(px-14,318,30,11,3):ctx.rect(px-14,318,30,11);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 8px system-ui";ctx.textAlign="center";ctx.fillText("LIVE",px+3,326.5);
   if(Math.floor(T*2)%2===0){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(px-9,323.5,2,0,7);ctx.fill();}
 }
@@ -1659,7 +1756,7 @@ function useAbility(k){
   else if(k==="roadie"){const add=S.max*0.15;S.hp=Math.min(S.max,S.hp+add);A.wall={x:S.x+640,t:D.dur};
     G.floats.push({x:S.x,y:GY-230*S.size,txt:"🔧 +"+Math.round(add),col:"#fff",t:0});banner("🔧 "+name+"!","#ffd84a");sfx("thud");}
   else if(k==="smoke"){A.smoke=D.dur;banner("🌫 "+name+"!","#cfd8e8");if(AU.ctx&&save.sfx)noise(1.2,0.25,"lowpass",900);}
-  else if(k==="king"){A.king=D.dur;A.kingX=frontX();A.wave={x:A.kingX,hit:{}};banner("👑 "+name+"!","#f5c400");G.shk=Math.max(G.shk||0,0.5);sfxKing();setTimeout(sfxSolo,1100);}
+  else if(k==="king"){A.king=D.dur;A.kingX=frontX();A.wave={x:A.kingX,hit:{}};G.slow=1.4;camX=A.kingX-viewW()*0.35;clampCam();G.flash=1;banner("👑 "+name+"!","#f5c400");G.shk=Math.max(G.shk||0,0.5);sfxKing();setTimeout(sfxSolo,1100);}
 }
 function frontX(){let x=G.statues[0].x+220;for(const u of G.units)if(u.team===0&&!u.dead&&u.type!=="miner")x=Math.max(x,u.x);return Math.min(x-70,W-400);}
 function sfxSolo(){if(!AU.ctx||!save.sfx)return;const n=AU.ctx.currentTime;[330,392,440,523,587,659,784,880,1047].forEach((f,i)=>tone("sawtooth",f,f*1.02,0.12,0.09,n+i*0.06,AU.fx,2400));tone("sawtooth",1047,1568,0.6,0.08,n+0.56,AU.fx,2400);}
@@ -1673,10 +1770,15 @@ function stepAbil(dt){
   if(A.wall){A.wall.t-=dt;if(A.wall.t<=0)A.wall=null;}
   if(A.wave){A.wave.x+=1100*dt;
     for(const u of G.units){if(u.team!==1||u.dead||A.wave.hit[u.id]||u.x>A.wave.x)continue;A.wave.hit[u.id]=1;
-      hurt(u,90,0,"giant");if(!u.dead){u.x=Math.min(W-30,u.x+(u.type==="giant"?40:90));}}
+      hurt(u,170,0,"giant");if(!u.dead){u.x=Math.min(W-30,u.x+(u.type==="giant"?60:140));u.spin=SPIN;}}
     if(A.wave.x>W)A.wave=null;}
 }
-function drawAbil(){
+function drawTip(){if(!G||!(G.tip>0)||G.fake||G.level===0)return;G.tip-=1/60;
+  const L={fi:"🎯 Kaada vastustajan patsas! →",sv:"🎯 Fäll motståndarens staty! →",en:"🎯 Topple the rival statue! →",de:"🎯 Stürze die gegnerische Statue! →",es:"🎯 ¡Derriba la estatua rival! →",fr:"🎯 Renverse la statue rivale ! →"};
+  const P={fi:"↖ Paina nappia – bändisi kasvaa!",sv:"↖ Tryck på en knapp – bandet växer!",en:"↖ Tap a button – your band grows!",de:"↖ Tippe auf einen Knopf – deine Band wächst!",es:"↖ ¡Toca un botón y tu banda crece!",fr:"↖ Touche un bouton – ton groupe grandit !"};
+  const a=Math.min(1,G.tip),vw=viewW();ctx.save();ctx.globalAlpha=a;ctx.textAlign="center";ctx.font="900 30px system-ui";ctx.lineWidth=6;ctx.strokeStyle="#120a20";ctx.fillStyle="#f5c400";
+  const x=camX+vw/2;ctx.strokeText(L[lang]||L.en,x,150);ctx.fillText(L[lang]||L.en,x,150);ctx.font="800 20px system-ui";ctx.fillStyle="#fff";ctx.strokeText(P[lang]||P.en,x,190+Math.sin(G.time*6)*4);ctx.fillText(P[lang]||P.en,x,190+Math.sin(G.time*6)*4);ctx.restore();}
+function drawAbil(){drawTip();
   const A=G.ab;if(!A)return;const T=G.time;
   if(A.wall){const x=A.wall.x,al=Math.min(1,A.wall.t/0.5);ctx.globalAlpha=al;
     for(let i=0;i<4;i++){const y=LANE0-6+i*20;ctx.fillStyle="#1a1a1a";ctx.fillRect(x-14,y-46,28,46);ctx.strokeStyle="#555";ctx.lineWidth=2;ctx.strokeRect(x-14,y-46,28,46);
@@ -1690,7 +1792,15 @@ function drawAbil(){
       ctx.fillStyle=`rgba(225,230,240,${al})`;ctx.beginPath();ctx.arc(u.x+Math.sin(T*1.5+u.id+j)*10,u.y-22-j*14,r,0,7);ctx.fill();}}}
   if(A.king>0){drawKing(A.kingX,LANE0+34,T,Math.min(1,A.king/1,(AB.king.dur-A.king)/0.6));}
 }
+const KIMG=new Image();KIMG.src="kuvat/bandi/kuningas.png";
 function drawKing(x,y,T,al){
+  if(KIMG.complete&&KIMG.naturalWidth){ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);
+    ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createLinearGradient(0,-230,0,0);g.addColorStop(0,"rgba(255,240,180,0)");g.addColorStop(1,"rgba(255,240,180,0.4)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-10,-230);ctx.lineTo(10,-230);ctx.lineTo(55,0);ctx.lineTo(-55,0);ctx.fill();ctx.restore();
+    const H=110,w=H*KIMG.naturalWidth/KIMG.naturalHeight,b=-Math.abs(Math.sin(T*5))*5,r=Math.sin(T*2.5)*0.05;
+    ctx.save();ctx.translate(0,b);ctx.rotate(r);ctx.drawImage(KIMG,-w/2,-H,w,H);ctx.restore();
+    ctx.fillStyle="#fff";ctx.font="bold 20px system-ui";ctx.textAlign="center";for(let i=0;i<3;i++){const q=(T*0.8+i/3)%1;ctx.globalAlpha=Math.max(0,al)*(1-q);ctx.fillText(i%2?"♫":"♪",30+i*10,-H+10-q*50);}
+    ctx.restore();ctx.globalAlpha=1;return;}
   ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.translate(x,y);const s=1.5,sw=Math.sin(T*6)*4;ctx.scale(s,s);
   // pieni lava ja valokeila
   ctx.save();ctx.globalCompositeOperation="lighter";const g=ctx.createLinearGradient(0,-140,0,0);g.addColorStop(0,"rgba(255,240,180,0)");g.addColorStop(1,"rgba(255,240,180,0.35)");
@@ -1719,7 +1829,7 @@ function drawKing(x,y,T,al){
 const abtns={};
 function buildAbBtns(){const box=$("abtns");
   for(const k of AB_ORDER){const b=document.createElement("button");b.className="ub ab";
-    b.innerHTML=`<span class="ic">${AB[k].ic}</span><span class="pr">${AB[k].cost}</span><span class="cdn"></span>`;
+    b.innerHTML=`<span class="ic">${k==="king"?'<img src="kuvat/bandi/kuningas.png" style="height:30px">':AB[k].ic}</span><span class="pr">${AB[k].cost}</span><span class="cdn"></span>`;
     b.onclick=()=>{if(!G)return;if(!abOpen(k)){G.floats.push({x:camX+viewW()/2,y:GY-150,txt:at("opens").replace("{c}",LEVELS[AB[k].lvl].name),col:"#ffd84a",t:0});return;}useAbility(k);};
     box.appendChild(b);abtns[k]=b;}}
 buildAbBtns();
@@ -1727,12 +1837,79 @@ function updAbUI(){if(!G||G.fake)return;const A=abState(),tm=G.teams[0];
   const any=AB_ORDER.some(abOpen);$("abtns").style.display=any?"flex":"none";
   for(const k of AB_ORDER){const b=abtns[k],open=abOpen(k),used=AB[k].once&&A.used[k],cd=A.cd[k]||0;
     b.title=open?at(k)[0]+" – "+AB[k].cost+" 💰\n"+at(k)[1]:at("opens").replace("{c}",LEVELS[AB[k].lvl].name);
-    b.querySelector(".ic").textContent=open?AB[k].ic:"🔒";b.querySelector(".pr").textContent=used?"✓":AB[k].cost;
+    if(k!=="king")b.querySelector(".ic").textContent=open?AB[k].ic:"🔒";b.querySelector(".pr").textContent=used?"✓":AB[k].cost;
     const cdn=b.querySelector(".cdn");cdn.style.display=cd>0?"flex":"none";cdn.textContent=cd>0?Math.ceil(cd):"";
     b.style.display=open?"":"none";
     const active=(k==="mgr"&&A.mgr>0)||(k==="smoke"&&A.smoke>0)||(k==="king"&&A.king>0)||(k==="roadie"&&A.wall);
     b.classList.toggle("off",!open||used||cd>0||tm.gold<AB[k].cost);b.classList.toggle("act",!!active);}}
 
+
+
+
+/* ===== BACKSTAGE: oma kuva peliin ja selfie kuninkaan kanssa (kuva pysyy vain tässä laitteessa) ===== */
+const BST={fi:["Ota selfie tai valitse kuva – pääset itse lavalle!","Kamera","Kuvagalleria","Kenen paikalle menet?","Tallenna kuva","Poista","Valmis","Kuva jää vain tähän laitteeseen eikä lähde minnekään.","Rumpali","Kitaristi","Laulaja","Basisti"],
+ sv:["Ta en selfie eller välj en bild – du kliver själv upp på scenen!","Kamera","Bildgalleri","Vems plats tar du?","Spara bild","Ta bort","Klar","Bilden stannar i den här enheten och skickas ingenstans.","Trummis","Gitarrist","Sångare","Basist"],
+ en:["Take a selfie or pick a photo – you join the band!","Camera","Gallery","Whose place do you take?","Save picture","Remove","Done","The photo stays on this device and is never sent anywhere.","Drummer","Guitarist","Singer","Bassist"],
+ de:["Mach ein Selfie oder wähle ein Foto – du stehst selbst auf der Bühne!","Kamera","Galerie","Wessen Platz nimmst du ein?","Bild speichern","Entfernen","Fertig","Das Foto bleibt auf diesem Gerät und wird nirgendwohin gesendet.","Schlagzeuger","Gitarristin","Sänger","Bassist"],
+ es:["¡Hazte un selfie o elige una foto y sube al escenario!","Cámara","Galería","¿A quién sustituyes?","Guardar imagen","Quitar","Listo","La foto se queda en este dispositivo y no se envía a ningún sitio.","Batería","Guitarrista","Cantante","Bajista"],
+ fr:["Prends un selfie ou choisis une photo – tu montes sur scène !","Appareil photo","Galerie","Qui remplaces-tu ?","Enregistrer l'image","Supprimer","Terminé","La photo reste sur cet appareil et n'est envoyée nulle part.","Batteur","Guitariste","Chanteur","Bassiste"]};
+const bsT=i=>(BST[lang]||BST.en)[i];
+// kasvojen paikka kunkin hahmokuvan sisällä (osuus leveydestä/korkeudesta)
+const FACEPOS={sword:[0.56,0.27],archer:[0.36,0.12],spear:[0.46,0.15],giant:[0.62,0.13]};
+let FACE=null,FACE_SLOT="spear";
+try{const d=localStorage.getItem("sstour2_face");if(d){FACE=new Image();FACE.src=d;}FACE_SLOT=localStorage.getItem("sstour2_faceSlot")||"spear";}catch(e){}
+function drawFace(u,Hh,w){if(!FACE||!FACE.complete||!FACE.naturalWidth||u.team!==0||u.type!==FACE_SLOT)return;
+  const fp=FACEPOS[u.type],cx=-w/2+fp[0]*w,cy=-Hh+fp[1]*Hh,r=Hh*0.13;
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+1.6,0,7);ctx.fillStyle="#f5c400";ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.clip();ctx.drawImage(FACE,cx-r,cy-r,r*2,r*2);ctx.restore();}
+let bsPrev=null;
+function bsRender(){const c=$("bsC"),x=c.getContext("2d");x.clearRect(0,0,640,480);
+  const g=x.createLinearGradient(0,0,640,480);g.addColorStop(0,"#3a0f5a");g.addColorStop(1,"#c2185b");x.fillStyle=g;x.fillRect(0,0,640,480);
+  for(let i=0;i<40;i++){x.fillStyle=SPECTRUM[i%6]+"55";x.beginPath();x.arc((i*97)%640,(i*53)%480,6+(i%5)*3,0,7);x.fill();}
+  x.save();x.translate(450,470);if(KIMG.naturalWidth){const H=420,w=H*KIMG.naturalWidth/KIMG.naturalHeight;x.drawImage(KIMG,-w/2,-H,w,H);}x.restore();
+  if(FACE&&FACE.naturalWidth){x.save();x.beginPath();x.arc(200,230,150,0,7);x.fillStyle="#f5c400";x.fill();x.beginPath();x.arc(200,230,142,0,7);x.clip();x.drawImage(FACE,58,88,284,284);x.restore();}
+  else{x.fillStyle="#fff8";x.beginPath();x.arc(200,230,142,0,7);x.fill();x.fillStyle="#2b1515";x.font="900 120px system-ui";x.textAlign="center";x.fillText("?",200,272);}
+  x.fillStyle="#000a";x.fillRect(0,416,640,64);x.fillStyle="#f5c400";x.font="900 30px system-ui";x.textAlign="center";x.fillText("BACKSTAGE · STRINGS & STATUES",320,452);
+  x.fillStyle="#fff";x.font="700 16px system-ui";x.fillText("WORLD TOUR 2026",320,472);}
+function bsLoad(file){if(!file)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const c=document.createElement("canvas");c.width=c.height=256;const x=c.getContext("2d"),m=Math.min(im.width,im.height);
+  const sx=(im.width-m)/2,sy=Math.max(0,(im.height-m)*0.35);x.drawImage(im,sx,sy,m,m,0,0,256,256);
+  const d=c.toDataURL("image/jpeg",0.85);try{localStorage.setItem("sstour2_face",d);}catch(e){}
+  FACE=new Image();FACE.onload=bsRender;FACE.src=d;};im.src=r.result;};r.readAsDataURL(file);}
+function bsSlots(){const box=$("bsSlots");box.innerHTML="";["sword","archer","spear","giant"].forEach((k,i)=>{const b=document.createElement("button");
+  b.className="sb"+(FACE_SLOT===k?" on":"");b.innerHTML=`<img src="kuvat/bandi/${k}-ikoni.png" style="width:26px;height:26px;vertical-align:middle"> ${bsT(8+i)}`;
+  b.onclick=()=>{FACE_SLOT=k;try{localStorage.setItem("sstour2_faceSlot",k)}catch(e){}bsSlots();};box.appendChild(b);});}
+let bsWas=null;
+function openBackstage(){bsWas=state;if(state==="play")state="paused";$("bstage").classList.remove("hide");
+  $("bsP").textContent=bsT(0);$("bsCam").textContent=bsT(1);$("bsGal").textContent=bsT(2);$("bsW").textContent=bsT(3);
+  $("bsSave").textContent="💾 "+bsT(4);$("bsDel").textContent="🗑 "+bsT(5);$("bsClose").textContent="✔ "+bsT(6);$("bsPriv").textContent="🔒 "+bsT(7);bsSlots();bsRender();}
+$("bBack").onclick=openBackstage;
+$("bsFile").onchange=e=>bsLoad(e.target.files[0]);$("bsFile2").onchange=e=>bsLoad(e.target.files[0]);
+$("bsClose").onclick=()=>{$("bstage").classList.add("hide");if(bsWas==="play"&&state==="paused")state="play";};
+$("bsDel").onclick=()=>{FACE=null;try{localStorage.removeItem("sstour2_face")}catch(e){}bsRender();};
+$("bsSave").onclick=()=>{bsRender();const a=document.createElement("a");a.download="backstage-selfie.png";a.href=$("bsC").toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();};
+
+/* ===== Opastus ensimmäisellä keikalla: nuoli osoittaa, mitä painaa ===== */
+const TUTX={fi:["Paina tästä – saat rumpalin! 🥁","Vielä pari soittajaa…","Nyt: 🤘 HYÖKKÄÄ!","Kaada vastustajan patsas! 🗿💥"],
+ sv:["Tryck här – du får en trummis! 🥁","Ett par musiker till…","Nu: 🤘 ANFALL!","Fäll motståndarens staty! 🗿💥"],
+ en:["Tap here – you get a drummer! 🥁","A couple more players…","Now: 🤘 ATTACK!","Topple the rival statue! 🗿💥"],
+ de:["Tippe hier – du bekommst einen Schlagzeuger! 🥁","Noch ein paar Musiker…","Jetzt: 🤘 ANGRIFF!","Stürze die gegnerische Statue! 🗿💥"],
+ es:["¡Toca aquí y tendrás un batería! 🥁","Un par de músicos más…","Ahora: 🤘 ¡ATACA!","¡Derriba la estatua rival! 🗿💥"],
+ fr:["Touche ici – tu reçois un batteur ! 🥁","Encore quelques musiciens…","Maintenant : 🤘 ATTAQUE !","Renverse la statue rivale ! 🗿💥"]};
+const tutEl=document.createElement("div");tutEl.id="tut";document.body.appendChild(tutEl);
+const tutCss=document.createElement("style");tutCss.textContent="#tut{position:fixed;z-index:50;pointer-events:none;display:none;background:#f5c400;color:#120a20;font:900 18px system-ui;padding:8px 14px;border-radius:12px;box-shadow:0 4px 0 #7a5a00,0 0 20px #f5c400aa;white-space:nowrap}#tut b{position:absolute;font-size:30px;line-height:1}";document.head.appendChild(tutCss);
+function updTut(){
+  if(!G||G.fake||G.level!==0||state!=="play"||G.winner>=0){tutEl.style.display="none";return;}
+  const L=TUTX[lang]||TUTX.en,tm=G.teams[0];let n=0;for(const u of G.units)if(u.team===0&&!u.dead)n++;for(const k of ORDER)n+=tm.q[k].length;
+  let step,el;
+  if(tm.mode==="attack"){step=3;el=null;}else if(n<3){step=0;el=ubtns.sword;}else if(n<5){step=1;el=ubtns.sword;}else{step=2;el=$("bAtk");}
+  tutEl.style.display="block";const bounce=Math.sin(performance.now()/180)*6;
+  if(!el){tutEl.innerHTML=L[step];tutEl.style.left=(innerWidth/2-tutEl.offsetWidth/2)+"px";tutEl.style.top=(innerHeight*0.3+bounce)+"px";return;}
+  const r=el.getBoundingClientRect(),up=r.top>innerHeight/2;
+  tutEl.innerHTML=L[step]+(up?'<b style="left:12px;bottom:-30px">⬇</b>':'<b style="left:12px;top:-30px">⬆</b>');
+  tutEl.style.left=Math.max(6,Math.min(innerWidth-tutEl.offsetWidth-6,r.left))+"px";
+  tutEl.style.top=(up?r.top-tutEl.offsetHeight-34+bounce:r.bottom+34+bounce)+"px";
+}
 /* ===== ruudun vetäminen ja pienoiskartta ===== */
 let drag=null;
 function setZoom(z,cx){const old=viewW(),c=camX+(cx!=null?cx/scale:old/2);save.zoom=Math.max(1,Math.min(2.2,z));calcView();camX=c-(cx!=null?cx/scale:viewW()/2);clampCam();try{persist()}catch(e){}}
@@ -1765,14 +1942,14 @@ function loop(now){
   if(G){if(G.slow>0)G.slow-=dt;if(G.shk>0)G.shk=Math.max(0,G.shk-dt*1.5);if(G.flash>0)G.flash=Math.max(0,G.flash-dt*1.5);}
   if(state==="play"||(state==="over"&&G)){acc+=dt*speed*(G&&G.slow>0?0.3:1);while(acc>=1/60){step(1/60);acc-=1/60;}}
   if(state==="play"){saveT+=dt;if(saveT>5){saveT=0;saveGame();}}
-  draw();drawMini();updUI();updAbUI();requestAnimationFrame(loop);
+  draw();drawMini();updUI();updAbUI();updTut();requestAnimationFrame(loop);
 }
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
 if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}
 state="intro";
 /* ================= ALKUNÄYTÖS: autotalli → kiertuebussi → kitara murskaa patsaan ================= */
 const PROCAP={"en": ["It all started in a garage…", "…then the band hit the road…", "…and the guitars got LOUDER…", "Now the whole world is waiting.", "Skip ▶"], "fi": ["Kaikki alkoi autotallista…", "…sitten bändi lähti tien päälle…", "…ja kitarat soivat yhä KOVEMPAA…", "Nyt koko maailma odottaa.", "Ohita ▶"], "sv": ["Allt började i ett garage…", "…sedan gav sig bandet ut på vägarna…", "…och gitarrerna blev allt HÖGRE…", "Nu väntar hela världen.", "Hoppa över ▶"], "de": ["Alles begann in einer Garage…", "…dann ging die Band auf Tour…", "…und die Gitarren wurden immer LAUTER…", "Jetzt wartet die ganze Welt.", "Überspringen ▶"], "es": ["Todo empezó en un garaje…", "…luego la banda salió de gira…", "…y las guitarras sonaron cada vez MÁS FUERTE…", "Ahora el mundo entero espera.", "Saltar ▶"], "fr": ["Tout a commencé dans un garage…", "…puis le groupe a pris la route…", "…et les guitares ont joué de plus en plus FORT…", "Maintenant, le monde entier attend.", "Passer ▶"]};
-(function prologue(){
+(function prologue(){return; // alkuelokuva pois: kansikuva ja peli heti (sääntö 2)
   const intro=$("intro");if(!intro)return;intro.classList.add("wait");
   const P=PROCAP[lang]||PROCAP.en,box=document.createElement("div");box.id="pro";
   box.innerHTML='<canvas></canvas><div id="proCap"></div><button id="proSkip"></button>';document.body.appendChild(box);
@@ -1861,8 +2038,8 @@ const PROCAP={"en": ["It all started in a garage…", "…then the band hit the 
 })();
 (function intro(){
   $("iWel").textContent=t("introWel");$("introGo").textContent=t("introGo");
-  const L=t("introLines");L.forEach((x,i)=>{const d=document.createElement("div");d.className="ln";d.textContent=x;d.style.animation=`fin .9s ${1.6+i*0.9}s forwards`;$("iLines").appendChild(d);});
-  $("introGo").style.animationDelay=(1.6+L.length*0.9)+"s, "+(2.4+L.length*0.9)+"s";
+  const L=t("introLines");L.forEach((x,i)=>{const d=document.createElement("div");d.className="ln";d.textContent=x;d.style.animation=`fin .5s ${0.6+i*0.2}s forwards`;$("iLines").appendChild(d);});
+  $("introGo").style.animationDelay="0.8s, 1.3s";
   let t0=0,an=0;const cv3=$("introc");
   function frame(now){an=requestAnimationFrame(frame);if(!t0)t0=now;const T=(now-t0)/1000,r=cv3.getBoundingClientRect(),d=window.devicePixelRatio||1;
     if(cv3.width!==Math.round(r.width*d)){cv3.width=r.width*d;cv3.height=r.height*d;}
@@ -1910,7 +2087,7 @@ const PROCAP={"en": ["It all started in a garage…", "…then the band hit the 
           if(id%5===0){c.fillStyle=id%2?"#ffd060":"#cdeaff";c.globalAlpha=0.7+0.3*Math.sin(T*9+id);c.beginPath();c.arc(x+sz*1.6+wv,hy-sz*3.1,sz*0.45,0,7);c.fill();c.globalAlpha=1;}}}}
   }
   an=requestAnimationFrame(frame);
-  function go(){cancelAnimationFrame(an);$("intro").style.transition="opacity .5s";$("intro").style.opacity=0;setTimeout(()=>{$("intro").remove();showMenu();},500);}
+  function go(){cancelAnimationFrame(an);$("intro").style.transition="opacity .5s";$("intro").style.opacity=0;setTimeout(()=>{$("intro").remove();if(save.camp<LEVELS.length)newGame(save.camp);else showMenu();},500);}
   $("intro").addEventListener("click",go,{once:true});
 })();
 resize();applyLang();requestAnimationFrame(loop);

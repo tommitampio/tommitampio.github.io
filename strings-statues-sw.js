@@ -1,7 +1,29 @@
 // Strings & Statues: tallentaa pelin puhelimeen, jotta se toimii myös ilman nettiä.
 // Nettiyhteyden ollessa päällä haetaan aina uusin versio, muuten käytetään tallennettua.
-const CACHE = "strings-statues-v1";
-const FILES = ["/sticks-statues.html", "/strings-statues.webmanifest", "/strings-statues-192.png", "/strings-statues-512.png"];
+const CACHE = "strings-statues-v2";
+const FILES = [
+  "/sticks-statues.html",
+  "/strings-statues.webmanifest",
+  "/strings-statues-192.png",
+  "/strings-statues-512.png",
+  "/kuvat/strings-statues-bandi.jpg",
+  "/kuvat/bandi/kuningas.png",
+  "/kuvat/bandi/patsas-p.png",
+  "/kuvat/bandi/patsas-e.png",
+  "/musiikki/hopeful-road-trip.mp3",
+  "/kuvat/bandi/sword-p.png",
+  "/kuvat/bandi/sword-e.png",
+  "/kuvat/bandi/sword-ikoni.png",
+  "/kuvat/bandi/archer-p.png",
+  "/kuvat/bandi/archer-e.png",
+  "/kuvat/bandi/archer-ikoni.png",
+  "/kuvat/bandi/spear-p.png",
+  "/kuvat/bandi/spear-e.png",
+  "/kuvat/bandi/spear-ikoni.png",
+  "/kuvat/bandi/giant-p.png",
+  "/kuvat/bandi/giant-e.png",
+  "/kuvat/bandi/giant-ikoni.png"
+];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
