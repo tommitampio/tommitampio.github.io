@@ -117,6 +117,7 @@ canvas#c{position:absolute;inset:0;width:100%;height:100%;display:block}
       <div class="row"><button class="sb aud" data-k="music"></button><button class="sb aud" data-k="sfx"></button></div>
       <p id="mHelp" style="font-size:13px;color:#ddd;white-space:pre-line;text-align:left;line-height:1.55;max-width:480px;margin:10px auto"></p>
       <button class="sb" id="bReset" style="margin-top:4px"></button>
+      <p style="font-size:12px;color:#bbb;margin:10px 0 0;line-height:1.5">🎵 Zenambi – Latino Tribal<br>🎵 Tommi Tampio – Hopeful Road Trip</p>
       <a id="backHome" href="pelit.html" style="display:none;margin-top:12px;color:#f5c400;font-size:14px">‹ tommitampio.github.io</a>
     </div></div>
     <div id="bstage" class="ov hide" style="z-index:30"><div class="panel">
@@ -275,8 +276,20 @@ function audioInit(){
   const len=c.sampleRate;AU.noise=c.createBuffer(1,len,c.sampleRate);const dd=AU.noise.getChannelData(0);for(let i=0;i<len;i++)dd[i]=Math.random()*2-1;
   AU.next=c.currentTime+0.1;AU.timer=setInterval(schedMusic,50);
 }
-const BGM=new Audio("musiikki/hopeful-road-trip.mp3");BGM.loop=true;BGM.volume=0.55;BGM.preload="auto";
-function bgmSync(){try{if(save.music&&!document.hidden){const p=BGM.play();if(p&&p.catch)p.catch(()=>{});}else BGM.pause();}catch(e){}}
+// Valikko: Tommi Tampio – Hopeful Road Trip. Keikat: Zenambi (Marko Pekka Rinne) – Latino Tribal, käytetään luvalla.
+const BGM_TR={menu:{a:new Audio("musiikki/hopeful-road-trip.mp3"),v:0.55},battle:{a:new Audio("musiikki/latino-tribal.mp3"),v:0.3,credit:"🎵 Zenambi – Latino Tribal"}};
+for(const k in BGM_TR){const t=BGM_TR[k];t.a.loop=true;t.a.preload="auto";t.a.volume=0;}
+const BGM=BGM_TR.menu.a;let bgmCur=null,bgmUnlocked=false;
+function bgmWant(){return (G&&!G.fake&&(state==="play"||state==="paused"))?"battle":"menu";}
+function showNowPlaying(txt){let el=document.getElementById("nowPl");
+  if(!el){el=document.createElement("div");el.id="nowPl";el.style.cssText="position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:40;background:#000c;color:#fff;border:1.5px solid #f5c400;border-radius:20px;padding:6px 16px;font:800 13px system-ui;pointer-events:none;transition:opacity .6s;opacity:0;white-space:nowrap";document.body.appendChild(el);}
+  el.textContent=txt;el.style.opacity="1";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity="0";},4000);}
+function bgmTick(dt){if(!bgmUnlocked)return;const on=save.music&&!document.hidden,want=bgmWant();
+  for(const k in BGM_TR){const t=BGM_TR[k],target=on&&k===want?t.v:0;
+    try{if(target>0&&t.a.paused){const p=t.a.play();if(p&&p.catch)p.catch(()=>{});if(bgmCur!==k&&t.credit)showNowPlaying(t.credit);bgmCur=k;}
+      const stp=dt>0?dt*0.6:1,d=target-t.a.volume;t.a.volume=Math.max(0,Math.min(1,t.a.volume+Math.sign(d)*Math.min(Math.abs(d),stp)));
+      if(target===0&&t.a.volume<=0.001&&!t.a.paused){t.a.pause();if(bgmCur===k)bgmCur=null;}}catch(e){}}}
+function bgmSync(){bgmUnlocked=true;bgmTick(0);}
 document.addEventListener("pointerdown",bgmSync,{capture:true});
 document.addEventListener("pointerdown",audioInit,{capture:true});
 document.addEventListener("keydown",audioInit,{capture:true});
@@ -1942,7 +1955,7 @@ function loop(now){
   if(G){if(G.slow>0)G.slow-=dt;if(G.shk>0)G.shk=Math.max(0,G.shk-dt*1.5);if(G.flash>0)G.flash=Math.max(0,G.flash-dt*1.5);}
   if(state==="play"||(state==="over"&&G)){acc+=dt*speed*(G&&G.slow>0?0.3:1);while(acc>=1/60){step(1/60);acc-=1/60;}}
   if(state==="play"){saveT+=dt;if(saveT>5){saveT=0;saveGame();}}
-  draw();drawMini();updUI();updAbUI();updTut();requestAnimationFrame(loop);
+  draw();drawMini();updUI();updAbUI();updTut();bgmTick(Math.min(dt,0.1));requestAnimationFrame(loop);
 }
 if(location.hostname.indexOf("github.io")>=0)$("backHome").style.display="block";
 if(location.hostname.indexOf("github.io")>=0&&"serviceWorker" in navigator){navigator.serviceWorker.register("/strings-statues-sw.js",{scope:"/sticks-statues.html"}).catch(()=>{});}

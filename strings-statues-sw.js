@@ -1,6 +1,6 @@
 // Strings & Statues: tallentaa pelin puhelimeen, jotta se toimii myös ilman nettiä.
 // Nettiyhteyden ollessa päällä haetaan aina uusin versio, muuten käytetään tallennettua.
-const CACHE = "strings-statues-v2";
+const CACHE = "strings-statues-v3";
 const FILES = [
   "/sticks-statues.html",
   "/strings-statues.webmanifest",
@@ -11,6 +11,7 @@ const FILES = [
   "/kuvat/bandi/patsas-p.png",
   "/kuvat/bandi/patsas-e.png",
   "/musiikki/hopeful-road-trip.mp3",
+  "/musiikki/latino-tribal.mp3",
   "/kuvat/bandi/sword-p.png",
   "/kuvat/bandi/sword-e.png",
   "/kuvat/bandi/sword-ikoni.png",
