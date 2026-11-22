@@ -1,4 +1,19 @@
-<!doctype html>
+<!doctype html
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  var k=document.getElementById("kappaleet"); if(!k||document.getElementById("uutiset-osio"))return;
+  var l="fi"; try{l=localStorage.getItem("lang")||document.documentElement.lang||"fi";}catch(e){}
+  var T={fi:["Päivän uutiset","Tuoreimmat uutiset Helsingistä ja Ruotsista sekä päivän hyvä uutinen.","Avaa uutiset →","Kysy Tommilta","Kysy sivusta, peleistä tai minusta – apuri vastaa heti.","Kysy →"],
+         sv:["Dagens nyheter","Senaste nytt från Helsingfors och Sverige samt dagens goda nyhet.","Öppna nyheterna →","Fråga Tommi","Fråga om sidan, spelen eller mig – hjälpredan svarar direkt.","Fråga →"],
+         en:["Today's news","The latest from Helsinki and Sweden, plus the good news of the day.","Open the news →","Ask Tommi","Ask about the site, the games or me – the helper answers right away.","Ask →"]};
+  var t=T[l.slice(0,2)]||T.fi;
+  function s(id,h,p,a,href){var e=document.createElement("section");e.id=id;e.innerHTML='<h2>'+h+'</h2><div><p>'+p+'</p><p><a class="go" href="'+href+'">'+a+'</a></p></div>';k.parentNode.insertBefore(e,k);}
+  s("uutiset-osio",t[0],t[1],t[2],"uutiset.html");
+  s("kysy-osio",t[3],t[4],t[5],"kysy.html");
+});
+</script>
+
 <html lang="fi">
 <head>
 <meta charset="utf-8">
