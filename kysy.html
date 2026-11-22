@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kysy Tommilta</title>
+<style>
+:root{--bg:#f6f4ef;--card:#ffffff;--ink:#1f2328;--muted:#6b7078;--accent:#2f6f5e;--me:#2f6f5e;--meink:#fff;--bot:#eef1ee;--line:#e2e0da}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--card:#1f2226;--ink:#e8e6e1;--muted:#9aa0a6;--accent:#6fc3a8;--me:#3b8a74;--meink:#fff;--bot:#2a2e33;--line:#33373c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+header a{color:var(--accent);text-decoration:none;font-size:15px}
+h1{font-size:20px;margin:0}
+.langs button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 8px;margin-left:4px;font-size:13px;cursor:pointer}
+.langs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0 12px}
+.msg{max-width:85%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-wrap:break-word}
+.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:4px}
+.me{background:var(--me);color:var(--meink);align-self:flex-end;border-bottom-right-radius:4px}
+.msg a{color:var(--accent);font-weight:600}
+.me a{color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.chips button{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.chips button:hover{border-color:var(--accent)}
+form{display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0}
+input{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+form button{font:inherit;padding:0 16px;border:0;border-radius:12px;background:var(--accent);color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><a href="index.html" id="back">← Etusivu</a><h1 id="title">Kysy Tommilta</h1></div>
+    <div class="langs"><button data-l="fi">FI</button><button data-l="sv">SV</button><button data-l="en">EN</button></div>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <div class="chips" id="chips"></div>
+  <form id="f"><input id="q" autocomplete="off"><button id="send">→</button></form>
+</div>
+<script>
+var L = "fi";
+try { var p = new URLSearchParams(location.search).get("lang"); if (p) L = p; else { var s = localStorage.getItem("lang"); if (s) L = s; } } catch(e){}
+if (["fi","sv","en"].indexOf(L) < 0) L = "fi";
+
+var G = "pelit.html";
+var UI = {
+  fi:{title:"Kysy Tommilta",back:"← Etusivu",ph:"Kirjoita kysymys…",
+      hello:"Hei! Olen Tommin kotisivun apuri. Kysy vaikka peleistä, kirjoista tai siitä, kuka Tommi on – tai paina nappia alta.",
+      chips:["Kuka Tommi on?","Mitä pelejä on?","Mitä täältä löytyy?","Arkineuvoja","Yhteystiedot"]},
+  sv:{title:"Fråga Tommi",back:"← Startsidan",ph:"Skriv en fråga…",
+      hello:"Hej! Jag är hjälpredan på Tommis hemsida. Fråga om spelen, böckerna eller vem Tommi är – eller tryck på en knapp nedan.",
+      chips:["Vem är Tommi?","Vilka spel finns?","Vad finns här?","Vardagsrådgivaren","Kontakt"]},
+  en:{title:"Ask Tommi",back:"← Home",ph:"Type a question…",
+      hello:"Hi! I'm the helper on Tommi's homepage. Ask about the games, books or who Tommi is – or tap a button below.",
+      chips:["Who is Tommi?","What games are there?","What's on this site?","Everyday advisor","Contact"]}
+};
+
+function a(href, text){ return '<a href="'+href+'">'+text+'</a>'; }
+
+// Each topic: keywords (any language, lowercase) and answers per language.
+var T = [
+ {k:["hei","moi","terve","moro","hej","tjena","hello","hi ","hey"],
+  a:{fi:"Hei vaan! Mitä haluaisit tietää?",sv:"Hej! Vad vill du veta?",en:"Hi there! What would you like to know?"}},
+ {k:["kuka","tommi","sinusta","itsestä","vem","who","about","om dig"],
+  a:{fi:"Tommi asuu Helsingissä ja on utelias ihminen. Häntä kiinnostavat ihmismieli, muisti, historia ja kielet – hän on opiskellut saksaa, latinaa, espanjaa, ranskaa ja esperantoa. Lapsuutensa hän vietti Kalmarissa Ruotsissa.",
+     sv:"Tommi bor i Helsingfors och är nyfiken av naturen. Han är intresserad av människans sinne, minnet, historia och språk – han har studerat tyska, latin, spanska, franska och esperanto. Barndomen tillbringade han i Kalmar.",
+     en:"Tommi lives in Helsinki and is a curious person. He's interested in the human mind, memory, history and languages – he has studied German, Latin, Spanish, French and Esperanto. He grew up in Kalmar, Sweden."}},
+ {k:["shakki","schack","chess"],
+  a:{fi:"Shakkia voi pelata tietokonetta vastaan: "+a("shakki.html","Shakki"),sv:"Du kan spela schack mot datorn: "+a("shakki.html","Schack"),en:"You can play chess against the computer: "+a("shakki.html","Chess")}},
+ {k:["miina","minröj","minesweeper","mine"],
+  a:{fi:a("miinaharava.html","Miinaharava")+" löytyy täältä.",sv:a("miinaharava.html","Minröjning")+" finns här.",en:a("miinaharava.html","Minesweeper")+" is here."}},
+ {k:["parkour","katto","tak ","roof"],
+  a:{fi:"Hypi autojen katoilla: "+a("kattoparkour.html","Kattoparkour"),sv:"Hoppa på biltak: "+a("kattoparkour.html","Kattoparkour"),en:"Jump across car roofs: "+a("kattoparkour.html","Kattoparkour")}},
+ {k:["strings","statues","patsas","staty"],
+  a:{fi:"Musiikkiaiheinen strategiapeli: "+a("sticks-statues.html","Strings & Statues"),sv:"Ett strategispel med musiktema: "+a("sticks-statues.html","Strings & Statues"),en:"A music-themed strategy game: "+a("sticks-statues.html","Strings & Statues")}},
+ {k:["jalkapallo","fotboll","football","soccer","tähtipelaaja"],
+  a:{fi:a("tahtipelaaja.html","Tähtipelaaja")+" on jalkapallopeli.",sv:a("tahtipelaaja.html","Tähtipelaaja")+" är ett fotbollsspel.",en:a("tahtipelaaja.html","Tähtipelaaja")+" is a football game."}},
+ {k:["kiekko","hockey","nhl","kiekkotähti"],
+  a:{fi:a("kiekkotahti.html","Kiekkotähti")+" on jääkiekkopeli – valitse oma NHL-joukkue.",sv:a("kiekkotahti.html","Kiekkotähti")+" är ett ishockeyspel – välj ditt NHL-lag.",en:a("kiekkotahti.html","Kiekkotähti")+" is an ice hockey game – pick your NHL team."}},
+ {k:["kieli","kielipeli","språkspel","language game","sanasto","vocab"],
+  a:{fi:a("kielipeli.html","Kielipeli")+": opettele sanoja monella kielellä, ruotsista swahiliin.",sv:a("kielipeli.html","Språkspelet")+": lär dig ord på många språk, från svenska till swahili.",en:a("kielipeli.html","The language game")+": learn words in many languages, from Swedish to Swahili."}},
+ {k:["presidentti","president"],
+  a:{fi:a("presidentit.html","Presidenttivisa")+": kuinka hyvin tunnet USA:n presidentit?",sv:a("presidentit.html","Presidentquizen")+": hur väl känner du USA:s presidenter?",en:a("presidentit.html","The presidents quiz")+": how well do you know the US presidents?"}},
+ {k:["doomsday","viikonpäivä","veckodag","weekday"],
+  a:{fi:a("doomsday.html","Doomsday")+": laske minkä tahansa päivämäärän viikonpäivä päässä.",sv:a("doomsday.html","Doomsday")+": räkna ut veckodagen för vilket datum som helst i huvudet.",en:a("doomsday.html","Doomsday")+": work out the weekday of any date in your head."}},
+ {k:["ambigrammi","ambigram"],
+  a:{fi:a("ambigrammi.html","Ambigrammikone")+" tekee sanoista kuvioita, jotka toimivat ylösalaisinkin.",sv:a("ambigrammi.html","Ambigrammaskinen")+" gör ord som går att läsa upp och ner.",en:a("ambigrammi.html","The ambigram machine")+" makes words that read upside down too."}},
+ {k:["holvi","pisteholvi","vault"],
+  a:{fi:a("pisteholvi.html","Pisteholvi")+": avaa holveja, pelataan pisteillä eikä rahalla.",sv:a("pisteholvi.html","Pisteholvi")+": öppna valv – med poäng, inte pengar.",en:a("pisteholvi.html","Pisteholvi")+": open vaults – played with points, not money."}},
+ {k:["peli","pelej","pelaa","pelat","spel","game","play"],
+  a:{fi:"Täällä on kymmenkunta peliä: shakki, miinaharava, Kattoparkour, Strings & Statues, jalkapallo- ja jääkiekkopeli, kielipeli, presidenttivisa ja muita. Kaikki löytyvät täältä: "+a(G,"Pelit"),
+     sv:"Här finns ett tiotal spel: schack, minröjning, Kattoparkour, Strings & Statues, fotboll och ishockey, språkspel, presidentquiz med mera. Alla finns här: "+a(G,"Spel"),
+     en:"There are about ten games: chess, minesweeper, Kattoparkour, Strings & Statues, football and ice hockey, a language game, a presidents quiz and more. All of them are here: "+a(G,"Games")}},
+ {k:["arkineuvoja","neuvo","huoli","murhe","ongelma","råd","bekymmer","advice","advisor","worry","problem"],
+  a:{fi:"Arkineuvoja vastaa arjen huoliin tekoälyn avulla. Kokeile: "+a("arkineuvoja.html","Arkineuvoja"),
+     sv:"Vardagsrådgivaren svarar på vardagsbekymmer med hjälp av AI. Prova: "+a("arkineuvoja.html","Vardagsrådgivaren"),
+     en:"The everyday advisor answers day-to-day worries with the help of AI. Try it: "+a("arkineuvoja.html","Everyday advisor")}},
+ {k:["vastausten","vastaus","kyllä vai ei","svarens","answer"],
+  a:{fi:"Mieti kysymystä ja avaa "+a("vastausten-kirja.html","Vastausten kirja")+" – se antaa vastauksen.",
+     sv:"Tänk på en fråga och öppna "+a("vastausten-kirja.html","Svarens bok")+" – den ger dig ett svar.",
+     en:"Think of a question and open "+a("vastausten-kirja.html","The Book of Answers")+" – it will give you an answer."}},
+ {k:["oivallus","oivallukset","ajatus","insikt","insight","idea"],
+  a:{fi:"Joka päivä etusivulla on uusi oivalluskortti. Kaikki kortit: "+a("oivallukset.html","Oivallukset"),
+     sv:"Varje dag finns ett nytt insiktskort på startsidan. Alla kort: "+a("oivallukset.html","Insikter"),
+     en:"There's a new insight card on the homepage every day. All cards: "+a("oivallukset.html","Insights")}},
+ {k:["kirja","kirjat","luke","luettu","bok","böcker","läs","book","read"],
+  a:{fi:"Tommi lukee paljon, erityisesti psykologiaa, filosofiaa ja historiaa, ja kuuntelee äänikirjoja. Luettu lista on "+a("index.html#luettua","etusivulla")+".",
+     sv:"Tommi läser mycket, särskilt psykologi, filosofi och historia, och lyssnar på ljudböcker. Listan finns på "+a("index.html#luettua","startsidan")+".",
+     en:"Tommi reads a lot, especially psychology, philosophy and history, and listens to audiobooks. The reading list is on the "+a("index.html#luettua","homepage")+"."}},
+ {k:["kappale","laulu","musiikki","biisi","suno","låt","musik","song","music"],
+  a:{fi:"Tommi on tehnyt omia kappaleita Sunon avulla. Ne löytyvät etusivun Omat kappaleet -osiosta.",
+     sv:"Tommi har gjort egna låtar med Suno. De finns i avsnittet Egna låtar på startsidan.",
+     en:"Tommi has made his own songs with Suno. You'll find them in the Own songs section on the homepage."}},
+ {k:["harrast","rubik","kuutio","kitara","hobby","hobbies","gitarr","guitar","kub","cube"],
+  a:{fi:"Tommi ratkoo eri kokoisia Rubikin kuutioita ja soittaa klassista ja akustista kitaraa. Hän käyttää myös muistitekniikoita.",
+     sv:"Tommi löser Rubiks kuber i olika storlekar och spelar klassisk och akustisk gitarr. Han använder också minnestekniker.",
+     en:"Tommi solves Rubik's cubes of different sizes and plays classical and acoustic guitar. He also uses memory techniques."}},
+ {k:["yhteys","sähköposti","ota yhteyttä","kontakt","mejl","contact","email","mail"],
+  a:{fi:"Tommin tavoittaa sähköpostilla: tommitampio [at] gmail.com",sv:"Du når Tommi via e-post: tommitampio [at] gmail.com",en:"You can reach Tommi by email: tommitampio [at] gmail.com"}},
+ {k:["löytyy","mitä täällä","sisältö","vad finns","innehåll","what's on","site","sivu"],
+  a:{fi:"Täältä löytyy: tietoa Tommista ja harrastuksista, "+a(G,"pelit")+", luettujen kirjojen lista, päivän oivallus, "+a("arkineuvoja.html","Arkineuvoja")+", "+a("vastausten-kirja.html","Vastausten kirja")+" ja Tommin omat kappaleet.",
+     sv:"Här finns: om Tommi och hans hobbyer, "+a(G,"spel")+", lästa böcker, dagens insikt, "+a("arkineuvoja.html","Vardagsrådgivaren")+", "+a("vastausten-kirja.html","Svarens bok")+" och Tommis egna låtar.",
+     en:"On this site: about Tommi and his hobbies, "+a(G,"games")+", a reading list, the daily insight, "+a("arkineuvoja.html","Everyday advisor")+", "+a("vastausten-kirja.html","The Book of Answers")+" and Tommi's own songs."}},
+ {k:["kiitos","tack","thanks","thank"],
+  a:{fi:"Ole hyvä! Kysy lisää milloin vain.",sv:"Varsågod! Fråga gärna mer.",en:"You're welcome! Ask anything else anytime."}}
+];
+
+var FB = {fi:"Tuohon en osaa vielä vastata. Voit kysyä esimerkiksi peleistä, kirjoista, harrastuksista tai siitä, kuka Tommi on.",
+          sv:"Det kan jag inte svara på ännu. Fråga till exempel om spelen, böckerna, hobbyerna eller vem Tommi är.",
+          en:"I can't answer that yet. Try asking about the games, books, hobbies or who Tommi is."};
+
+var log = document.getElementById("log");
+function add(html, who){ var d=document.createElement("div"); d.className="msg "+who; d.innerHTML=html; log.appendChild(d); log.scrollTop=log.scrollHeight; }
+function esc(s){ return s.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+function answer(q){
+  var t = " " + q.toLowerCase() + " ";
+  var best=null, score=0;
+  for (var i=0;i<T.length;i++){
+    var s=0; for (var j=0;j<T[i].k.length;j++){ if (t.indexOf(T[i].k[j])>=0) s += T[i].k[j].length; }
+    if (s>score){ score=s; best=T[i]; }
+  }
+  return best ? best.a[L] : FB[L];
+}
+function ask(q){ q=q.trim(); if(!q) return; add(esc(q),"me"); setTimeout(function(){ add(answer(q),"bot"); },300); }
+
+function render(){
+  var u=UI[L]; document.documentElement.lang=L;
+  document.getElementById("title").textContent=u.title; document.title=u.title;
+  document.getElementById("back").textContent=u.back;
+  document.getElementById("q").placeholder=u.ph;
+  var c=document.getElementById("chips"); c.innerHTML="";
+  u.chips.forEach(function(x){ var b=document.createElement("button"); b.type="button"; b.textContent=x; b.onclick=function(){ask(x);}; c.appendChild(b); });
+  document.querySelectorAll(".langs button").forEach(function(b){ b.classList.toggle("on", b.dataset.l===L); });
+  log.innerHTML=""; add(u.hello,"bot");
+}
+document.querySelectorAll(".langs button").forEach(function(b){ b.onclick=function(){ L=b.dataset.l; try{localStorage.setItem("lang",L);}catch(e){} render(); }; });
+document.getElementById("f").onsubmit=function(e){ e.preventDefault(); var i=document.getElementById("q"); ask(i.value); i.value=""; };
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Päivän uutiset</title>
+<style>
+:root{--bg:#f6f4ef;--card:#ffffff;--ink:#1f2328;--muted:#6b7078;--accent:#2f6f5e;--line:#e2e0da}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--card:#1f2226;--ink:#e8e6e1;--muted:#9aa0a6;--accent:#6fc3a8;--line:#33373c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+header a{color:var(--accent);text-decoration:none;font-size:15px}
+h1{font-size:22px;margin:2px 0 0}
+.langs button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 8px;margin-left:4px;font-size:13px;cursor:pointer}
+.langs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:14px 0}
+h2{font-size:17px;margin:0 0 6px}
+ul{list-style:none;margin:0;padding:0}
+li{padding:8px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li a{color:var(--ink);text-decoration:none;font-weight:500}
+li a:hover{color:var(--accent);text-decoration:underline}
+.t{display:block;color:var(--muted);font-size:13px}
+.note{color:var(--muted);font-size:13px;text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><a href="index.html" id="back">← Etusivu</a><h1 id="title">Päivän uutiset</h1></div>
+    <div class="langs"><button data-l="fi">FI</button><button data-l="sv">SV</button><button data-l="en">EN</button></div>
+  </header>
+  <section><h2 id="h-helsinki">🏙️ Helsinki ja Uusimaa</h2><ul id="helsinki"></ul></section>
+  <section><h2 id="h-ruotsi">🇸🇪 Ruotsi</h2><ul id="ruotsi"></ul></section>
+  <section><h2 id="h-hyva">☀️ Hyvä uutinen</h2><ul id="hyva"></ul></section>
+  <p class="note" id="note"></p>
+</div>
+<script>
+var API = "https://uutiset.tommitampio.workers.dev";
+var L = "fi";
+try { var p = new URLSearchParams(location.search).get("lang"); if (p) L = p; else { var s = localStorage.getItem("lang"); if (s) L = s; } } catch(e){}
+if (["fi","sv","en"].indexOf(L) < 0) L = "fi";
+
+var TX = {
+  fi:{title:"Päivän uutiset",back:"← Etusivu",helsinki:"🏙️ Helsinki ja Uusimaa",ruotsi:"🇸🇪 Ruotsi",hyva:"☀️ Hyvä uutinen",
+      note:"Lähteet: Yle, SVT ja Positive News. Päivittyy puolen tunnin välein.",load:"Ladataan…",err:"Uutisia ei saatu juuri nyt. Yritä hetken päästä uudelleen.",
+      now:"juuri nyt",min:" min sitten",h:" t sitten",d:" pv sitten"},
+  sv:{title:"Dagens nyheter",back:"← Startsidan",helsinki:"🏙️ Helsingfors och Nyland",ruotsi:"🇸🇪 Sverige",hyva:"☀️ En god nyhet",
+      note:"Källor: Yle, SVT och Positive News. Uppdateras varje halvtimme.",load:"Laddar…",err:"Nyheterna kunde inte hämtas just nu. Försök igen om en stund.",
+      now:"just nu",min:" min sedan",h:" tim sedan",d:" d sedan"},
+  en:{title:"Today's news",back:"← Home",helsinki:"🏙️ Helsinki and Uusimaa",ruotsi:"🇸🇪 Sweden",hyva:"☀️ Good news",
+      note:"Sources: Yle, SVT and Positive News. Updates every half hour.",load:"Loading…",err:"Couldn't load the news right now. Please try again shortly.",
+      now:"just now",min:" min ago",h:" h ago",d:" d ago"}
+};
+var DATA = null;
+
+function ago(d){
+  var t = Date.parse(d); if (isNaN(t)) return "";
+  var m = Math.max(0, Math.round((Date.now()-t)/60000)), x = TX[L];
+  if (m < 2) return x.now; if (m < 60) return m + x.min;
+  var h = Math.round(m/60); if (h < 24) return h + x.h;
+  return Math.round(h/24) + x.d;
+}
+function fill(id, list){
+  var ul = document.getElementById(id); ul.innerHTML = "";
+  (list || []).forEach(function(it){
+    var li = document.createElement("li"), a = document.createElement("a");
+    a.href = it.link; a.target = "_blank"; a.rel = "noopener"; a.textContent = it.title;
+    var s = document.createElement("span"); s.className = "t"; s.textContent = ago(it.date);
+    li.appendChild(a); li.appendChild(s); ul.appendChild(li);
+  });
+  ul.parentNode.style.display = (list && list.length) ? "" : "none";
+}
+function render(){
+  var x = TX[L]; document.documentElement.lang = L; document.title = x.title;
+  document.getElementById("title").textContent = x.title;
+  document.getElementById("back").textContent = x.back;
+  ["helsinki","ruotsi","hyva"].forEach(function(k){ document.getElementById("h-"+k).textContent = x[k]; });
+  document.querySelectorAll(".langs button").forEach(function(b){ b.classList.toggle("on", b.dataset.l === L); });
+  if (DATA) { fill("helsinki", DATA.helsinki); fill("ruotsi", DATA.ruotsi); fill("hyva", DATA.hyva); document.getElementById("note").textContent = x.note; }
+}
+document.querySelectorAll(".langs button").forEach(function(b){ b.onclick = function(){ L = b.dataset.l; try{ localStorage.setItem("lang", L); }catch(e){} render(); }; });
+
+render();
+document.getElementById("note").textContent = TX[L].load;
+fetch(API).then(function(r){ return r.json(); }).then(function(j){ DATA = j; render(); })
+  .catch(function(){ document.getElementById("note").textContent = TX[L].err; });
+</script>
+</body>
+</html>
